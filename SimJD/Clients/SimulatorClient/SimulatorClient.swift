@@ -105,8 +105,12 @@ extension SimulatorClient {
         _fetchSimulatorDictionary: {
             handleFetchSimulators()
         },
-        _updateLocation: { _, _, _ in
-            .success(())
+        _updateLocation: { simulatorID, latitude, longtitude in
+            handleUpdateLocation(
+                simulatorID: simulatorID,
+                latitude: latitude,
+                longitude: longtitude
+            )
         }
     )
 
