@@ -135,8 +135,8 @@ struct SimulatorDetailsViewCoordinator: CoordinatingView {
                     simulatorManager: simManager
                 )
 
-            case .geolocation(let simulator):
-                SimulatorGeolocationView(simulator: simulator)
+            case .geolocation:
+                SimulatorGeolocationCoordinatingView(simManager: simManager)
             }
         }
         .sheet(item: $present) {

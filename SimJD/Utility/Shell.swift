@@ -17,6 +17,7 @@ struct Shell: Sendable {
         case .fetchBootedSimulators_Legacy,
              .shotdown,
              .uninstallApp,
+             .updateLocation,
              .activeProcesses,
              .installedApps,
              .fetchAllSimulators_Legacy:    basicExecute(command)
@@ -169,13 +170,14 @@ extension Shell {
         case installedApps(String)
         case deleteSimulator(String)
         case uninstallApp(String, String)
+        case updateLocation(String, Double, Double)
 
         var path: Path {
             switch self {
             case .fetchBootedSimulators_Legacy, .fetchAllSimulators_Legacy, .activeProcesses:
                 .bash
 
-            case .shotdown, .installedApps, .eraseContents, .uninstallApp, .deleteSimulator, .fetchSimulators:
+            case .shotdown, .installedApps, .eraseContents, .uninstallApp, .deleteSimulator, .fetchSimulators, .updateLocation:
                 .xcrun
 
             case .openSimulator:
@@ -214,6 +216,9 @@ extension Shell {
 
             case .fetchSimulators:
                 ["simctl", "list", "devices", "--json"]
+
+            case .updateLocation(let id, let lat, let long):
+                ["simctl", "location", id, "\(lat)", "\(long)"]
             }
         }
     }

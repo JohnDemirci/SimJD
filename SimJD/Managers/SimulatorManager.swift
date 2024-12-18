@@ -142,6 +142,19 @@ extension SimulatorManager {
     func eraseContents(in simulator: Simulator) -> Result<Void, Failure> {
         simulatorClient.eraseContents(simulator: simulator.id)
     }
+
+    @discardableResult
+    func updateLocation(
+        in simulator: Simulator,
+        latitude: Double,
+        longtitude: Double
+    ) -> Result<Void, Failure> {
+        simulatorClient.updateLocation(
+            simulator: simulator.id,
+            latitude: latitude,
+            longitude: longtitude
+        )
+    }
 }
 
 extension SimulatorManager {

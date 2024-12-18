@@ -17,6 +17,7 @@ struct SimulatorClient {
     fileprivate var _uninstallApp: (String, String) -> Result<Void, Failure>
     fileprivate var _deleteSimulator: (String) -> Result<Void, Failure>
     fileprivate var _fetchSimulatorDictionary: () -> Result<OrderedDictionary<OS.Name, [Simulator]>, Failure>
+    fileprivate var _updateLocation: (String, Double, Double) -> Result<Void, Failure>
 
     private init(
         _shutdownSimulator: @escaping (String) -> Result<Void, Failure>,
@@ -26,7 +27,8 @@ struct SimulatorClient {
         _installedApps: @escaping (String) -> Result<[InstalledAppDetail], Failure>,
         _uninstallApp: @escaping (String, String) -> Result<Void, Failure>,
         _deleteSimulator: @escaping (String) -> Result<Void, Failure>,
-        _fetchSimulatorDictionary: @escaping () -> Result<OrderedDictionary<OS.Name, [Simulator]>, Failure>
+        _fetchSimulatorDictionary: @escaping () -> Result<OrderedDictionary<OS.Name, [Simulator]>, Failure>,
+        _updateLocation: @escaping (String, Double, Double) -> Result<Void, Failure>
     ) {
         self._shutdownSimulator = _shutdownSimulator
         self._openSimulator = _openSimulator
@@ -36,6 +38,7 @@ struct SimulatorClient {
         self._uninstallApp = _uninstallApp
         self._deleteSimulator = _deleteSimulator
         self._fetchSimulatorDictionary = _fetchSimulatorDictionary
+        self._updateLocation = _updateLocation
     }
 
     func shutdownSimulator(simulator: String) -> Result<Void, Failure> {
@@ -69,6 +72,10 @@ struct SimulatorClient {
     func fetchSimulatorDictionary() -> Result<OrderedDictionary<OS.Name, [Simulator]>, Failure> {
         return _fetchSimulatorDictionary()
     }
+
+    func updateLocation(simulator: String, latitude: Double, longitude: Double) -> Result<Void, Failure> {
+        return _updateLocation(simulator, latitude, longitude)
+    }
 }
 
 extension SimulatorClient {
@@ -97,6 +104,9 @@ extension SimulatorClient {
         },
         _fetchSimulatorDictionary: {
             handleFetchSimulators()
+        },
+        _updateLocation: { _, _, _ in
+            .success(())
         }
     )
 
@@ -110,7 +120,8 @@ extension SimulatorClient {
         _installedApps: { _ in fatalError("not implemented") },
         _uninstallApp: { _, _ in fatalError("not implemented") },
         _deleteSimulator: { _ in fatalError("not implemented") },
-        _fetchSimulatorDictionary: { fatalError("not implemented") }
+        _fetchSimulatorDictionary: { fatalError("not implemented") },
+        _updateLocation: { _, _, _ in fatalError("not implemented") }
     )
     #endif
 }
@@ -125,7 +136,8 @@ extension SimulatorClient {
         _installedApps:  ((String) -> Result<[InstalledAppDetail], Failure>)? = nil,
         _uninstallApp:  ((String, String) -> Result<Void, Failure>)? = nil,
         _deleteSimulator: ((String) -> Result<Void, Failure>)? = nil,
-        _fetchSimulatorDictionary: (() -> Result<OrderedDictionary<OS.Name, [Simulator]>, Failure>)? = nil
+        _fetchSimulatorDictionary: (() -> Result<OrderedDictionary<OS.Name, [Simulator]>, Failure>)? = nil,
+        _updateLocation: ((String, Double, Double) -> Result<Void, Failure>)?
     ) -> Self {
         if let _shutdownSimulator = _shutdownSimulator {
             self._shutdownSimulator = _shutdownSimulator
@@ -157,6 +169,10 @@ extension SimulatorClient {
 
         if let _fetchSimulatorDictionary = _fetchSimulatorDictionary {
             self._fetchSimulatorDictionary = _fetchSimulatorDictionary
+        }
+
+        if let _updateLocation = _updateLocation {
+            self._updateLocation = _updateLocation
         }
 
         return self
