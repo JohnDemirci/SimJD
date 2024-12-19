@@ -9,7 +9,7 @@ import SwiftUI
 
 struct InstalledApplicationsView: View {
     enum Event {
-        case couldNotFetchInstalledApps(Failure)
+        case didFailToFetchInstalledApps(Failure)
         case didSelectApp(InstalledAppDetail, Binding<[InstalledAppDetail]>)
     }
 
@@ -56,7 +56,7 @@ struct InstalledApplicationsView: View {
                 }
 
             case .failure(let error):
-                sendEvent(.couldNotFetchInstalledApps(error))
+                sendEvent(.didFailToFetchInstalledApps(error))
             }
         }
     }

@@ -4,15 +4,15 @@ import Combine
 
 struct SimulatorGeolocationView: View {
     enum Event {
-        case updatedLocation
-        case couldNotUpdateLocation
-        case coordinateTranslationFailed
+        case didFailCoordinateProxy
+        case didFailUpdateLocation
+        case didUpdateLocation
     }
 
     @Bindable var simManager: SimulatorManager
     var sendEvent: (Event) -> Void
 
-    private let position = MapCameraPosition.region(
+    @State private var position = MapCameraPosition.region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(
                 latitude: 37.773972,
@@ -29,14 +29,14 @@ struct SimulatorGeolocationView: View {
 
     var body: some View {
         MapReader { proxy in
-            Map(initialPosition: position) {
+            Map(position: $position) {
                 Marker("Selected Location", coordinate: marker)
             }
             .onTapGesture { position in
                 if let coordinate = proxy.convert(position, from: .local) {
                     self.marker = coordinate
                 } else {
-                    sendEvent(.coordinateTranslationFailed)
+                    sendEvent(.didFailCoordinateProxy)
                 }
             }
         }
@@ -49,9 +49,9 @@ struct SimulatorGeolocationView: View {
                     longtitude: marker.longitude
                 ) {
                 case .success:
-                    sendEvent(.updatedLocation)
+                    sendEvent(.didUpdateLocation)
                 case .failure:
-                    sendEvent(.couldNotUpdateLocation)
+                    sendEvent(.didFailUpdateLocation)
                 }
             }
         }

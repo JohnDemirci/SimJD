@@ -13,12 +13,12 @@ struct SimulatorDetailsViewCoordinator: CoordinatingView {
     }
 
     enum Alert: Hashable, Identifiable {
-        case didSelectEraseData(Simulator)
-        case couldNotOpenEraseContents
-        case couldNotOpenDocumentsFolder
-        case didSelectDeleteSimulator(Simulator)
         case didDeleteSimulator
-        case couldNotDeleteSimulator
+        case didFailToDeleteSimulator
+        case didFailToEraseContents
+        case didFailToOpenDocumentsFolder
+        case didSelectDeleteSimulator(Simulator)
+        case didSelectEraseData(Simulator)
 
         var id: AnyHashable {
             "\(self)" as AnyHashable
@@ -26,8 +26,8 @@ struct SimulatorDetailsViewCoordinator: CoordinatingView {
     }
 
     enum Destination: Hashable {
-        case installedApplications
         case geolocation(Simulator)
+        case installedApplications
     }
 
     enum Sheet: Hashable, Identifiable {
@@ -63,80 +63,35 @@ struct SimulatorDetailsViewCoordinator: CoordinatingView {
         )
         .alert(item: $alert) {
             switch $0 {
-            case .couldNotOpenEraseContents:
-                SwiftUI.Alert(title: Text("Could not erase contents"))
-
-            case .couldNotOpenDocumentsFolder:
-                SwiftUI.Alert(title: Text("Unable to Open Documents Folder"))
-
-            case .didSelectEraseData(let simulator):
-                SwiftUI.Alert(
-                    title: Text("Erase All Simulator Data?"),
-                    message: Text("This will behave similarly to a factory reset. Are you sure you want to erase all simulator data?"),
-                    primaryButton: .default(
-                        Text("Erase Data"),
-                        action: {
-                            switch simManager.eraseContents(in: simulator) {
-                            case .success:
-                                break
-                            case .failure:
-                                Task {
-                                    try? await Task.sleep(for: .seconds(1))
-
-                                    await MainActor.run {
-                                        self.alert = .couldNotOpenEraseContents
-                                    }
-                                }
-                            }
-                        }
-                    ),
-                    secondaryButton: .cancel()
-                )
-
-            case .didSelectDeleteSimulator(let simulator):
-                SwiftUI.Alert(
-                    title: Text("Are you sure you want to delete this simulator?"),
-                    message: Text("This will delete the simulator entirely"),
-                    primaryButton: .default(Text("Delete")) {
-                        switch simManager.deleteSimulator(simulator) {
-                        case .success:
-                            Task {
-                                try? await Task.sleep(for: .seconds(1))
-
-                                await MainActor.run {
-                                    self.alert = .didDeleteSimulator
-                                }
-                            }
-                        case .failure:
-                            Task {
-                                try? await Task.sleep(for: .seconds(1))
-
-                                await MainActor.run {
-                                    self.alert = .couldNotDeleteSimulator
-                                }
-                            }
-                        }
-                    },
-                    secondaryButton: .cancel()
-                )
-
             case .didDeleteSimulator:
                 SwiftUI.Alert(title: Text("Success ✅"))
 
-            case .couldNotDeleteSimulator:
+            case .didFailToDeleteSimulator:
                 SwiftUI.Alert(title: Text("Failed to Delete Simulator"))
+
+            case .didFailToEraseContents:
+                SwiftUI.Alert(title: Text("Could not erase contents"))
+
+            case .didFailToOpenDocumentsFolder:
+                SwiftUI.Alert(title: Text("Failed to Open Documents Folder"))
+
+            case .didSelectDeleteSimulator(let simulator):
+                didSelectDeleteSimulatorAlert(simulator)
+
+            case .didSelectEraseData(let simulator):
+                didSelectEraseDataAlert(simulator: simulator)
             }
         }
         .navigationDestination(item: $destination) {
             switch $0 {
+            case .geolocation:
+                SimulatorGeolocationCoordinatingView(simManager: simManager)
+
             case .installedApplications:
                 InstalledApplicationsCoordinatingView(
                     folderManager: folderManager,
                     simulatorManager: simManager
                 )
-
-            case .geolocation:
-                SimulatorGeolocationCoordinatingView(simManager: simManager)
             }
         }
         .sheet(item: $present) {
@@ -157,17 +112,23 @@ extension SimulatorDetailsViewCoordinator {
         switch action {
         case .simulatorDetailViewEvent(let event):
             switch event {
-            case .couldNotEraseContent:
+            case .didFailToEraseContents:
                 // TODO: [for later] log
-                self.alert = .couldNotOpenEraseContents
+                self.alert = .didFailToEraseContents
 
-            case .couldNotOpenFolder:
+            case .didFailToOpenFolder:
                 // TODO: [for later] log
-                self.alert = .couldNotOpenDocumentsFolder
+                self.alert = .didFailToOpenDocumentsFolder
+
+            case .didSelectDeleteSimulator(let simulator):
+                self.alert = .didSelectDeleteSimulator(simulator)
 
             case .didSelectEraseData(let simulator):
                 // TODO: [for later] log
                 self.alert = .didSelectEraseData(simulator)
+
+            case .didSelectGeolocation(let simulator):
+                navigate(to: .geolocation(simulator))
 
             case .didSelectInstalledApplications:
                 // TODO: [for later] log
@@ -176,12 +137,6 @@ extension SimulatorDetailsViewCoordinator {
             case .didSelectRunningProcesses:
                 // TODO: [for later] log
                 openSheet(.runningProcesses)
-
-            case .didSelectGeolocation(let simulator):
-                navigate(to: .geolocation(simulator))
-
-            case .didSelectDeleteSimulator(let simulator):
-                self.alert = .didSelectDeleteSimulator(simulator)
             }
         }
     }
@@ -201,5 +156,62 @@ extension SimulatorDetailsViewCoordinator {
         case .runningProcesses:
             self.present = .runningProcesses
         }
+    }
+}
+
+private extension SimulatorDetailsViewCoordinator {
+    func didSelectDeleteSimulatorAlert(
+        _ simulator: Simulator
+    ) -> SwiftUI.Alert {
+        SwiftUI.Alert(
+            title: Text("Are you sure you want to delete this simulator?"),
+            message: Text("This will delete the simulator entirely"),
+            primaryButton: .default(Text("Delete")) {
+                switch simManager.deleteSimulator(simulator) {
+                case .success:
+                    Task {
+                        try? await Task.sleep(for: .seconds(1))
+
+                        await MainActor.run {
+                            self.alert = .didDeleteSimulator
+                        }
+                    }
+                case .failure:
+                    Task {
+                        try? await Task.sleep(for: .seconds(1))
+
+                        await MainActor.run {
+                            self.alert = .didFailToDeleteSimulator
+                        }
+                    }
+                }
+            },
+            secondaryButton: .cancel()
+        )
+    }
+
+    func didSelectEraseDataAlert(simulator: Simulator) -> SwiftUI.Alert {
+        SwiftUI.Alert(
+            title: Text("Erase All Simulator Data?"),
+            message: Text("This will behave similarly to a factory reset. Are you sure you want to erase all simulator data?"),
+            primaryButton: .default(
+                Text("Erase Data"),
+                action: {
+                    switch simManager.eraseContents(in: simulator) {
+                    case .success:
+                        break
+                    case .failure:
+                        Task {
+                            try? await Task.sleep(for: .seconds(1))
+
+                            await MainActor.run {
+                                self.alert = .didFailToEraseContents
+                            }
+                        }
+                    }
+                }
+            ),
+            secondaryButton: .cancel()
+        )
     }
 }

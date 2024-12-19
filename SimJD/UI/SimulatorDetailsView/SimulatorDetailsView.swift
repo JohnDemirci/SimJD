@@ -10,18 +10,18 @@ import SwiftUI
 
 struct SimulatorDetailsView: View {
     enum Action {
-        case simulatorActionOptionsViewEvent(SimulatorActionOptionsView.Event)
         case deviceStatusViewEvent(DeviceStatusView.Event)
+        case simulatorActionOptionsViewEvent(SimulatorActionOptionsView.Event)
     }
 
     enum Event {
-        case couldNotEraseContent(Failure)
-        case couldNotOpenFolder(Failure)
+        case didFailToEraseContents(Simulator)
+        case didFailToOpenFolder(Failure)
         case didSelectDeleteSimulator(Simulator)
         case didSelectEraseData(Simulator)
+        case didSelectGeolocation(Simulator)
         case didSelectInstalledApplications
         case didSelectRunningProcesses
-        case didSelectGeolocation(Simulator)
     }
 
     @Bindable private var simManager: SimulatorManager
@@ -84,20 +84,20 @@ private extension SimulatorDetailsView {
 
     func handleSimulatorActionOptionsViewEvent(_ event: SimulatorActionOptionsView.Event) {
         switch event {
-        case .couldNotOpenFolder(let error):
-            sendEvent(.couldNotOpenFolder(error))
+        case .didFailToOpenFolder(let error):
+            sendEvent(.didFailToOpenFolder(error))
 
         case .didSelectEraseData(let simulator):
-            sendEvent(.didSelectEraseData(simulator))
+            sendEvent(.didFailToEraseContents(simulator))
 
-        case .didSelectRunningProcesses:
-            sendEvent(.didSelectRunningProcesses)
+        case .didSelectGeolocation(let simulator):
+            sendEvent(.didSelectGeolocation(simulator))
 
         case .didSelectInstalledApplications:
             sendEvent(.didSelectInstalledApplications)
 
-        case .didSelectGeolocation(let simulator):
-            sendEvent(.didSelectGeolocation(simulator))
+        case .didSelectRunningProcesses:
+            sendEvent(.didSelectRunningProcesses)
         }
     }
 }

@@ -13,9 +13,9 @@ struct SimulatorGeolocationCoordinatingView: CoordinatingView {
     }
 
     enum Alert: Hashable, Identifiable {
-        case didUpdateSimulatorLocation
-        case failedUpdatingSimulatorLocation
-        case failedToConvertMapReaderProxy
+        case didFailCoordinateProxy
+        case didFailUpdateLocation
+        case didUpdateLocation
 
         var id: AnyHashable {
             "\(self)" as AnyHashable
@@ -30,40 +30,46 @@ struct SimulatorGeolocationCoordinatingView: CoordinatingView {
         SimulatorGeolocationView(simManager: simManager) { event in
             handleAction(.simulatorGeolocationViewEvent(event))
         }
-        .onChange(of: simManager.selectedSimulator, initial: false) { oldValue, newValue in
-            if oldValue != newValue {
-                dismiss()
-            }
-        }
         .alert(item: $alert) { alert in
             switch alert {
-            case .didUpdateSimulatorLocation:
-                SwiftUI.Alert(
-                    title: Text("Success")
-                )
-            case .failedToConvertMapReaderProxy:
+            case .didFailCoordinateProxy:
                 SwiftUI.Alert(
                     title: Text("Failure"),
                     message: Text("Could not locate the coordinates")
                 )
-            case .failedUpdatingSimulatorLocation:
+
+            case .didFailUpdateLocation:
                 SwiftUI.Alert(
                     title: Text("Could not update location")
                 )
+
+            case .didUpdateLocation:
+                SwiftUI.Alert(
+                    title: Text("Success")
+                )
+            }
+        }
+        .onChange(of: simManager.selectedSimulator, initial: false) {
+            if $0 != $1 {
+                dismiss()
             }
         }
     }
+}
 
+extension SimulatorGeolocationCoordinatingView {
     func handleAction(_ action: Action) {
         switch action {
         case .simulatorGeolocationViewEvent(let event):
             switch event {
-            case .updatedLocation:
-                self.alert = .didUpdateSimulatorLocation
-            case .couldNotUpdateLocation:
-                self.alert = .failedUpdatingSimulatorLocation
-            case .coordinateTranslationFailed:
-                self.alert = .failedToConvertMapReaderProxy
+            case .didFailCoordinateProxy:
+                self.alert = .didFailCoordinateProxy
+
+            case .didFailUpdateLocation:
+                self.alert = .didFailUpdateLocation
+
+            case .didUpdateLocation:
+                self.alert = .didUpdateLocation
             }
         }
     }

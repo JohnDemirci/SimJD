@@ -85,7 +85,7 @@ extension InstalledApplicationsCoordinatingView {
         switch action {
         case .installedApplicationsViewEvent(let event):
             switch event {
-            case .couldNotFetchInstalledApps:
+            case .didFailToFetchInstalledApps:
                 self.alert = .couldNotFetchInstalledApps
 
             case .didSelectApp(let installedApplication, let $bindingApplications):

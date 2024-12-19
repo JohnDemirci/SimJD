@@ -9,11 +9,11 @@ import SwiftUI
 
 struct SimulatorActionOptionsView: View {
     enum Event {
-        case couldNotOpenFolder(Failure)
+        case didFailToOpenFolder(Failure)
         case didSelectEraseData(Simulator)
-        case didSelectRunningProcesses
-        case didSelectInstalledApplications
         case didSelectGeolocation(Simulator)
+        case didSelectInstalledApplications
+        case didSelectRunningProcesses
     }
 
     @Bindable private var folderManager: FolderManager
@@ -39,7 +39,7 @@ struct SimulatorActionOptionsView: View {
                     case .success:
                         print("Successfully opened Documents folder")
                     case .failure(let error):
-                        sendEvent(.couldNotOpenFolder(error))
+                        sendEvent(.didFailToOpenFolder(error))
                     }
                 }
 
