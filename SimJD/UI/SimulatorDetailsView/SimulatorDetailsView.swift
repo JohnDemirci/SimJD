@@ -88,7 +88,7 @@ private extension SimulatorDetailsView {
             sendEvent(.didFailToOpenFolder(error))
 
         case .didSelectEraseData(let simulator):
-            sendEvent(.didFailToEraseContents(simulator))
+            sendEvent(.didSelectEraseData(simulator))
 
         case .didSelectGeolocation(let simulator):
             sendEvent(.didSelectGeolocation(simulator))

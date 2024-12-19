@@ -24,6 +24,10 @@ struct SimJDApp: App {
         )
     }
 
+    var simulatorDetailsViewID: AnyHashable {
+        "\(simulatorManager.selectedSimulator?.id ?? "") \(simulatorManager.selectedSimulator?.state ?? "")"
+    }
+
     var body: some Scene {
         WindowGroup {
             NavigationSplitView(
@@ -36,6 +40,7 @@ struct SimJDApp: App {
                             folderManager: folderManager,
                             simulatorManager: simulatorManager
                         )
+                        .id(simulatorDetailsViewID)
                     }
                 }
             )
