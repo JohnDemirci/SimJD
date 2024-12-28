@@ -39,9 +39,7 @@ extension SimulatorManager {
         case .success(let dict):
             self.simulators = dict
 
-            if selectedSimulator == nil {
-                handleSelectedSimulator()
-            }
+            handleSimulatorSelection()
 
             return .success(())
 
@@ -62,8 +60,21 @@ extension SimulatorManager {
         }
     }
 
-    private func handleSelectedSimulator() {
-        self.selectedSimulator = simulators.values.first?.first
+    private func handleSimulatorSelection() {
+        guard let selectedSimulator else {
+            self.selectedSimulator = simulators.values.first?.first
+            return
+        }
+
+        guard let selectedSimulatorOS = selectedSimulator.os else { return }
+
+        guard let updatedSelectedSimulator = self.simulators[selectedSimulatorOS]?.first(where: {
+            $0.id == selectedSimulator.id
+        }) else {
+            return
+        }
+
+        self.selectedSimulator = updatedSelectedSimulator
     }
 
     func didOpenSimulator(_ simulator: Simulator) {
@@ -99,10 +110,8 @@ extension SimulatorManager {
 
         if let index {
             simulators[os]?.remove(at: index)
-
-            if selectedSimulator?.id == simulator.id {
-                handleSelectedSimulator()
-            }
+            selectedSimulator = nil
+            handleSimulatorSelection()
         }
     }
 
