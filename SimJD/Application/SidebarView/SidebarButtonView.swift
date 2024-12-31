@@ -27,7 +27,7 @@ struct SidebarButtonView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(
-            simManager.selectedSimulator?.id == simulator.id ? Color.purple.opacity(0.3) : .clear
+            simManager.selectedSimulator?.id == simulator.id ? Color.brown.opacity(0.3) : .clear
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .contentShape(RoundedRectangle(cornerRadius: 12))

@@ -40,6 +40,7 @@ struct InstalledApplicationsView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
         .inCase(installedApplications.isEmpty) {
             Text("Simulator is not Active")
         }

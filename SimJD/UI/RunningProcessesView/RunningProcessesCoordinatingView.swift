@@ -48,7 +48,7 @@ extension RunningProcessesCoordinatingView {
         switch action {
         case .runningProcessesViewEvent(let event):
             switch event {
-            case .couldNotFetchProcesses:
+            case .didFailToFetchProcesses:
                 self.alert = .fetchError
             }
         }

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct RunningProcessesView: View {
     enum Event {
-        case couldNotFetchProcesses
+        case didFailToFetchProcesses
     }
 
     @Bindable private var simManager: SimulatorManager
@@ -27,12 +27,11 @@ struct RunningProcessesView: View {
 
     var body: some View {
         List {
-            Section("Processes") {
-                ForEach(processes) { process in
-                    Text(process.label)
-                }
+            ForEach(processes) { process in
+                Text(process.label)
             }
         }
+        .scrollContentBackground(.hidden)
         .inCase(processes.isEmpty) {
             Text("No Active Processes")
         }
@@ -47,7 +46,7 @@ struct RunningProcessesView: View {
 
             case .failure(let error):
                 print(error)
-                sendEvent(.couldNotFetchProcesses)
+                sendEvent(.didFailToFetchProcesses)
             }
         }
     }

@@ -30,6 +30,7 @@ struct SimulatorGeolocationCoordinatingView: CoordinatingView {
         SimulatorGeolocationView(simManager: simManager) { event in
             handleAction(.simulatorGeolocationViewEvent(event))
         }
+        .clipShape(RoundedRectangle(cornerRadius: 20))
         .alert(item: $alert) { alert in
             switch alert {
             case .didFailCoordinateProxy:

@@ -21,7 +21,7 @@ struct SimulatorDetailsViewCoordinator: CoordinatingView {
         case didSelectEraseData(Simulator)
 
         var id: AnyHashable {
-            "\(self)" as AnyHashable
+            self
         }
     }
 
