@@ -9,21 +9,6 @@ import Combine
 import SwiftUI
 
 struct SimulatorDetailsView: View {
-    enum Action {
-        case deviceStatusViewEvent(DeviceStatusView.Event)
-        case simulatorActionOptionsViewEvent(SimulatorActionOptionsView.Event)
-    }
-
-    enum Event {
-        case didFailToEraseContents(Simulator)
-        case didFailToOpenFolder(Failure)
-        case didSelectDeleteSimulator(Simulator)
-        case didSelectEraseData(Simulator)
-        case didSelectGeolocation(Simulator)
-        case didSelectInstalledApplications
-        case didSelectRunningProcesses
-    }
-
     enum Tab: Hashable, CaseIterable {
         case activeProcesses
         case documents
@@ -33,34 +18,23 @@ struct SimulatorDetailsView: View {
 
         var title: String {
             switch self {
-            case .activeProcesses: return "Active Processes"
-            case .documents: return "Documents"
-            case .eraseContentAndSettings: return "Erase Content & Settings"
-            case .geolocation: return "Geolocation"
-            case .installedApplications: return "Installed Applications"
+            case .activeProcesses:          return "Active Processes"
+            case .documents:                return "Documents"
+            case .eraseContentAndSettings:  return "Erase Content & Settings"
+            case .geolocation:              return "Geolocation"
+            case .installedApplications:    return "Installed Applications"
             }
         }
     }
 
-    @Bindable private var simManager: SimulatorManager
-    @Bindable private var folderManager: FolderManager
+    @Environment(FolderManager.self) private var folderManager
+    @Environment(SimulatorManager.self) private var simManager
 
     @State private var selectedTab: Tab = .activeProcesses
 
     @Environment(\.colorScheme) private var colorScheme
 
     private let columnWidth: CGFloat = 400
-    private let sendEvent: (Event) -> Void
-
-    init(
-        folderManager: FolderManager,
-        simManager: SimulatorManager,
-        sendEvent: @escaping (Event) -> Void
-    ) {
-        self.simManager = simManager
-        self.folderManager = folderManager
-        self.sendEvent = sendEvent
-    }
 
     var body: some View {
         HStack(spacing: 10) {
@@ -78,11 +52,13 @@ struct SimulatorDetailsView: View {
                     content: {
                         switch selectedTab {
                         case .activeProcesses:
-                            RunningProcessesCoordinatingView(simManager: simManager)
+                            RunningProcessesCoordinatingView()
                         case .documents:
                             FileSystemCoordinatingView(
-                                url: URL(
-                                    fileURLWithPath: simManager.selectedSimulator?.dataPath ?? ""
+                                initialDestination: .fileSystem(
+                                    url: URL(
+                                        fileURLWithPath: simManager.selectedSimulator?.dataPath ?? ""
+                                    )
                                 )
                             )
                         case .eraseContentAndSettings:
@@ -90,10 +66,7 @@ struct SimulatorDetailsView: View {
                         case .geolocation:
                             SimulatorGeolocationCoordinatingView(simManager: simManager)
                         case .installedApplications:
-                            InstalledApplicationsCoordinatingView(
-                                folderManager: folderManager,
-                                simulatorManager: simManager
-                            )
+                            FileSystemCoordinatingView(initialDestination: .installedApplications)
                         }
                     }
                 )
@@ -183,69 +156,5 @@ private struct InformationView: View {
                 .scrollContentBackground(.hidden)
             }
         )
-    }
-}
-
-extension SimulatorDetailsView {
-    func oldView() -> some View {
-        HStack {
-            DeviceStatusView(simManager: simManager) {
-                handleAction(.deviceStatusViewEvent($0))
-            }
-
-            VStack {
-                SimulatorInformationView(simManager: simManager)
-                SimulatorActionOptionsView(
-                    folderManager: folderManager,
-                    simManager: simManager,
-                    sendEvent: {
-                        handleAction(.simulatorActionOptionsViewEvent($0))
-                    }
-                )
-                Spacer()
-            }
-            .textSelection(.enabled)
-            .padding()
-        }
-    }
-}
-
-extension SimulatorDetailsView {
-    func handleAction(_ action: Action) {
-        switch action {
-        case .deviceStatusViewEvent(let event):
-            handleDeviceStatusEvent(event)
-
-        case .simulatorActionOptionsViewEvent(let event):
-            handleSimulatorActionOptionsViewEvent(event)
-        }
-    }
-}
-
-private extension SimulatorDetailsView {
-    func handleDeviceStatusEvent(_ event: DeviceStatusView.Event) {
-        switch event {
-        case .didSelectDeleteSimulator(let simulator):
-            sendEvent(.didSelectDeleteSimulator(simulator))
-        }
-    }
-
-    func handleSimulatorActionOptionsViewEvent(_ event: SimulatorActionOptionsView.Event) {
-        switch event {
-        case .didFailToOpenFolder(let error):
-            sendEvent(.didFailToOpenFolder(error))
-
-        case .didSelectEraseData(let simulator):
-            sendEvent(.didSelectEraseData(simulator))
-
-        case .didSelectGeolocation(let simulator):
-            sendEvent(.didSelectGeolocation(simulator))
-
-        case .didSelectInstalledApplications:
-            sendEvent(.didSelectInstalledApplications)
-
-        case .didSelectRunningProcesses:
-            sendEvent(.didSelectRunningProcesses)
-        }
     }
 }

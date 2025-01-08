@@ -8,35 +8,55 @@
 import SwiftUI
 
 struct FileSystemCoordinatingView: View {
-    @StateObject private var stack: Stack = .init()
-    private let url: URL
+    @StateObject private var navigator: FileSystemNavigator
 
-    init(url: URL) {
-        self.url = url
+    init(initialDestination: FileSystemNavigator.ViewDestination) {
+        self._navigator = .init(wrappedValue: .init(initialDestination: initialDestination))
     }
 
     var body: some View {
         Group {
-            switch stack.urls.last {
-            case .some(let url):
+            switch navigator.last {
+            case .fileSystem(url: let url):
                 FileSystemView(currentURL: url)
-                    .id(url)
-                    .environmentObject(stack)
+                
+            case .installedApplications:
+                InstalledApplicationsCoordinatingView()
+
+            case .installedApplicationDetails(let detail):
+                InstalledApplicationDetailCoordinatingView(installedApplication: detail)
+
             case .none:
-                Text("No url")
+                EmptyView()
             }
         }
-        .onAppear {
-            stack.add(url)
-        }
+        .environmentObject(navigator)
+        .id(navigator.last)
     }
 }
 
-final class Stack: ObservableObject {
-    private(set) var urls: [URL] = []
+final class FileSystemNavigator: ObservableObject {
+    enum ViewDestination: Hashable {
+        case fileSystem(url: URL)
+        case installedApplications
+        case installedApplicationDetails(InstalledAppDetail)
+    }
+    
+    private(set) var stack: [ViewDestination] = []
 
-    func add(_ url: URL) {
-        urls.append(url)
+    init(initialDestination: ViewDestination) {
+        self.stack = [initialDestination]
+    }
+
+    var last: ViewDestination? { stack.last }
+
+    func add(_ destination: ViewDestination) {
+        stack.append(destination)
+        self.objectWillChange.send()
+    }
+
+    func pop() {
+        stack.removeLast()
         self.objectWillChange.send()
     }
 }

@@ -8,15 +8,8 @@
 import SwiftUI
 
 struct FileSystemView: View {
-    enum Destination: Identifiable, Hashable {
-        case folder(FileItem)
+    @EnvironmentObject private var navigator: FileSystemNavigator
 
-        var id: AnyHashable { self }
-    }
-
-    @EnvironmentObject private var stack: Stack
-
-    @State private var destination: Destination?
     @State private var items: [FileItem] = []
     @State private var selection: FileItem.ID?
 
@@ -105,9 +98,8 @@ struct FileSystemView: View {
         }) else { return }
 
         if item.isDirectory {
-            self.destination = .folder(item)
             withAnimation {
-                stack.add(item.url)
+                navigator.add(.fileSystem(url: item.url))
             }
         } else {
             NSWorkspace.shared.open(item.url)

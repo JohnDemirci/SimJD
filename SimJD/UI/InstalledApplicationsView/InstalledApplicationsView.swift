@@ -10,55 +10,123 @@ import SwiftUI
 struct InstalledApplicationsView: View {
     enum Event {
         case didFailToFetchInstalledApps(Failure)
-        case didSelectApp(InstalledAppDetail, Binding<[InstalledAppDetail]>)
+        case didSelectApp(InstalledAppDetail)
     }
 
-    @Bindable private var folderManager: FolderManager
-    @Bindable private var simulatorManager: SimulatorManager
+    @Environment(SimulatorManager.self) private var simulatorManager
+    @Environment(FolderManager.self) private var folderManager
 
-    @State private var installedApplications: [InstalledAppDetail] = []
+    @State private var selectedApp: InstalledAppDetail.ID?
 
     private let sendEvent: (Event) -> Void
 
-    init(
-        folderManager: FolderManager,
-        simulatorManager: SimulatorManager,
-        sendEvent: @escaping (Event) -> Void
-    ) {
-        self.folderManager = folderManager
-        self.simulatorManager = simulatorManager
+    init(sendEvent: @escaping (Event) -> Void) {
         self.sendEvent = sendEvent
     }
 
     var body: some View {
-        List {
-            ForEach(installedApplications, id: \.self) { installedApp in
-                OptionalView(installedApp.displayName) { appName in
-                    ListRowTapableButton(appName) {
-                        sendEvent(.didSelectApp(installedApp, $installedApplications))
+        OptionalView(simulatorManager.selectedSimulator) { selectedSimulator in
+            Table(
+                simulatorManager.installedApplications[selectedSimulator.id] ?? [],
+                selection: $selectedApp
+            ) {
+                TableColumn("Name") { item in
+                    HStack {
+                        Text(item.displayName ?? "")
                     }
+                }
+
+                TableColumn("Bundle ID") { item in
+                    Text(item.bundleIdentifier ?? "")
+                }
+
+                TableColumn("Type") { item in
+                    Text(item.applicationType ?? "")
+                }
+
+                TableColumn("Path") { item in
+                    Text(item.path ?? "")
                 }
             }
         }
+        .contextMenu(
+            forSelectionType: InstalledAppDetail.ID.self,
+            menu: { selections in
+                Button("Copy Bundle Identifier") {
+                    guard
+                        let installedApp = getInstalledAppFromSelections(selections),
+                        let bundleID = installedApp.bundleIdentifier
+                    else { return }
+
+                    copyToClipboard(bundleID)
+                }
+
+                Button("Copy Data Container Path") {
+                    guard
+                        let installedApp = getInstalledAppFromSelections(selections),
+                        let dataContainer = installedApp.dataContainer
+                    else { return }
+
+                    copyToClipboard(dataContainer)
+                }
+
+                Button("Copy Application Path") {
+                    guard
+                        let installedApp = getInstalledAppFromSelections(selections),
+                        let path = installedApp.path
+                    else { return }
+
+                    copyToClipboard(path)
+                }
+
+                Button("Copy Bundle Path") {
+                    guard
+                        let installedApp = getInstalledAppFromSelections(selections),
+                        let bundle = installedApp.bundle
+                    else { return }
+
+                    copyToClipboard(bundle)
+                }
+            },
+            primaryAction: { selectedItems in
+                guard
+                    let selectedItem = selectedItems.first,
+                    let selectedSimulator = simulatorManager.selectedSimulator,
+                    let installedAppDetails = simulatorManager.installedApplications[selectedSimulator.id],
+                    let installedAppDetail = installedAppDetails.first(where: { $0.id == selectedItem })
+                else { return }
+
+                sendEvent(.didSelectApp(installedAppDetail))
+            }
+        )
         .scrollContentBackground(.hidden)
-        .inCase(installedApplications.isEmpty) {
-            Text("Simulator is not Active")
-        }
-        .inCase(simulatorManager.selectedSimulator == nil) {
-            Text("Please Select a Simulator")
-        }
         .onChange(of: simulatorManager.selectedSimulator, initial: true) {
             guard let selectedSimulator = simulatorManager.selectedSimulator else { return }
 
             switch simulatorManager.fetchInstalledApplications(for: selectedSimulator) {
-            case .success(let installedApplications):
-                withAnimation {
-                    self.installedApplications = installedApplications
-                }
+            case .success:
+                break
 
             case .failure(let error):
                 sendEvent(.didFailToFetchInstalledApps(error))
             }
         }
+    }
+
+    func getInstalledAppFromSelections(_ selections: Set<InstalledAppDetail.ID>) -> InstalledAppDetail? {
+        guard
+            let selection = selections.first,
+            let selectedSimulator = simulatorManager.selectedSimulator,
+            let installedApps = simulatorManager.installedApplications[selectedSimulator.id],
+            let selectedApp = simulatorManager.installedApplications[selectedSimulator.id]?.first(where: { $0.bundleIdentifier == selection })
+        else { return nil }
+
+        return selectedApp
+    }
+
+    func copyToClipboard(_ text: String) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(text , forType: .string)
     }
 }

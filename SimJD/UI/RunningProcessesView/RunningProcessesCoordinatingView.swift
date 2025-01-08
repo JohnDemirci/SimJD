@@ -20,12 +20,8 @@ struct RunningProcessesCoordinatingView: CoordinatingView {
         }
     }
 
-    @Bindable private var simManager: SimulatorManager
+    @Environment(SimulatorManager.self) private var simManager
     @State var alert: Alert?
-
-    init(simManager: SimulatorManager) {
-        self.simManager = simManager
-    }
 
     var body: some View {
         RunningProcessesView(

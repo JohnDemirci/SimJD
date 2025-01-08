@@ -30,14 +30,11 @@ struct SimJDApp: App {
             NavigationSplitView(
                 columnVisibility: $visibility,
                 sidebar: {
-                    SidebarView(simulatorManager: simulatorManager)
+                    SidebarView()
                         .navigationSplitViewColumnWidth(300)
                 },
                 detail: {
-                    SimulatorDetailsViewCoordinator(
-                        folderManager: folderManager,
-                        simulatorManager: simulatorManager
-                    )
+                    SimulatorDetailsViewCoordinator()
                 }
             )
             .toolbarBackground(.hidden, for: .windowToolbar)
@@ -49,5 +46,7 @@ struct SimJDApp: App {
                 }
             }
         }
+        .environment(simulatorManager)
+        .environment(folderManager)
     }
 }
