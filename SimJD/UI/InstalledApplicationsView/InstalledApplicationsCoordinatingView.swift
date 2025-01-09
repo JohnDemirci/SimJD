@@ -13,68 +13,31 @@ struct InstalledApplicationsCoordinatingView: CoordinatingView {
     }
 
     enum Alert: Hashable, Identifiable {
-        case couldNotFetchInstalledApps
+        case didFailToFetchInstalledApps
+        case didFailToRetrieveApp
 
         var id: AnyHashable {
             "\(self)" as AnyHashable
         }
     }
 
-    enum Destination: Hashable {
-        case installedAppDetailView(InstalledAppDetail, Binding<[InstalledAppDetail]>)
-
-        func hash(into hasher: inout Hasher) {
-            switch self {
-            case .installedAppDetailView(let installedApp, let installedApps):
-                hasher.combine(installedApp)
-                hasher.combine(installedApps.wrappedValue)
-            }
-        }
-
-        static func == (lhs: Self, rhs: Self) -> Bool {
-            switch (lhs, rhs) {
-            case (.installedAppDetailView(let lhsInstalledApp, let lhsInstalledApps), .installedAppDetailView(let rhsInstalledApp, let rhsInstalledApps)):
-
-                return lhsInstalledApp == rhsInstalledApp && lhsInstalledApps.wrappedValue == rhsInstalledApps.wrappedValue
-            }
-        }
-    }
-
-    @Bindable private var folderManager: FolderManager
-    @Bindable private var simulatorManager: SimulatorManager
+    @Environment(FolderManager.self) private var folderManager: FolderManager
+    @Environment(SimulatorManager.self) private var simulatorManager: SimulatorManager
+    @EnvironmentObject private var navigator: FileSystemNavigator
 
     @State var alert: Alert?
-    @State var destination: Destination?
-
-    init(
-        folderManager: FolderManager,
-        simulatorManager: SimulatorManager
-    ) {
-        self.folderManager = folderManager
-        self.simulatorManager = simulatorManager
-    }
 
     var body: some View {
         InstalledApplicationsView(
-            folderManager: folderManager,
-            simulatorManager: simulatorManager,
             sendEvent: { handleAction(.installedApplicationsViewEvent($0)) }
         )
         .alert(item: $alert) {
             switch $0 {
-            case .couldNotFetchInstalledApps:
+            case .didFailToFetchInstalledApps:
                 SwiftUI.Alert(title: Text("Could not fetch installed apps"))
-            }
-        }
-        .navigationDestination(item: $destination) {
-            switch $0 {
-            case .installedAppDetailView(let installedApplication, let $bindingApplications):
-                InstalledApplicationDetailCoordinatingView(
-                    folderManager: folderManager,
-                    installedApplication: installedApplication,
-                    installedApplications: $bindingApplications,
-                    simulatorManager: simulatorManager
-                )
+
+            case .didFailToRetrieveApp:
+                SwiftUI.Alert(title: Text("Could not retrieve installed application"))
             }
         }
     }
@@ -86,18 +49,14 @@ extension InstalledApplicationsCoordinatingView {
         case .installedApplicationsViewEvent(let event):
             switch event {
             case .didFailToFetchInstalledApps:
-                self.alert = .couldNotFetchInstalledApps
+                self.alert = .didFailToFetchInstalledApps
 
-            case .didSelectApp(let installedApplication, let $bindingApplications):
-                navigate(to: .installedAppDetailView(installedApplication, $bindingApplications))
+            case .didSelectApp(let installedApplication):
+                navigator.add(.installedApplicationDetails(installedApplication))
+
+            case .didFailToRetrieveApplication:
+                self.alert = .didFailToRetrieveApp
             }
-        }
-    }
-
-    func navigate(to destination: Destination) {
-        switch destination {
-        case .installedAppDetailView(let installedApp, let $bindingApplications):
-            self.destination = .installedAppDetailView(installedApp, $bindingApplications)
         }
     }
 }

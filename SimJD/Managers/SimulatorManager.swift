@@ -18,6 +18,8 @@ final class SimulatorManager {
     let simulatorClient: SimulatorClient
     var simulators: OrderedDictionary<OS.Name, [Simulator]> = [:]
     var selectedSimulator: Simulator? = nil
+    var processes: [Simulator.ID: [ProcessInfo]] = [:]
+    var installedApplications: [Simulator.ID: [InstalledAppDetail]] = [:]
 
     init(
         simulatorClient: SimulatorClient = .live
@@ -77,7 +79,7 @@ extension SimulatorManager {
         self.selectedSimulator = updatedSelectedSimulator
     }
 
-    func didOpenSimulator(_ simulator: Simulator) {
+    private func didOpenSimulator(_ simulator: Simulator) {
         guard let os = simulator.os else { return }
         let index = simulators[os]?.firstIndex {
             $0.id == simulator.id
@@ -139,12 +141,26 @@ extension SimulatorManager {
 
     @discardableResult
     func fetchRunningProcesses(for simulator: Simulator) -> Result<[ProcessInfo], Failure> {
-        simulatorClient.activeProcesses(simulator: simulator.id)
+        switch simulatorClient.activeProcesses(simulator: simulator.id) {
+        case .success(let processInfo):
+            self.processes[simulator.id] = processInfo
+            return .success(processInfo)
+        case .failure(let error):
+            return .failure(error)
+        }
     }
 
     @discardableResult
-    func fetchInstalledApplications(for simulator: Simulator) -> Result<[InstalledAppDetail], Failure> {
-        simulatorClient.installedApps(simulator: simulator.id)
+    func fetchInstalledApplications(
+        for simulator: Simulator
+    ) -> Result<[InstalledAppDetail], Failure> {
+        switch simulatorClient.installedApps(simulator: simulator.id) {
+        case .success(let installedApps):
+            self.installedApplications[simulator.id] = installedApps
+            return .success(installedApps)
+        case .failure(let error):
+            return .failure(error)
+        }
     }
 
     @discardableResult

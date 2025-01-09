@@ -13,7 +13,6 @@ struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
     }
 
     enum Alert: Hashable, Identifiable {
-        case couldNotOpenSandboxFolder
         case couldNotOpenUserDefaults
         case couldNotRemoveApplication
         case couldNotRemoveUserDefaults
@@ -23,47 +22,30 @@ struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
         case didUnisntallApplication(InstalledAppDetail)
         case didRemoveUserDefaults
 
-        var id: AnyHashable {
-            "\(self)" as AnyHashable
-        }
+        var id: AnyHashable { self }
     }
 
-    @Bindable private var folderManager: FolderManager
-    @Bindable private var simulatorManager: SimulatorManager
-    @Binding private var installedApps: [InstalledAppDetail]
-
-    @Environment(\.dismiss) private var dismiss
+    @Environment(FolderManager.self) private var folderManager
+    @Environment(SimulatorManager.self) private var simulatorManager
+    @EnvironmentObject private var navigator: FileSystemNavigator
 
     @State var alert: Alert?
 
     private let installedApplication: InstalledAppDetail
 
-    init(
-        folderManager: FolderManager,
-        installedApplication: InstalledAppDetail,
-        installedApplications: Binding<[InstalledAppDetail]>,
-        simulatorManager: SimulatorManager
-    ) {
-        self.folderManager = folderManager
+    init(installedApplication: InstalledAppDetail) {
         self.installedApplication = installedApplication
-        self.simulatorManager = simulatorManager
-        self._installedApps = installedApplications
     }
 
     var body: some View {
         InstalledApplicationDetailView(
-            folderManager: folderManager,
             installedApplication: installedApplication,
-            simulatorManager: simulatorManager,
             sendEvent: {
                 handleAction(.installedApplicationDetailViewEvent($0))
             }
         )
         .alert(item: $alert) {
             switch $0 {
-            case .couldNotOpenSandboxFolder:
-                SwiftUI.Alert(title: Text("Unable to open Applicatiopn Support Folder"))
-
             case .couldNotOpenUserDefaults:
                 SwiftUI.Alert(title: Text("Unable to open User Defaults Folder"))
 
@@ -142,18 +124,15 @@ struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
                     message: Text("Successfully Removed Application"),
                     dismissButton: .default(Text("OK")) {
                         withAnimation {
-                            installedApps.removeAll {
+                            guard let selectedSimulator = simulatorManager.selectedSimulator else { return }
+                            navigator.pop()
+                            simulatorManager.installedApplications[selectedSimulator.id]?.removeAll {
                                 $0 == installedApplication
                             }
-
-                            dismiss()
                         }
                     }
                 )
             }
-        }
-        .onChange(of: simulatorManager.selectedSimulator, initial: false) {
-            dismiss()
         }
     }
 }
@@ -163,9 +142,6 @@ extension InstalledApplicationDetailCoordinatingView {
         switch action {
         case .installedApplicationDetailViewEvent(let event):
             switch event {
-            case .couldNotOpenSandboxFolder:
-                self.alert = .couldNotOpenSandboxFolder
-
             case .couldNotOpenUserDefaults:
                 self.alert = .couldNotOpenUserDefaults
 

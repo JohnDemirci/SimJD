@@ -11,6 +11,7 @@ import SwiftUI
 struct SimJDApp: App {
     @State private var simulatorManager: SimulatorManager
     @State private var folderManager: FolderManager
+    @State private var visibility: NavigationSplitViewVisibility = .doubleColumn
 
     init() {
         let simulatorClient: SimulatorClient = .live
@@ -24,26 +25,28 @@ struct SimJDApp: App {
         )
     }
 
-    var simulatorDetailsViewID: AnyHashable {
-        "\(simulatorManager.selectedSimulator?.id ?? "") \(simulatorManager.selectedSimulator?.state ?? "")"
-    }
-
     var body: some Scene {
         WindowGroup {
             NavigationSplitView(
+                columnVisibility: $visibility,
                 sidebar: {
-                    SidebarView(simulatorManager: simulatorManager)
+                    SidebarView()
+                        .navigationSplitViewColumnWidth(300)
                 },
                 detail: {
-                    NavigationStack {
-                        SimulatorDetailsViewCoordinator(
-                            folderManager: folderManager,
-                            simulatorManager: simulatorManager
-                        )
-                        .id(simulatorDetailsViewID)
-                    }
+                    SimulatorDetailsViewCoordinator()
                 }
             )
+            .toolbarBackground(.hidden, for: .windowToolbar)
+            .toolbar {
+                ToolbarItem(placement: .navigation) {
+                    Image(.logo)
+                        .resizable()
+                        .frame(width: 50, height: 50)
+                }
+            }
         }
+        .environment(simulatorManager)
+        .environment(folderManager)
     }
 }

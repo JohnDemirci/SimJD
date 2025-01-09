@@ -8,8 +8,12 @@
 import SwiftUI
 
 struct SidebarButtonView: View {
-    @Bindable var simManager: SimulatorManager
+    @Environment(SimulatorManager.self) var manager: SimulatorManager
     let simulator: Simulator
+
+    init(simulator: Simulator) {
+        self.simulator = simulator
+    }
 
     var body: some View {
         HStack {
@@ -27,13 +31,13 @@ struct SidebarButtonView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(
-            simManager.selectedSimulator?.id == simulator.id ? Color.purple.opacity(0.3) : .clear
+            manager.selectedSimulator?.id == simulator.id ? Color.brown.opacity(0.3) : .clear
         )
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .contentShape(RoundedRectangle(cornerRadius: 12))
         .onTapGesture {
             withAnimation {
-                simManager.didSelectSimulator(simulator)
+                manager.didSelectSimulator(simulator)
             }
         }
     }

@@ -9,11 +9,10 @@ import SwiftUI
 
 struct RunningProcessesView: View {
     enum Event {
-        case couldNotFetchProcesses
+        case didFailToFetchProcesses
     }
 
     @Bindable private var simManager: SimulatorManager
-    @State private var processes: [ProcessInfo] = []
 
     private let sendEvent: (Event) -> Void
 
@@ -27,28 +26,72 @@ struct RunningProcessesView: View {
 
     var body: some View {
         List {
-            Section("Processes") {
-                ForEach(processes) { process in
-                    Text(process.label)
+            OptionalView(
+                data: simManager.selectedSimulator,
+                unwrappedData: { selectedSimulator in
+                    OptionalView(
+                        data: simManager.processes[selectedSimulator.id],
+                        unwrappedData: { processes in
+                            ForEach(processes) { process in
+                                Text(process.label)
+                            }
+                            .inCase(simManager.processes[selectedSimulator.id] == []) {
+                                NoProcessView {
+                                    simManager.openSimulator(selectedSimulator)
+                                    handleFetchProcesses()
+                                }
+                            }
+                        },
+                        placeholderView: {
+                            NoProcessView {
+                                simManager.openSimulator(selectedSimulator)
+                                handleFetchProcesses()
+                            }
+                        }
+                    )
+                },
+                placeholderView: {
+                    Text("There is no selected Simulator")
                 }
-            }
+            )
         }
-        .inCase(processes.isEmpty) {
-            Text("No Active Processes")
-        }
+        .scrollContentBackground(.hidden)
         .onChange(of: simManager.selectedSimulator, initial: true) {
-            guard let newSim = simManager.selectedSimulator else { return }
+            handleFetchProcesses()
+        }
+    }
+}
 
-            switch simManager.fetchRunningProcesses(for: newSim) {
-            case .success(let processes):
+private extension RunningProcessesView {
+    func handleFetchProcesses() {
+        guard let selectedSimulator = simManager.selectedSimulator else { return }
+
+        switch simManager.fetchRunningProcesses(for: selectedSimulator) {
+        case .success:
+            break
+
+        case .failure:
+            sendEvent(.didFailToFetchProcesses)
+        }
+    }
+}
+
+private struct NoProcessView: View {
+    private let action: () -> Void
+
+    init(action: @escaping () -> Void) {
+        self.action = action
+    }
+
+    var body: some View {
+        VStack {
+            Text("Currently There are no processes, check if the simulator is active")
+            Button("turn on this simulator") {
                 withAnimation {
-                    self.processes = processes
+                    action()
                 }
-
-            case .failure(let error):
-                print(error)
-                sendEvent(.couldNotFetchProcesses)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 }

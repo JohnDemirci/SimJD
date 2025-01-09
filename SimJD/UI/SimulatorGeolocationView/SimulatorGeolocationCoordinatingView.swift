@@ -18,11 +18,11 @@ struct SimulatorGeolocationCoordinatingView: CoordinatingView {
         case didUpdateLocation
 
         var id: AnyHashable {
-            "\(self)" as AnyHashable
+            self
         }
     }
 
-    @Bindable var simManager: SimulatorManager
+    @Environment(SimulatorManager.self) private var simManager
     @Environment(\.dismiss) private var dismiss
     @State var alert: Alert?
 
@@ -30,6 +30,7 @@ struct SimulatorGeolocationCoordinatingView: CoordinatingView {
         SimulatorGeolocationView(simManager: simManager) { event in
             handleAction(.simulatorGeolocationViewEvent(event))
         }
+        .clipShape(RoundedRectangle(cornerRadius: 20))
         .alert(item: $alert) { alert in
             switch alert {
             case .didFailCoordinateProxy:

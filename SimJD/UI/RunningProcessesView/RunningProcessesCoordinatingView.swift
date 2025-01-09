@@ -20,12 +20,8 @@ struct RunningProcessesCoordinatingView: CoordinatingView {
         }
     }
 
-    @Bindable private var simManager: SimulatorManager
+    @Environment(SimulatorManager.self) private var simManager
     @State var alert: Alert?
-
-    init(simManager: SimulatorManager) {
-        self.simManager = simManager
-    }
 
     var body: some View {
         RunningProcessesView(
@@ -48,7 +44,7 @@ extension RunningProcessesCoordinatingView {
         switch action {
         case .runningProcessesViewEvent(let event):
             switch event {
-            case .couldNotFetchProcesses:
+            case .didFailToFetchProcesses:
                 self.alert = .fetchError
             }
         }

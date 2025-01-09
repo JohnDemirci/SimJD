@@ -9,95 +9,153 @@ import Combine
 import SwiftUI
 
 struct SimulatorDetailsView: View {
-    enum Action {
-        case deviceStatusViewEvent(DeviceStatusView.Event)
-        case simulatorActionOptionsViewEvent(SimulatorActionOptionsView.Event)
+    enum Tab: Hashable, CaseIterable {
+        case activeProcesses
+        case documents
+        case eraseContentAndSettings
+        case geolocation
+        case installedApplications
+
+        var title: String {
+            switch self {
+            case .activeProcesses:          return "Active Processes"
+            case .documents:                return "Documents"
+            case .eraseContentAndSettings:  return "Erase Content & Settings"
+            case .geolocation:              return "Geolocation"
+            case .installedApplications:    return "Installed Applications"
+            }
+        }
     }
 
-    enum Event {
-        case didFailToEraseContents(Simulator)
-        case didFailToOpenFolder(Failure)
-        case didSelectDeleteSimulator(Simulator)
-        case didSelectEraseData(Simulator)
-        case didSelectGeolocation(Simulator)
-        case didSelectInstalledApplications
-        case didSelectRunningProcesses
-    }
+    @Environment(FolderManager.self) private var folderManager
+    @Environment(SimulatorManager.self) private var simManager
 
-    @Bindable private var simManager: SimulatorManager
-    @Bindable private var folderManager: FolderManager
-    
-    private let sendEvent: (Event) -> Void
+    @State private var selectedTab: Tab = .activeProcesses
 
-    init(
-        folderManager: FolderManager,
-        simManager: SimulatorManager,
-        sendEvent: @escaping (Event) -> Void
-    ) {
-        self.simManager = simManager
-        self.folderManager = folderManager
-        self.sendEvent = sendEvent
-    }
+    @Environment(\.colorScheme) private var colorScheme
+
+    private let columnWidth: CGFloat = 400
 
     var body: some View {
-        HStack {
-            DeviceStatusView(simManager: simManager) {
-                handleAction(.deviceStatusViewEvent($0))
+        HStack(spacing: 10) {
+            VStack {
+                ActionsView(selectedTab: $selectedTab, columnWidth: columnWidth)
+                OptionalView(simManager.selectedSimulator) { simulator in
+                    InformationView(columnWidth: columnWidth, simulator: simulator, simManager: simManager)
+                }
             }
 
             VStack {
-                SimulatorInformationView(simManager: simManager)
-                SimulatorActionOptionsView(
-                    folderManager: folderManager,
-                    simManager: simManager,
-                    sendEvent: {
-                        handleAction(.simulatorActionOptionsViewEvent($0))
+                PanelView(
+                    title: selectedTab.title,
+                    columnWidth: .infinity,
+                    content: {
+                        switch selectedTab {
+                        case .activeProcesses:
+                            RunningProcessesCoordinatingView()
+                        case .documents:
+                            FileSystemCoordinatingView(
+                                initialDestination: .fileSystem(
+                                    url: URL(
+                                        fileURLWithPath: simManager.selectedSimulator?.dataPath ?? ""
+                                    )
+                                )
+                            )
+                        case .eraseContentAndSettings:
+                            EmptyView()
+                        case .geolocation:
+                            SimulatorGeolocationCoordinatingView()
+                        case .installedApplications:
+                            FileSystemCoordinatingView(initialDestination: .installedApplications)
+                        }
                     }
                 )
-                Spacer()
             }
-            .textSelection(.enabled)
-            .padding()
         }
+        .background(colorScheme == .dark ? Color.black : Color.white)
     }
 }
 
-extension SimulatorDetailsView {
-    func handleAction(_ action: Action) {
-        switch action {
-        case .deviceStatusViewEvent(let event):
-            handleDeviceStatusEvent(event)
 
-        case .simulatorActionOptionsViewEvent(let event):
-            handleSimulatorActionOptionsViewEvent(event)
-        }
+
+private struct ActionsView: View {
+    @Binding var selectedTab: SimulatorDetailsView.Tab
+    let columnWidth: CGFloat
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        PanelView(
+            title: "Tab",
+            columnWidth: columnWidth,
+            content: {
+                VStack(alignment: .leading) {
+                    ForEach(SimulatorDetailsView.Tab.allCases, id: \.self) { tab in
+                        Button(tab.title) {
+                            withAnimation(.spring) {
+                                selectedTab = tab
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(selectedTab == tab ? colorSelection : Color.clear)
+                    }
+                }
+            }
+        )
+    }
+
+    private var colorSelection: Color {
+        colorScheme == .light ? Color.init(nsColor: .brown).opacity(0.2) :
+            Color.init(nsColor: .systemBrown)
     }
 }
 
-private extension SimulatorDetailsView {
-    func handleDeviceStatusEvent(_ event: DeviceStatusView.Event) {
-        switch event {
-        case .didSelectDeleteSimulator(let simulator):
-            sendEvent(.didSelectDeleteSimulator(simulator))
-        }
-    }
+private struct InformationView: View {
+    let columnWidth: CGFloat
+    let simulator: Simulator
+    @Bindable var simManager: SimulatorManager
 
-    func handleSimulatorActionOptionsViewEvent(_ event: SimulatorActionOptionsView.Event) {
-        switch event {
-        case .didFailToOpenFolder(let error):
-            sendEvent(.didFailToOpenFolder(error))
-
-        case .didSelectEraseData(let simulator):
-            sendEvent(.didSelectEraseData(simulator))
-
-        case .didSelectGeolocation(let simulator):
-            sendEvent(.didSelectGeolocation(simulator))
-
-        case .didSelectInstalledApplications:
-            sendEvent(.didSelectInstalledApplications)
-
-        case .didSelectRunningProcesses:
-            sendEvent(.didSelectRunningProcesses)
-        }
+    var body: some View {
+        PanelView(
+            title: "Information",
+            columnWidth: columnWidth,
+            content: {
+                List {
+                    Group {
+                        LabeledContent("Name", value: simulator.name ?? "")
+                        LabeledContent("ID", value: simulator.id)
+                            .textSelection(.enabled)
+                        LabeledContent("Status") {
+                            Toggle(
+                                isOn: Binding(
+                                    get: { simulator.state == "Booted" },
+                                    set: { newVal in
+                                        if newVal {
+                                            simManager.openSimulator(simulator)
+                                        } else {
+                                            simManager.shutdownSimulator(simulator)
+                                        }
+                                    }
+                                ),
+                                label: {
+                                    EmptyView()
+                                }
+                            )
+                            .toggleStyle(.switch)
+                        }
+                        LabeledContent("OS", value: simulator.os?.name ?? "")
+                        LabeledContent("Path", value: simulator.dataPath ?? "")
+                            .multilineTextAlignment(.trailing)
+                            .textSelection(.enabled)
+                        LabeledContent("is Available", value: "\(simulator.isAvailable ?? false)")
+                        LabeledContent("Log Path", value: simulator.logPath ?? "")
+                            .multilineTextAlignment(.trailing)
+                            .textSelection(.enabled)
+                        LabeledContent("DataPath Size", value: "\(simulator.dataPathSize ?? -1)")
+                    }
+                    .listRowSeparator(.hidden)
+                }
+                .scrollContentBackground(.hidden)
+            }
+        )
     }
 }
