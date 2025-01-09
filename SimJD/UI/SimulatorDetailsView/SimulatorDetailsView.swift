@@ -86,6 +86,7 @@ struct SimulatorDetailsView: View {
                         }
                     }
                 )
+                .id(simManager.selectedSimulator)
             }
         }
         .background(colorScheme == .dark ? Color.black : Color.white)
