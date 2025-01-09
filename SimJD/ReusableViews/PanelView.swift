@@ -17,11 +17,12 @@ struct PanelView<Content: View>: View {
         VStack(alignment: .leading) {
             Text(title)
                 .font(.largeTitle)
-                .fontWeight(.light)
+                .fontWeight(.bold)
                 .fontDesign(.serif)
                 .kerning(0.5)
                 .frame(maxWidth: columnWidth)
                 .padding(5)
+                .foregroundStyle(Color.black)
                 .background(
                     UnevenRoundedRectangle(
                         topLeadingRadius: 12,

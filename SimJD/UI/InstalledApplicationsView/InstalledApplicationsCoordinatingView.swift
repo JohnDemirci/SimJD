@@ -13,7 +13,8 @@ struct InstalledApplicationsCoordinatingView: CoordinatingView {
     }
 
     enum Alert: Hashable, Identifiable {
-        case couldNotFetchInstalledApps
+        case didFailToFetchInstalledApps
+        case didFailToRetrieveApp
 
         var id: AnyHashable {
             "\(self)" as AnyHashable
@@ -32,8 +33,11 @@ struct InstalledApplicationsCoordinatingView: CoordinatingView {
         )
         .alert(item: $alert) {
             switch $0 {
-            case .couldNotFetchInstalledApps:
+            case .didFailToFetchInstalledApps:
                 SwiftUI.Alert(title: Text("Could not fetch installed apps"))
+
+            case .didFailToRetrieveApp:
+                SwiftUI.Alert(title: Text("Could not retrieve installed application"))
             }
         }
     }
@@ -45,10 +49,13 @@ extension InstalledApplicationsCoordinatingView {
         case .installedApplicationsViewEvent(let event):
             switch event {
             case .didFailToFetchInstalledApps:
-                self.alert = .couldNotFetchInstalledApps
+                self.alert = .didFailToFetchInstalledApps
 
             case .didSelectApp(let installedApplication):
                 navigator.add(.installedApplicationDetails(installedApplication))
+
+            case .didFailToRetrieveApplication:
+                self.alert = .didFailToRetrieveApp
             }
         }
     }

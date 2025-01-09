@@ -7,7 +7,20 @@
 
 import SwiftUI
 
-struct FileSystemCoordinatingView: View {
+struct FileSystemCoordinatingView: CoordinatingView {
+    enum Action {
+        case fileSystemViewEvent(FileSystemView.Event)
+    }
+
+    enum Alert: Hashable, Identifiable {
+        case fileFetchingError
+        case fileFindingError
+        case fileOpeningError
+
+        var id: AnyHashable { self }
+    }
+
+    @State var alert: Alert?
     @StateObject private var navigator: FileSystemNavigator
 
     init(initialDestination: FileSystemNavigator.ViewDestination) {
@@ -18,8 +31,10 @@ struct FileSystemCoordinatingView: View {
         Group {
             switch navigator.last {
             case .fileSystem(url: let url):
-                FileSystemView(currentURL: url)
-                
+                FileSystemView(currentURL: url) {
+                    handleAction(.fileSystemViewEvent($0))
+                }
+
             case .installedApplications:
                 InstalledApplicationsCoordinatingView()
 
@@ -30,8 +45,34 @@ struct FileSystemCoordinatingView: View {
                 EmptyView()
             }
         }
+        .alert(item: $alert) { activeAlert in
+            switch activeAlert {
+            case .fileFetchingError:
+                SwiftUI.Alert(title: Text("Could not fetch files"))
+            case .fileFindingError:
+                SwiftUI.Alert(title: Text("Could not find the selected files"))
+            case .fileOpeningError:
+                SwiftUI.Alert(title: Text("Could not open the selected files"))
+            }
+        }
         .environmentObject(navigator)
         .id(navigator.last)
+    }
+}
+
+extension FileSystemCoordinatingView {
+    func handleAction(_ action: Action) {
+        switch action {
+        case .fileSystemViewEvent(let event):
+            switch event {
+            case .didFailToFetchFiles:
+                alert = .fileFetchingError
+            case .didFailToFindSelectedFile:
+                alert = .fileFindingError
+            case .didFailToOpenFile:
+                alert = .fileOpeningError
+            }
+        }
     }
 }
 
@@ -42,10 +83,14 @@ final class FileSystemNavigator: ObservableObject {
         case installedApplicationDetails(InstalledAppDetail)
     }
     
-    private(set) var stack: [ViewDestination] = []
+    private(set) var stack: [ViewDestination]
 
     init(initialDestination: ViewDestination) {
         self.stack = [initialDestination]
+    }
+
+    init() {
+        self.stack = []
     }
 
     var last: ViewDestination? { stack.last }

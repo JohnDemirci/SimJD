@@ -16,7 +16,6 @@ struct InstalledApplicationAction: Identifiable {
 
 struct InstalledApplicationDetailView: View {
     enum Event {
-        case couldNotOpenSandboxFolder
         case couldNotOpenUserDefaults
         case didSelectRemoveUserDefaults
         case didSelectUninstallApplication(Simulator)

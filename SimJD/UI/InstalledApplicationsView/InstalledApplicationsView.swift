@@ -10,6 +10,7 @@ import SwiftUI
 struct InstalledApplicationsView: View {
     enum Event {
         case didFailToFetchInstalledApps(Failure)
+        case didFailToRetrieveApplication
         case didSelectApp(InstalledAppDetail)
     }
 
@@ -89,13 +90,7 @@ struct InstalledApplicationsView: View {
                 }
             },
             primaryAction: { selectedItems in
-                guard
-                    let selectedItem = selectedItems.first,
-                    let selectedSimulator = simulatorManager.selectedSimulator,
-                    let installedAppDetails = simulatorManager.installedApplications[selectedSimulator.id],
-                    let installedAppDetail = installedAppDetails.first(where: { $0.id == selectedItem })
-                else { return }
-
+                guard let installedAppDetail = getInstalledAppFromSelections(selectedItems) else { return }
                 sendEvent(.didSelectApp(installedAppDetail))
             }
         )
@@ -113,18 +108,23 @@ struct InstalledApplicationsView: View {
         }
     }
 
-    func getInstalledAppFromSelections(_ selections: Set<InstalledAppDetail.ID>) -> InstalledAppDetail? {
+    func getInstalledAppFromSelections(
+        _ selections: Set<InstalledAppDetail.ID>
+    ) -> InstalledAppDetail? {
         guard
             let selection = selections.first,
             let selectedSimulator = simulatorManager.selectedSimulator,
             let installedApps = simulatorManager.installedApplications[selectedSimulator.id],
-            let selectedApp = simulatorManager.installedApplications[selectedSimulator.id]?.first(where: { $0.bundleIdentifier == selection })
-        else { return nil }
+            let selectedApp = installedApps.first(where: { $0.bundleIdentifier == selection })
+        else {
+            sendEvent(.didFailToRetrieveApplication)
+            return nil
+        }
 
         return selectedApp
     }
 
-    func copyToClipboard(_ text: String) {
+    private func copyToClipboard(_ text: String) {
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(text , forType: .string)

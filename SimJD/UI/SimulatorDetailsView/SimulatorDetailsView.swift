@@ -64,7 +64,7 @@ struct SimulatorDetailsView: View {
                         case .eraseContentAndSettings:
                             EmptyView()
                         case .geolocation:
-                            SimulatorGeolocationCoordinatingView(simManager: simManager)
+                            SimulatorGeolocationCoordinatingView()
                         case .installedApplications:
                             FileSystemCoordinatingView(initialDestination: .installedApplications)
                         }
@@ -81,6 +81,7 @@ struct SimulatorDetailsView: View {
 private struct ActionsView: View {
     @Binding var selectedTab: SimulatorDetailsView.Tab
     let columnWidth: CGFloat
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         PanelView(
@@ -94,14 +95,17 @@ private struct ActionsView: View {
                                 selectedTab = tab
                             }
                         }
-                        .background(
-                            selectedTab == tab ? Color.red : Color.clear
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .buttonStyle(.borderedProminent)
+                        .tint(selectedTab == tab ? colorSelection : Color.clear)
                     }
                 }
             }
         )
+    }
+
+    private var colorSelection: Color {
+        colorScheme == .light ? Color.init(nsColor: .brown).opacity(0.2) :
+            Color.init(nsColor: .systemBrown)
     }
 }
 
@@ -109,11 +113,6 @@ private struct InformationView: View {
     let columnWidth: CGFloat
     let simulator: Simulator
     @Bindable var simManager: SimulatorManager
-
-    @State private var deviceNameDisclosureGroupExpanded = true
-    @State private var identifierDisclosrueGroupExpanded = true
-    @State private var statusDisclosureGroupExpanded = true
-    @State private var operatingSystemDisclosureGroupExpanded = true
 
     var body: some View {
         PanelView(
@@ -149,6 +148,8 @@ private struct InformationView: View {
                             .textSelection(.enabled)
                         LabeledContent("is Available", value: "\(simulator.isAvailable ?? false)")
                         LabeledContent("Log Path", value: simulator.logPath ?? "")
+                            .multilineTextAlignment(.trailing)
+                            .textSelection(.enabled)
                         LabeledContent("DataPath Size", value: "\(simulator.dataPathSize ?? -1)")
                     }
                     .listRowSeparator(.hidden)

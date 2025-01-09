@@ -8,15 +8,32 @@
 import SwiftUI
 
 struct FileSystemView: View {
+    enum Event {
+        case didFailToFetchFiles
+        case didFailToFindSelectedFile
+        case didFailToOpenFile
+    }
+
+    @Environment(\.colorScheme) private var colorScheme
     @EnvironmentObject private var navigator: FileSystemNavigator
 
     @State private var items: [FileItem] = []
     @State private var selection: FileItem.ID?
 
     private let currentURL: URL
+    private let sendEvent: (Event) -> Void
 
-    init(currentURL: URL) {
+    var selectedColor: Color {
+        colorScheme == .light ? Color.init(nsColor: .brown).opacity(0.2) :
+            Color.init(nsColor: .systemBrown)
+    }
+
+    init(
+        currentURL: URL,
+        sendEvent: @escaping (Event) -> Void
+    ) {
         self.currentURL = currentURL
+        self.sendEvent = sendEvent
     }
 
     var body: some View {
@@ -95,14 +112,19 @@ struct FileSystemView: View {
     func openAction() {
         guard let item = self.items.first(where: { fileItem in
             fileItem.id == selection
-        }) else { return }
+        }) else {
+            sendEvent(.didFailToFindSelectedFile)
+            return
+        }
 
         if item.isDirectory {
             withAnimation {
                 navigator.add(.fileSystem(url: item.url))
             }
         } else {
-            NSWorkspace.shared.open(item.url)
+            if !NSWorkspace.shared.open(item.url) {
+                sendEvent(.didFailToOpenFile)
+            }
         }
     }
 }
@@ -136,7 +158,7 @@ extension FileSystemView {
             }
             self.items = items
         } catch {
-            print("Error fetching files in directory: \(error.localizedDescription)")
+            sendEvent(.didFailToFetchFiles)
         }
     }
 }
