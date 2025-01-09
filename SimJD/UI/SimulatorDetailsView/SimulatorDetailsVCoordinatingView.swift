@@ -8,17 +8,18 @@
 import SwiftUI
 
 struct SimulatorDetailsViewCoordinator: CoordinatingView {
+    enum Action {
+        case simulatorDetailsViewEvent(SimulatorDetailsView.Event)
+    }
+
     enum Alert: Hashable, Identifiable {
         case didDeleteSimulator
         case didFailToDeleteSimulator
         case didFailToEraseContents
-        case didFailToOpenDocumentsFolder
         case didSelectDeleteSimulator(Simulator)
         case didSelectEraseData(Simulator)
 
-        var id: AnyHashable {
-            self
-        }
+        var id: AnyHashable { self }
     }
 
     @Environment(FolderManager.self) private var folderManager
@@ -27,7 +28,35 @@ struct SimulatorDetailsViewCoordinator: CoordinatingView {
     @State var alert: Alert?
 
     var body: some View {
-        SimulatorDetailsView()
+        SimulatorDetailsView { event in
+            handleAction(.simulatorDetailsViewEvent(event))
+        }
+        .alert(item: $alert) {
+            switch $0 {
+            case .didDeleteSimulator:
+                SwiftUI.Alert(title: Text("Simulator deleted"))
+            case .didFailToDeleteSimulator:
+                SwiftUI.Alert(title: Text("Simulator deletion failed"))
+            case .didFailToEraseContents:
+                SwiftUI.Alert(title: Text("Simulator contents erasure failed"))
+            case .didSelectDeleteSimulator(let simulator):
+                self.didSelectDeleteSimulatorAlert(simulator)
+            case .didSelectEraseData(let simulator):
+                self.didSelectEraseDataAlert(simulator: simulator)
+            }
+        }
+    }
+
+    func handleAction(_ action: Action) {
+        switch action {
+        case .simulatorDetailsViewEvent(let event):
+            switch event {
+            case .didSelectDeleteSimulator(let simulator):
+                self.alert = .didSelectDeleteSimulator(simulator)
+            case .didSelectEraseContentAndSettings(let simulator):
+                self.alert = .didSelectEraseData(simulator)
+            }
+        }
     }
 }
 
