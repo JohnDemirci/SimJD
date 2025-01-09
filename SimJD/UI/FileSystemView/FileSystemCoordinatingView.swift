@@ -45,14 +45,14 @@ struct FileSystemCoordinatingView: CoordinatingView {
                 EmptyView()
             }
         }
-        .alert(item: $alert) { activeAlert in
-            switch activeAlert {
+        .nsAlert(item: $alert) { activeAlert in
+            return switch activeAlert {
             case .fileFetchingError:
-                SwiftUI.Alert(title: Text("Could not fetch files"))
+                JDAlert(title: "Could not fetch files")
             case .fileFindingError:
-                SwiftUI.Alert(title: Text("Could not find the selected files"))
+                JDAlert(title: "Could not find the selected files")
             case .fileOpeningError:
-                SwiftUI.Alert(title: Text("Could not open the selected files"))
+                JDAlert(title: "Could not open the selected files")
             }
         }
         .environmentObject(navigator)

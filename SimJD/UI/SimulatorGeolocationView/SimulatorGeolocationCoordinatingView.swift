@@ -23,7 +23,6 @@ struct SimulatorGeolocationCoordinatingView: CoordinatingView {
     }
 
     @Environment(SimulatorManager.self) private var simManager
-    @Environment(\.dismiss) private var dismiss
     @State var alert: Alert?
 
     var body: some View {
@@ -31,28 +30,19 @@ struct SimulatorGeolocationCoordinatingView: CoordinatingView {
             handleAction(.simulatorGeolocationViewEvent(event))
         }
         .clipShape(RoundedRectangle(cornerRadius: 20))
-        .alert(item: $alert) { alert in
+        .nsAlert(item: $alert) { alert in
             switch alert {
             case .didFailCoordinateProxy:
-                SwiftUI.Alert(
-                    title: Text("Failure"),
-                    message: Text("Could not locate the coordinates")
+                return JDAlert(
+                    title: "Failure",
+                    message: "Could not locate the coordinates"
                 )
 
             case .didFailUpdateLocation:
-                SwiftUI.Alert(
-                    title: Text("Could not update location")
-                )
+                return JDAlert(title: "Could not update location")
 
             case .didUpdateLocation:
-                SwiftUI.Alert(
-                    title: Text("Success")
-                )
-            }
-        }
-        .onChange(of: simManager.selectedSimulator, initial: false) {
-            if $0 != $1 {
-                dismiss()
+                return JDAlert(title: "Success")
             }
         }
     }

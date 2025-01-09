@@ -12,6 +12,7 @@ struct InstalledApplicationsView: View {
         case didFailToFetchInstalledApps(Failure)
         case didFailToRetrieveApplication
         case didSelectApp(InstalledAppDetail)
+        case simulatorNotBooted
     }
 
     @Environment(SimulatorManager.self) private var simulatorManager
@@ -100,7 +101,9 @@ struct InstalledApplicationsView: View {
 
             switch simulatorManager.fetchInstalledApplications(for: selectedSimulator) {
             case .success:
-                break
+                if selectedSimulator.state != "Booted" {
+                    sendEvent(.simulatorNotBooted)
+                }
 
             case .failure(let error):
                 sendEvent(.didFailToFetchInstalledApps(error))

@@ -30,10 +30,10 @@ struct RunningProcessesCoordinatingView: CoordinatingView {
                 handleAction(.runningProcessesViewEvent($0))
             }
         )
-        .alert(item: $alert) {
+        .nsAlert(item: $alert) {
             switch $0 {
             case .fetchError:
-                SwiftUI.Alert(title: Text("Unable to fetch processes"))
+                return JDAlert(title: "Unable to fetch processes")
             }
         }
     }

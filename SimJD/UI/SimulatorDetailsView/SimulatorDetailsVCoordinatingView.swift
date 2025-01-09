@@ -31,14 +31,14 @@ struct SimulatorDetailsViewCoordinator: CoordinatingView {
         SimulatorDetailsView { event in
             handleAction(.simulatorDetailsViewEvent(event))
         }
-        .alert(item: $alert) {
+        .nsAlert(item: $alert) {
             switch $0 {
             case .didDeleteSimulator:
-                SwiftUI.Alert(title: Text("Simulator deleted"))
+                JDAlert(title: "Simulator deleted")
             case .didFailToDeleteSimulator:
-                SwiftUI.Alert(title: Text("Simulator deletion failed"))
+                JDAlert(title: "Simulator deletion failed")
             case .didFailToEraseContents:
-                SwiftUI.Alert(title: Text("Simulator contents erasure failed"))
+                JDAlert(title: "Simulator contents erasure failed")
             case .didSelectDeleteSimulator(let simulator):
                 self.didSelectDeleteSimulatorAlert(simulator)
             case .didSelectEraseData(let simulator):
@@ -63,11 +63,11 @@ struct SimulatorDetailsViewCoordinator: CoordinatingView {
 private extension SimulatorDetailsViewCoordinator {
     func didSelectDeleteSimulatorAlert(
         _ simulator: Simulator
-    ) -> SwiftUI.Alert {
-        SwiftUI.Alert(
-            title: Text("Are you sure you want to delete this simulator?"),
-            message: Text("This will delete the simulator entirely"),
-            primaryButton: .default(Text("Delete")) {
+    ) -> JDAlert {
+        JDAlert(
+            title: "Are you sure you want to delete this simulator?",
+            message: "This will delete the simulator entirely",
+            button1: AlertButton(title: "Delete") {
                 switch simManager.deleteSimulator(simulator) {
                 case .success:
                     Task {
@@ -87,16 +87,16 @@ private extension SimulatorDetailsViewCoordinator {
                     }
                 }
             },
-            secondaryButton: .cancel()
+            button2: AlertButton(title: "Cancel") { }
         )
     }
 
-    func didSelectEraseDataAlert(simulator: Simulator) -> SwiftUI.Alert {
-        SwiftUI.Alert(
-            title: Text("Erase All Simulator Data?"),
-            message: Text("This will behave similarly to a factory reset. Are you sure you want to erase all simulator data?"),
-            primaryButton: .default(
-                Text("Erase Data"),
+    func didSelectEraseDataAlert(simulator: Simulator) -> JDAlert {
+        JDAlert(
+            title: "Erase All Simulator Data?",
+            message: "This will behave similarly to a factory reset. Are you sure you want to erase all simulator data?",
+            button1: AlertButton(
+                title: "Erase Content & Settings",
                 action: {
                     switch simManager.eraseContents(in: simulator) {
                     case .success:
@@ -112,7 +112,10 @@ private extension SimulatorDetailsViewCoordinator {
                     }
                 }
             ),
-            secondaryButton: .cancel()
+            button2: AlertButton(
+                title: "Dismiss",
+                action: { }
+            )
         )
     }
 }

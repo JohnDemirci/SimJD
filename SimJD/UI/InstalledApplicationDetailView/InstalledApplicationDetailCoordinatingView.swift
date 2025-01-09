@@ -18,7 +18,6 @@ struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
         case couldNotRemoveUserDefaults
         case didSelectRemoveUserDefaults
         case didSelectUnisntallApplication(Simulator)
-
         case didUnisntallApplication(InstalledAppDetail)
         case didRemoveUserDefaults
 
@@ -44,45 +43,51 @@ struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
                 handleAction(.installedApplicationDetailViewEvent($0))
             }
         )
-        .alert(item: $alert) {
-            switch $0 {
+        .nsAlert(item: $alert) {
+            return switch $0 {
             case .couldNotOpenUserDefaults:
-                SwiftUI.Alert(title: Text("Unable to open User Defaults Folder"))
-
+                JDAlert(title: "Unable to open User Defaults Folder")
+            case .couldNotRemoveApplication:
+                JDAlert(title: "Could not Remove Application")
+            case .couldNotRemoveUserDefaults:
+                JDAlert(title: "Could not Remove User Defaults")
             case .didSelectRemoveUserDefaults:
-                SwiftUI.Alert(
-                    title: Text("Remove User Defaults"),
-                    message: Text("Are you sure about removing the user defaults folder for this application?"),
-                    primaryButton: .default(Text("Remove")) {
-                        switch folderManager.removeUserDefaults(installedApplication) {
-                        case .success:
-                            Task {
-                                try? await Task.sleep(for: .seconds(1))
+                JDAlert(
+                    title: "Remove User Defaults",
+                    message: "Are you sure about removing the user defaults folder for this application?",
+                    button1: AlertButton(
+                        title: "Remove",
+                        action: {
+                            switch folderManager.removeUserDefaults(installedApplication) {
+                            case .success:
+                                Task {
+                                    try? await Task.sleep(for: .seconds(1))
 
-                                await MainActor.run {
-                                    self.alert = .didRemoveUserDefaults
+                                    await MainActor.run {
+                                        self.alert = .didRemoveUserDefaults
+                                    }
                                 }
-                            }
-                        case .failure:
-                            Task {
-                                try? await Task.sleep(for: .seconds(1))
+                            case .failure:
+                                Task {
+                                    try? await Task.sleep(for: .seconds(1))
 
-                                await MainActor.run {
-                                    self.alert = .couldNotRemoveUserDefaults
+                                    await MainActor.run {
+                                        self.alert = .couldNotRemoveUserDefaults
+                                    }
                                 }
                             }
                         }
-                    },
-                    secondaryButton: .cancel {
-                        self.alert = nil
-                    }
+                    ),
+                    button2: AlertButton(
+                        title: "Cancel",
+                        action: { }
+                    )
                 )
-
             case .didSelectUnisntallApplication(let simulator):
-                SwiftUI.Alert(
-                    title: Text("Remove Application from Simulator"),
-                    message: Text("Are you sure about removing the application?"),
-                    primaryButton: .default(Text("Remove")) {
+                JDAlert(
+                    title: "Remove Application from Simulator",
+                    message: "Are you sure about removing the application?",
+                    button1: AlertButton(title: "Remove") {
                         switch folderManager.uninstall(
                             installedApplication,
                             simulatorID: simulator.id
@@ -106,32 +111,12 @@ struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
                             }
                         }
                     },
-                    secondaryButton: .cancel()
+                    button2: AlertButton(title: "Cancel", action: { })
                 )
-
-            case .couldNotRemoveApplication:
-                SwiftUI.Alert(title: Text("Could not Remove Application"))
-
-            case .couldNotRemoveUserDefaults:
-                SwiftUI.Alert(title: Text("Could not Remove User Defaults"))
-
+            case .didUnisntallApplication:
+                JDAlert(title: "Successfully Uninstalled Application")
             case .didRemoveUserDefaults:
-                SwiftUI.Alert(title: Text("Success ✅"))
-
-            case .didUnisntallApplication(let installedApplication):
-                SwiftUI.Alert(
-                    title: Text("Success ✅"),
-                    message: Text("Successfully Removed Application"),
-                    dismissButton: .default(Text("OK")) {
-                        withAnimation {
-                            guard let selectedSimulator = simulatorManager.selectedSimulator else { return }
-                            navigator.pop()
-                            simulatorManager.installedApplications[selectedSimulator.id]?.removeAll {
-                                $0 == installedApplication
-                            }
-                        }
-                    }
-                )
+                JDAlert(title: "User Defaults Removed")
             }
         }
     }

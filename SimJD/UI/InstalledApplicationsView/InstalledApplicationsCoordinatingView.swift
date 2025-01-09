@@ -15,10 +15,9 @@ struct InstalledApplicationsCoordinatingView: CoordinatingView {
     enum Alert: Hashable, Identifiable {
         case didFailToFetchInstalledApps
         case didFailToRetrieveApp
+        case simulatorNotBooted
 
-        var id: AnyHashable {
-            "\(self)" as AnyHashable
-        }
+        var id: AnyHashable { self }
     }
 
     @Environment(FolderManager.self) private var folderManager: FolderManager
@@ -31,13 +30,20 @@ struct InstalledApplicationsCoordinatingView: CoordinatingView {
         InstalledApplicationsView(
             sendEvent: { handleAction(.installedApplicationsViewEvent($0)) }
         )
-        .alert(item: $alert) {
-            switch $0 {
-            case .didFailToFetchInstalledApps:
-                SwiftUI.Alert(title: Text("Could not fetch installed apps"))
-
+        .nsAlert(item: $alert) { item in
+            return switch item {
+            case .simulatorNotBooted:
+                JDAlert(
+                    title: "Simulator not booted",
+                    message: "Please boot your simulator before continuing"
+                )
             case .didFailToRetrieveApp:
-                SwiftUI.Alert(title: Text("Could not retrieve installed application"))
+                JDAlert(
+                    title: "Failed retrieving installed application",
+                    message: "Please check the simulator state and try again"
+                )
+            case .didFailToFetchInstalledApps:
+                JDAlert(title: "Failed fetching installed apps")
             }
         }
     }
@@ -56,6 +62,9 @@ extension InstalledApplicationsCoordinatingView {
 
             case .didFailToRetrieveApplication:
                 self.alert = .didFailToRetrieveApp
+
+            case .simulatorNotBooted:
+                self.alert = .simulatorNotBooted
             }
         }
     }
