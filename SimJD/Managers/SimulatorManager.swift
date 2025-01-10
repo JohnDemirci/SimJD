@@ -73,7 +73,7 @@ extension SimulatorManager {
 
     private func handleSimulatorSelection() {
         guard let selectedSimulator else {
-            self.selectedSimulator = simulators.values.first?.first
+			self.selectedSimulator = simulators.flatMap(\.value).first
             return
         }
 

@@ -72,7 +72,6 @@ struct SimulatorDetailsView: View {
                     InformationView(columnWidth: columnWidth, simulator: simulator)
                 }
             }
-            .scrollBounceBehavior(.basedOnSize, axes: .vertical)
             .scrollIndicators(.hidden)
 
             VStack {

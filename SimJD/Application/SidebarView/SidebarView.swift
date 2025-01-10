@@ -5,11 +5,11 @@
 //  Created by John Demirci on 11/30/24.
 //
 
-import StateJD
 import SwiftUI
 
 struct SidebarView: View {
     @Environment(SimulatorManager.self) private var simulatorManager
+	@Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         List {
@@ -25,5 +25,6 @@ struct SidebarView: View {
             }
         }
         .scrollContentBackground(.hidden)
+		.background(colorScheme == .dark ? .black : .white)
     }
 }

@@ -9,6 +9,7 @@ import SwiftUI
 
 @main
 struct SimJDApp: App {
+	@Environment(\.colorScheme) private var colorScheme
     @State private var simulatorManager: SimulatorManager
     @State private var folderManager: FolderManager
     @State private var visibility: NavigationSplitViewVisibility = .doubleColumn
@@ -37,7 +38,10 @@ struct SimJDApp: App {
                     SimulatorDetailsViewCoordinator()
                 }
             )
-            .toolbarBackground(.hidden, for: .windowToolbar)
+			.toolbarBackground(
+				colorScheme == .light ? .white : .black,
+				for: .windowToolbar
+			)
             .toolbar {
                 ToolbarItem(placement: .navigation) {
                     Image(.logo)
