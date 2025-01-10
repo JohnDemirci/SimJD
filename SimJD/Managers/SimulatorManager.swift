@@ -17,9 +17,18 @@ final class SimulatorManager {
 
     let simulatorClient: SimulatorClient
     var simulators: OrderedDictionary<OS.Name, [Simulator]> = [:]
-    var selectedSimulator: Simulator? = nil
+
+    var selectedSimulator: Simulator? = nil {
+        didSet {
+            if let selectedSimulator {
+                self.fetchLocale(simulator: selectedSimulator)
+            }
+        }
+    }
+
     var processes: [Simulator.ID: [ProcessInfo]] = [:]
     var installedApplications: [Simulator.ID: [InstalledAppDetail]] = [:]
+    var locales: [Simulator.ID: String] = [:]
 
     init(
         simulatorClient: SimulatorClient = .live
@@ -179,6 +188,18 @@ extension SimulatorManager {
             latitude: latitude,
             longitude: longtitude
         )
+    }
+
+    private func fetchLocale(simulator: Simulator)  {
+        switch simulatorClient.fetchLocale(simulator.id) {
+        case .success(let locale):
+            if !locale.isEmpty {
+                self.locales[simulator.id] = locale
+            }
+
+        case .failure:
+            break
+        }
     }
 }
 

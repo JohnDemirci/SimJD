@@ -10,7 +10,7 @@ import SwiftUI
 
 struct SimulatorDetailsView: View {
     fileprivate enum Action {
-        case actionsViewEvent(ActionsView.Event)
+        case actionsViewEvent(SimulatorSettingsView.Event)
     }
 
     enum Event {
@@ -50,13 +50,9 @@ struct SimulatorDetailsView: View {
 
     private var navigatableView: Bool {
         switch selectedTab {
-        case .activeProcesses:
+        case .activeProcesses, .geolocation:
             return false
-        case .documents:
-            return true
-        case .geolocation:
-            return false
-        case .installedApplications:
+        case .documents, .installedApplications:
             return true
         }
     }
@@ -66,7 +62,7 @@ struct SimulatorDetailsView: View {
             ScrollView {
                 TabButtonsView(selectedTab: $selectedTab, columnWidth: columnWidth)
                 OptionalView(simManager.selectedSimulator) { simulator in
-                    ActionsView(
+                    SimulatorSettingsView(
                         columnWidth: columnWidth,
                         selectedSimulator: simulator,
                         sendEvent: { handleAction(.actionsViewEvent($0)) }
@@ -179,7 +175,7 @@ private struct TabButtonsView: View {
     }
 }
 
-fileprivate struct ActionsView: View {
+fileprivate struct SimulatorSettingsView: View {
     enum Event {
         case didSelectEraseContentAndSettings(Simulator)
         case didSelectDeleteSimulator(Simulator)
@@ -201,7 +197,7 @@ fileprivate struct ActionsView: View {
 
     var body: some View {
         PanelView(
-            title: "Actions",
+            title: "Settings",
             columnWidth: columnWidth,
             content: {
                 VStack(alignment: .leading) {
@@ -269,6 +265,10 @@ private struct InformationView: View {
                             .textSelection(.enabled)
                     }
                     LabeledContentForVStack(title: "DataPath Size", text: "\(simulator.dataPathSize ?? -1)")
+
+                    OptionalView(simManager.locales[simulator.id]) { locale in
+                        LabeledContentForVStack(title: "Locale", text: locale)
+                    }
                 }
             }
         )

@@ -18,6 +18,7 @@ struct SimulatorClient {
     fileprivate var _deleteSimulator: (String) -> Result<Void, Failure>
     fileprivate var _fetchSimulatorDictionary: () -> Result<OrderedDictionary<OS.Name, [Simulator]>, Failure>
     fileprivate var _updateLocation: (String, Double, Double) -> Result<Void, Failure>
+    fileprivate var _fetchLocale: (String) -> Result<String, Failure>
 
     private init(
         _shutdownSimulator: @escaping (String) -> Result<Void, Failure>,
@@ -28,7 +29,8 @@ struct SimulatorClient {
         _uninstallApp: @escaping (String, String) -> Result<Void, Failure>,
         _deleteSimulator: @escaping (String) -> Result<Void, Failure>,
         _fetchSimulatorDictionary: @escaping () -> Result<OrderedDictionary<OS.Name, [Simulator]>, Failure>,
-        _updateLocation: @escaping (String, Double, Double) -> Result<Void, Failure>
+        _updateLocation: @escaping (String, Double, Double) -> Result<Void, Failure>,
+        _fetchLocale: @escaping (String) -> Result<String, Failure>
     ) {
         self._shutdownSimulator = _shutdownSimulator
         self._openSimulator = _openSimulator
@@ -39,6 +41,7 @@ struct SimulatorClient {
         self._deleteSimulator = _deleteSimulator
         self._fetchSimulatorDictionary = _fetchSimulatorDictionary
         self._updateLocation = _updateLocation
+        self._fetchLocale = _fetchLocale
     }
 
     func shutdownSimulator(simulator: String) -> Result<Void, Failure> {
@@ -76,6 +79,10 @@ struct SimulatorClient {
     func updateLocation(simulator: String, latitude: Double, longitude: Double) -> Result<Void, Failure> {
         return _updateLocation(simulator, latitude, longitude)
     }
+
+    func fetchLocale(_ id: String) -> Result<String, Failure> {
+        return _fetchLocale(id)
+    }
 }
 
 extension SimulatorClient {
@@ -111,6 +118,9 @@ extension SimulatorClient {
                 latitude: latitude,
                 longitude: longtitude
             )
+        },
+        _fetchLocale: { id in
+            handleFetchLocale(id)
         }
     )
 
@@ -125,11 +135,13 @@ extension SimulatorClient {
         _uninstallApp: { _, _ in fatalError("not implemented") },
         _deleteSimulator: { _ in fatalError("not implemented") },
         _fetchSimulatorDictionary: { fatalError("not implemented") },
-        _updateLocation: { _, _, _ in fatalError("not implemented") }
+        _updateLocation: { _, _, _ in fatalError("not implemented") },
+        _fetchLocale: { _ in fatalError("not implemented") }
     )
     #endif
 }
 
+#if DEBUG
 extension SimulatorClient {
     @discardableResult
     mutating func mutate(
@@ -141,7 +153,8 @@ extension SimulatorClient {
         _uninstallApp:  ((String, String) -> Result<Void, Failure>)? = nil,
         _deleteSimulator: ((String) -> Result<Void, Failure>)? = nil,
         _fetchSimulatorDictionary: (() -> Result<OrderedDictionary<OS.Name, [Simulator]>, Failure>)? = nil,
-        _updateLocation: ((String, Double, Double) -> Result<Void, Failure>)?
+        _updateLocation: ((String, Double, Double) -> Result<Void, Failure>)?,
+        _fetchLocale: ((String) -> Result<String, Failure>)? = nil
     ) -> Self {
         if let _shutdownSimulator = _shutdownSimulator {
             self._shutdownSimulator = _shutdownSimulator
@@ -179,6 +192,11 @@ extension SimulatorClient {
             self._updateLocation = _updateLocation
         }
 
+        if let _fetchLocale = _fetchLocale {
+            self._fetchLocale = _fetchLocale
+        }
+
         return self
     }
 }
+#endif
