@@ -20,12 +20,8 @@ struct FileSystemCoordinatingView: CoordinatingView {
         var id: AnyHashable { self }
     }
 
+    @EnvironmentObject private var navigator: FileSystemNavigator
     @State var alert: Alert?
-    @StateObject private var navigator: FileSystemNavigator
-
-    init(initialDestination: FileSystemNavigator.ViewDestination) {
-        self._navigator = .init(wrappedValue: .init(initialDestination: initialDestination))
-    }
 
     var body: some View {
         Group {
@@ -102,6 +98,11 @@ final class FileSystemNavigator: ObservableObject {
 
     func pop() {
         stack.removeLast()
+        self.objectWillChange.send()
+    }
+
+    func resetTo(_ destination: ViewDestination) {
+        stack = [destination]
         self.objectWillChange.send()
     }
 }

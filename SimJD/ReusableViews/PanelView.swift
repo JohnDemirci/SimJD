@@ -72,6 +72,7 @@ struct PanelWithToolbarView<
                 .kerning(0.5)
                 .frame(maxWidth: columnWidth)
                 .padding(5)
+                .foregroundStyle(Color.black)
                 .background(
                     UnevenRoundedRectangle(
                         topLeadingRadius: 12,
