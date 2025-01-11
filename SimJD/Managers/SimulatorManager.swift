@@ -10,6 +10,7 @@ import Foundation
 import OrderedCollections
 import SwiftUI
 
+@MainActor
 @Observable
 final class SimulatorManager {
     @ObservationIgnored

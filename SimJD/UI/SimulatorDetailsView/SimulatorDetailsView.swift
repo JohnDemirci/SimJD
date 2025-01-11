@@ -79,14 +79,17 @@ struct SimulatorDetailsView: View {
                     title: selectedTab.title,
                     columnWidth: .infinity,
                     content: {
-                        switch selectedTab {
-                        case .activeProcesses:
-                            RunningProcessesCoordinatingView()
-                        case .documents, .installedApplications:
-                            FileSystemCoordinatingView()
-                        case .geolocation:
-                            SimulatorGeolocationCoordinatingView()
+                        Group {
+                            switch selectedTab {
+                            case .activeProcesses:
+                                RunningProcessesCoordinatingView()
+                            case .documents, .installedApplications:
+                                FileSystemCoordinatingView()
+                            case .geolocation:
+                                SimulatorGeolocationCoordinatingView()
+                            }
                         }
+                        .id(simManager.selectedSimulator)
                     },
                     toolbar: {
                         Button("", systemImage: "chevron.left") {
@@ -105,7 +108,6 @@ struct SimulatorDetailsView: View {
                     }
                 )
                 .environmentObject(navigator)
-                .id(simManager.selectedSimulator)
             }
         }
         .background(colorScheme == .dark ? Color.black : Color.white)

@@ -25,6 +25,6 @@ struct SidebarView: View {
             }
         }
         .scrollContentBackground(.hidden)
-		.background(colorScheme == .dark ? .black : .white)
+        .background(colorScheme == .dark ? Color.black : Color.white)
     }
 }
