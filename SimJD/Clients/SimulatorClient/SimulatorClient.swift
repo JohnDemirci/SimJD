@@ -153,7 +153,7 @@ extension SimulatorClient {
         _uninstallApp:  ((String, String) -> Result<Void, Failure>)? = nil,
         _deleteSimulator: ((String) -> Result<Void, Failure>)? = nil,
         _fetchSimulatorDictionary: (() -> Result<OrderedDictionary<OS.Name, [Simulator]>, Failure>)? = nil,
-        _updateLocation: ((String, Double, Double) -> Result<Void, Failure>)?,
+        _updateLocation: ((String, Double, Double) -> Result<Void, Failure>)? = nil,
         _fetchLocale: ((String) -> Result<String, Failure>)? = nil
     ) -> Self {
         if let _shutdownSimulator = _shutdownSimulator {

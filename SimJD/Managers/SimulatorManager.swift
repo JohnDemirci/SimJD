@@ -22,7 +22,9 @@ final class SimulatorManager {
     var selectedSimulator: Simulator? = nil {
         didSet {
             if let selectedSimulator {
-                self.fetchLocale(simulator: selectedSimulator)
+                if selectedSimulator.state == "Booted" {
+                    self.fetchLocale(simulator: selectedSimulator)
+                }
             }
         }
     }
@@ -42,6 +44,7 @@ final class SimulatorManager {
 
 extension SimulatorManager {
     func didSelectSimulator(_ simulator: Simulator) {
+        guard let _ = getSimulatorIfExists(simulator) else { return }
         self.selectedSimulator = simulator
     }
 
@@ -56,12 +59,21 @@ extension SimulatorManager {
             return .success(())
 
         case .failure(let error):
+            self.simulators = [:]
+            self.selectedSimulator = nil
+            self.processes = [:]
+            self.installedApplications = [:]
+            self.locales = [:]
             return .failure(error)
         }
     }
 
     @discardableResult
     func openSimulator(_ simulator: Simulator) -> Result<Void, Failure> {
+        guard let _ = getSimulatorIfExists(simulator) else {
+            return .failure(Failure.message("Simulator Does not Exist"))
+        }
+
         switch simulatorClient.openSimulator(simulator: simulator.id) {
         case .success:
             didOpenSimulator(simulator)
@@ -73,20 +85,15 @@ extension SimulatorManager {
     }
 
     private func handleSimulatorSelection() {
-        guard let selectedSimulator else {
-			self.selectedSimulator = simulators.flatMap(\.value).first
+        guard
+            let selectedSimulator,
+            let existingSimulator = getSimulatorIfExists(selectedSimulator)
+        else {
+            self.selectedSimulator = simulators.flatMap(\.value).first
             return
         }
 
-        guard let selectedSimulatorOS = selectedSimulator.os else { return }
-
-        guard let updatedSelectedSimulator = self.simulators[selectedSimulatorOS]?.first(where: {
-            $0.id == selectedSimulator.id
-        }) else {
-            return
-        }
-
-        self.selectedSimulator = updatedSelectedSimulator
+        self.selectedSimulator = existingSimulator
     }
 
     private func didOpenSimulator(_ simulator: Simulator) {
@@ -103,6 +110,10 @@ extension SimulatorManager {
 
     @discardableResult
     func deleteSimulator(_ simulator: Simulator) -> Result<Void, Failure> {
+        guard let _ = getSimulatorIfExists(simulator) else {
+            return .failure(Failure.message("Simulator Does not Exist"))
+        }
+
         switch simulatorClient.deleteSimulator(simulator: simulator.id) {
         case .success:
             handleDeleteSimulator(simulator)
@@ -123,16 +134,22 @@ extension SimulatorManager {
         if let index {
             simulators[os]?.remove(at: index)
             selectedSimulator = nil
+            locales[simulator.id] = nil
+            processes[simulator.id] = nil
+            installedApplications[simulator.id] = nil
             handleSimulatorSelection()
         }
     }
 
     @discardableResult
     func shutdownSimulator(_ simulator: Simulator) -> Result<Void, Failure> {
+        guard let _ = getSimulatorIfExists(simulator) else {
+            return .failure(Failure.message("Simulator Does not Exist"))
+        }
+        guard let os = simulator.os else { return .failure(Failure.message("Simulator has no OS")) }
+
         switch simulatorClient.shutdownSimulator(simulator: simulator.id) {
         case .success:
-            guard let os = simulator.os else { return  .success(()) }
-
             let index = simulators[os]?.firstIndex {
                 $0.id == simulator.id
             }
@@ -151,10 +168,15 @@ extension SimulatorManager {
 
     @discardableResult
     func fetchRunningProcesses(for simulator: Simulator) -> Result<[ProcessInfo], Failure> {
+        guard let _ = getSimulatorIfExists(simulator) else {
+            return .failure(Failure.message("Simulator Does not Exist"))
+        }
+
         switch simulatorClient.activeProcesses(simulator: simulator.id) {
         case .success(let processInfo):
             self.processes[simulator.id] = processInfo
             return .success(processInfo)
+
         case .failure(let error):
             return .failure(error)
         }
@@ -164,6 +186,10 @@ extension SimulatorManager {
     func fetchInstalledApplications(
         for simulator: Simulator
     ) -> Result<[InstalledAppDetail], Failure> {
+        guard let _ = getSimulatorIfExists(simulator) else {
+            return .failure(Failure.message("Simulator Does not Exist"))
+        }
+
         switch simulatorClient.installedApps(simulator: simulator.id) {
         case .success(let installedApps):
             self.installedApplications[simulator.id] = installedApps
@@ -175,7 +201,19 @@ extension SimulatorManager {
 
     @discardableResult
     func eraseContents(in simulator: Simulator) -> Result<Void, Failure> {
-        simulatorClient.eraseContents(simulator: simulator.id)
+        guard let _ = getSimulatorIfExists(simulator) else {
+            return .failure(Failure.message("Simulator Does not Exist"))
+        }
+
+        let result = simulatorClient.eraseContents(simulator: simulator.id)
+
+        if case .success = result {
+            fetchInstalledApplications(for: simulator)
+            fetchRunningProcesses(for: simulator)
+            fetchLocale(simulator: simulator)
+        }
+
+        return result
     }
 
     @discardableResult
@@ -184,7 +222,11 @@ extension SimulatorManager {
         latitude: Double,
         longtitude: Double
     ) -> Result<Void, Failure> {
-        simulatorClient.updateLocation(
+        guard let _ = getSimulatorIfExists(simulator) else {
+            return .failure(Failure.message("Simulator Does not Exist"))
+        }
+
+        return simulatorClient.updateLocation(
             simulator: simulator.id,
             latitude: latitude,
             longitude: longtitude
@@ -192,6 +234,8 @@ extension SimulatorManager {
     }
 
     private func fetchLocale(simulator: Simulator)  {
+        guard let _ = getSimulatorIfExists(simulator) else { return }
+
         switch simulatorClient.fetchLocale(simulator.id) {
         case .success(let locale):
             if !locale.isEmpty {
@@ -201,6 +245,18 @@ extension SimulatorManager {
         case .failure:
             break
         }
+    }
+}
+
+private extension SimulatorManager {
+    func getSimulatorIfExists(_ simulator: Simulator) -> Simulator? {
+        guard
+            let os = simulator.os,
+            let simulators = simulators[os],
+            let sim = simulators.first(where: { $0.id == simulator.id })
+        else { return nil }
+
+        return sim
     }
 }
 
