@@ -9,7 +9,7 @@ import Combine
 import SwiftUI
 
 struct SimulatorDetailsView: View {
-    fileprivate enum Action {
+    enum Action {
         case actionsViewEvent(SimulatorSettingsView.Event)
     }
 
@@ -57,60 +57,16 @@ struct SimulatorDetailsView: View {
         }
     }
 
+    private var backgroundColor: Color {
+        colorScheme == .dark ? Color.black : Color.white
+    }
+
     var body: some View {
         HStack(spacing: 10) {
-            ScrollView {
-                TabButtonsView(selectedTab: $selectedTab, columnWidth: columnWidth)
-                OptionalView(simManager.selectedSimulator) { simulator in
-                    SimulatorSettingsView(
-                        columnWidth: columnWidth,
-                        selectedSimulator: simulator,
-                        sendEvent: { handleAction(.actionsViewEvent($0)) }
-                    )
-                }
-                OptionalView(simManager.selectedSimulator) { simulator in
-                    InformationView(columnWidth: columnWidth, simulator: simulator)
-                }
-            }
-            .scrollIndicators(.hidden)
-
-            VStack {
-                PanelWithToolbarView(
-                    title: selectedTab.title,
-                    columnWidth: .infinity,
-                    content: {
-                        Group {
-                            switch selectedTab {
-                            case .activeProcesses:
-                                RunningProcessesCoordinatingView()
-                            case .documents, .installedApplications:
-                                FileSystemCoordinatingView()
-                            case .geolocation:
-                                SimulatorGeolocationCoordinatingView()
-                            }
-                        }
-                        .id(simManager.selectedSimulator)
-                    },
-                    toolbar: {
-                        Button("", systemImage: "chevron.left") {
-                            withAnimation {
-                                navigator.pop()
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(Color.black)
-                        .padding()
-                        .bold()
-                        .font(.largeTitle)
-                        .inCase(!navigatableView || navigator.stack.count < 2) {
-                            EmptyView()
-                        }
-                    }
-                )
-                .environmentObject(navigator)
-            }
+            leftColumnView
+            rightColumnView
         }
-        .background(colorScheme == .dark ? Color.black : Color.white)
+        .background(backgroundColor)
         .onChange(of: selectedTab) { oldValue, newValue in
             switch newValue {
             case .installedApplications:
@@ -125,6 +81,69 @@ struct SimulatorDetailsView: View {
             default:
                 break
             }
+        }
+    }
+}
+
+private extension SimulatorDetailsView {
+    var leftColumnView: some View {
+        ScrollView {
+            TabButtonsView(selectedTab: $selectedTab, columnWidth: columnWidth)
+            OptionalView(simManager.selectedSimulator) { simulator in
+                SimulatorSettingsView(
+                    columnWidth: columnWidth,
+                    selectedSimulator: simulator,
+                    sendEvent: { handleAction(.actionsViewEvent($0)) }
+                )
+            }
+            OptionalView(simManager.selectedSimulator) { simulator in
+                SimulatorInformationView(columnWidth: columnWidth, simulator: simulator)
+            }
+        }
+        .scrollIndicators(.hidden)
+    }
+
+    var rightColumnView: some View {
+        VStack {
+            PanelWithToolbarView(
+                title: selectedTab.title,
+                columnWidth: .infinity,
+                content: {
+                    Group {
+                        switch selectedTab {
+                        case .activeProcesses:
+                            RunningProcessesCoordinatingView()
+                        case .documents, .installedApplications:
+                            FileSystemCoordinatingView()
+                        case .geolocation:
+                            SimulatorGeolocationCoordinatingView()
+                        }
+                    }
+                    .id(simManager.selectedSimulator)
+                },
+                toolbar: {
+                    fileSystemBackButtonView
+                }
+            )
+            .environmentObject(navigator)
+        }
+    }
+}
+
+private extension SimulatorDetailsView {
+    var fileSystemBackButtonView: some View {
+        Button("", systemImage: "chevron.left") {
+            withAnimation {
+                navigator.pop()
+            }
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(Color.black)
+        .padding()
+        .bold()
+        .font(.largeTitle)
+        .inCase(!navigatableView || navigator.stack.count < 2) {
+            EmptyView()
         }
     }
 }
@@ -176,130 +195,3 @@ private struct TabButtonsView: View {
     }
 }
 
-fileprivate struct SimulatorSettingsView: View {
-    enum Event {
-        case didSelectEraseContentAndSettings(Simulator)
-        case didSelectDeleteSimulator(Simulator)
-    }
-
-    private let columnWidth: CGFloat
-    private let selectedSimulator: Simulator
-    private let sendEvent: (Event) -> Void
-
-    init(
-        columnWidth: CGFloat,
-        selectedSimulator: Simulator,
-        sendEvent: @escaping (Event) -> Void
-    ) {
-        self.columnWidth = columnWidth
-        self.selectedSimulator = selectedSimulator
-        self.sendEvent = sendEvent
-    }
-
-    var body: some View {
-        PanelView(
-            title: "Settings",
-            columnWidth: columnWidth,
-            content: {
-                VStack(alignment: .leading) {
-                    Button("Erase Content and Settings") {
-                        sendEvent(.didSelectEraseContentAndSettings(selectedSimulator))
-                    }
-
-                    Button("Delete Simulator") {
-                        sendEvent(.didSelectDeleteSimulator(selectedSimulator))
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(Color.clear)
-                .padding()
-            }
-        )
-    }
-}
-
-private struct InformationView: View {
-    @Environment(SimulatorManager.self) private var simManager
-    let columnWidth: CGFloat
-    let simulator: Simulator
-
-    var body: some View {
-        PanelView(
-            title: "Information",
-            columnWidth: columnWidth,
-            content: {
-                VStack {
-                    LabeledContentForVStack(title: "Name", text: simulator.name ?? "")
-                    LabeledContentForVStack("ID") {
-                        Text(simulator.id)
-                            .multilineTextAlignment(.trailing)
-                            .textSelection(.enabled)
-                    }
-                    LabeledContentForVStack("Status") {
-                        Toggle(
-                            isOn: Binding(
-                                get: { simulator.state == "Booted" },
-                                set: { newVal in
-                                    if newVal {
-                                        simManager.openSimulator(simulator)
-                                    } else {
-                                        simManager.shutdownSimulator(simulator)
-                                    }
-                                }
-                            ),
-                            label: {
-                                EmptyView()
-                            }
-                        )
-                        .toggleStyle(.switch)
-                    }
-                    LabeledContentForVStack(title: "Operating System", text: simulator.os?.name ?? "")
-                    LabeledContentForVStack("Path") {
-                        Text(simulator.dataPath ?? "")
-                            .multilineTextAlignment(.trailing)
-                            .textSelection(.enabled)
-                    }
-                    LabeledContentForVStack(title: "Available", text: "\(simulator.isAvailable ?? false)")
-                    LabeledContentForVStack("Log Path") {
-                        Text(simulator.logPath ?? "")
-                            .multilineTextAlignment(.trailing)
-                            .textSelection(.enabled)
-                    }
-                    LabeledContentForVStack(title: "DataPath Size", text: "\(simulator.dataPathSize ?? -1)")
-
-                    OptionalView(simManager.locales[simulator.id]) { locale in
-                        LabeledContentForVStack(title: "Locale", text: locale)
-                    }
-                }
-            }
-        )
-    }
-}
-
-extension InformationView {
-    struct LabeledContentForVStack<C: View>: View {
-        let title: String
-        let content: () -> C
-
-        init(_ title: String, content: @escaping () -> C) {
-            self.title = title
-            self.content = content
-        }
-
-        var body: some View {
-            HStack(alignment: .top) {
-                Text("\(title):")
-                Spacer()
-                content()
-            }
-            .padding(7)
-        }
-    }
-}
-
-extension InformationView.LabeledContentForVStack where C == Text {
-    init(title: String, text: String) {
-        self.title = title
-        self.content = { Text(text) }
-    }
-}

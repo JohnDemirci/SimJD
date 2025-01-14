@@ -9,85 +9,88 @@ import SwiftUI
 import AppKit
 
 struct SimulatorInformationView: View {
-    @Bindable private var simManager: SimulatorManager
+    @Environment(SimulatorManager.self) private var simManager
 
-    init(simManager: SimulatorManager) {
-        self.simManager = simManager
-    }
+    let columnWidth: CGFloat
+    let simulator: Simulator
 
     var body: some View {
-        OptionalView(simManager.selectedSimulator) { simulator in
-            simulatorNameView(simulator)
-            simulatorIDView(simulator)
-            simulatorDeviceTypeView(simulator)
-            simulatorOSVersionView(simulator)
+        PanelView(
+            title: "Information",
+            columnWidth: columnWidth,
+            content: {
+                VStack {
+                    LabeledContentForVStack(title: "Name", text: simulator.name ?? "")
+                    LabeledContentForVStack("ID") {
+                        Text(simulator.id)
+                            .multilineTextAlignment(.trailing)
+                            .textSelection(.enabled)
+                    }
+                    LabeledContentForVStack("Status") {
+                        Toggle(
+                            isOn: Binding(
+                                get: { simulator.state == "Booted" },
+                                set: { newVal in
+                                    if newVal {
+                                        simManager.openSimulator(simulator)
+                                    } else {
+                                        simManager.shutdownSimulator(simulator)
+                                    }
+                                }
+                            ),
+                            label: {
+                                EmptyView()
+                            }
+                        )
+                        .toggleStyle(.switch)
+                    }
+                    LabeledContentForVStack(title: "Operating System", text: simulator.os?.name ?? "")
+                    LabeledContentForVStack("Path") {
+                        Text(simulator.dataPath ?? "")
+                            .multilineTextAlignment(.trailing)
+                            .textSelection(.enabled)
+                    }
+                    LabeledContentForVStack(title: "Available", text: "\(simulator.isAvailable ?? false)")
+                    LabeledContentForVStack("Log Path") {
+                        Text(simulator.logPath ?? "")
+                            .multilineTextAlignment(.trailing)
+                            .textSelection(.enabled)
+                    }
+                    LabeledContentForVStack(title: "DataPath Size", text: "\(simulator.dataPathSize ?? -1)")
+
+                    OptionalView(simManager.locales[simulator.id]) { locale in
+                        LabeledContentForVStack(title: "Locale", text: locale)
+                    }
+                }
+            }
+        )
+    }
+}
+
+extension SimulatorInformationView {
+    struct LabeledContentForVStack<C: View>: View {
+        let title: String
+        let content: () -> C
+
+        init(_ title: String, content: @escaping () -> C) {
+            self.title = title
+            self.content = content
+        }
+
+        var body: some View {
+            HStack(alignment: .top) {
+                Text("\(title):")
+                Spacer()
+                content()
+            }
+            .padding(7)
         }
     }
 }
 
-private extension SimulatorInformationView {
-    func simulatorNameView(_ simulator: Simulator) -> some View {
-        Text(simulator.name ?? "")
-            .font(.largeTitle)
-    }
-
-    func simulatorIDView(_ simulator: Simulator) -> some View {
-        VStack {
-            Text("Unique Identifier")
-                .font(.title)
-                .bold()
-            Text(simulator.id)
-        }
-        .padding()
-        .frame(minWidth: 500)
-        .foregroundStyle(Color.gray)
-        .overlay {
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(lineWidth: 2)
-                .fill(Color.gray)
-                .background(Color.black.opacity(0.3))
-        }
-        .overlay(alignment: .trailing) {
-            Button("Copy") {
-                let pasteboard = NSPasteboard.general
-                pasteboard.clearContents()
-                pasteboard.setString(simulator.id, forType: .string)
-            }
-            .padding()
-        }
-    }
-
-    func simulatorDeviceTypeView(_ simulator: Simulator) -> some View {
-        VStack {
-            Text("Device Type")
-                .font(.title)
-            Text(simulator.deviceTypeIdentifier ?? "")
-        }
-        .padding()
-        .frame(minWidth: 500)
-        .foregroundStyle(Color.gray)
-        .overlay {
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(lineWidth: 2)
-                .fill(Color.gray)
-                .background(Color.orange.opacity(0.3))
-        }
-    }
-
-    func simulatorOSVersionView(_ simulator: Simulator) -> some View {
-        VStack {
-            Text("OS Version")
-                .font(.title)
-            Text(simulator.os?.name ?? "")
-        }
-        .padding()
-        .frame(minWidth: 500)
-        .foregroundStyle(Color.gray)
-        .overlay {
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(lineWidth: 2)
-                .fill(Color.gray)
-                .background(Color.yellow.opacity(0.3))
-        }
+extension SimulatorInformationView.LabeledContentForVStack where C == Text {
+    init(title: String, text: String) {
+        self.title = title
+        self.content = { Text(text) }
     }
 }
