@@ -60,7 +60,7 @@ extension SimulatorManagerTests {
 extension SimulatorManagerTests {
     func testChangeSelectedSimulatorChangesSelectedSimulator() {
         let simulator = Simulator.bootedSimulator
-        self.manager.selectedSimulator = simulator
+        self.manager.didSelectSimulator(simulator)
         XCTAssertEqual(self.manager.selectedSimulator, simulator)
     }
 

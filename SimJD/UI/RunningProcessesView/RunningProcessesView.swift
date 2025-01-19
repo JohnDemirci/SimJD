@@ -12,15 +12,11 @@ struct RunningProcessesView: View {
         case didFailToFetchProcesses
     }
 
-    @Bindable private var simManager: SimulatorManager
+    @Environment(SimulatorManager.self) private var simManager: SimulatorManager
 
     private let sendEvent: (Event) -> Void
 
-    init(
-        simManager: SimulatorManager,
-        sendEvent: @escaping (Event) -> Void
-    ) {
-        self.simManager = simManager
+    init(sendEvent: @escaping (Event) -> Void) {
         self.sendEvent = sendEvent
     }
 

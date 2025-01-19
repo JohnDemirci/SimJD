@@ -7,7 +7,9 @@
 
 import SwiftUI
 
-struct FileSystemCoordinatingView: CoordinatingView {
+@MainActor
+@Observable
+final class FileSystemCoordinatingViewModel {
     enum Action {
         case fileSystemViewEvent(FileSystemView.Event)
     }
@@ -20,43 +22,8 @@ struct FileSystemCoordinatingView: CoordinatingView {
         var id: AnyHashable { self }
     }
 
-    @EnvironmentObject private var navigator: FileSystemNavigator
-    @State var alert: Alert?
+    var alert: Alert?
 
-    var body: some View {
-        Group {
-            switch navigator.last {
-            case .fileSystem(url: let url):
-                FileSystemView(currentURL: url) {
-                    handleAction(.fileSystemViewEvent($0))
-                }
-
-            case .installedApplications:
-                InstalledApplicationsCoordinatingView()
-
-            case .installedApplicationDetails(let detail):
-                InstalledApplicationDetailCoordinatingView(installedApplication: detail)
-
-            case .none:
-                EmptyView()
-            }
-        }
-        .nsAlert(item: $alert) { activeAlert in
-            return switch activeAlert {
-            case .fileFetchingError:
-                JDAlert(title: "Could not fetch files")
-            case .fileFindingError:
-                JDAlert(title: "Could not find the selected files")
-            case .fileOpeningError:
-                JDAlert(title: "Could not open the selected files")
-            }
-        }
-        .environmentObject(navigator)
-        .id(navigator.last)
-    }
-}
-
-extension FileSystemCoordinatingView {
     func handleAction(_ action: Action) {
         switch action {
         case .fileSystemViewEvent(let event):
@@ -72,6 +39,44 @@ extension FileSystemCoordinatingView {
     }
 }
 
+struct FileSystemCoordinatingView: CoordinatingView {
+    @EnvironmentObject private var navigator: FileSystemNavigator
+    @State private var viewModel = FileSystemCoordinatingViewModel()
+
+    var body: some View {
+        Group {
+            switch navigator.last {
+            case .fileSystem(url: let url):
+                FileSystemView(currentURL: url) {
+                    viewModel.handleAction(.fileSystemViewEvent($0))
+                }
+
+            case .installedApplications:
+                InstalledApplicationsCoordinatingView()
+
+            case .installedApplicationDetails(let detail):
+                InstalledApplicationDetailCoordinatingView(installedApplication: detail)
+
+            case .none:
+                EmptyView()
+            }
+        }
+        .nsAlert(item: $viewModel.alert) { activeAlert in
+            return switch activeAlert {
+            case .fileFetchingError:
+                JDAlert(title: "Could not fetch files")
+            case .fileFindingError:
+                JDAlert(title: "Could not find the selected files")
+            case .fileOpeningError:
+                JDAlert(title: "Could not open the selected files")
+            }
+        }
+        .environmentObject(navigator)
+        .id(navigator.last)
+    }
+}
+
+@MainActor
 final class FileSystemNavigator: ObservableObject {
     enum ViewDestination: Hashable {
         case fileSystem(url: URL)

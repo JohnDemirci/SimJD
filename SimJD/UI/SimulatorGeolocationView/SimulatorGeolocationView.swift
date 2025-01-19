@@ -2,17 +2,13 @@ import MapKit
 import SwiftUI
 import Combine
 
-struct SimulatorGeolocationView: View {
-    enum Event {
-        case didFailCoordinateProxy
-        case didFailUpdateLocation
-        case didUpdateLocation
-    }
+@MainActor
+@Observable
+final class SimulatorGeolocationViewModel {
+    typealias Event = SimulatorGeolocationView.Event
+    let sendEvent: (Event) -> Void
 
-    @Bindable var simManager: SimulatorManager
-    var sendEvent: (Event) -> Void
-
-    @State private var position = MapCameraPosition.region(
+    var position = MapCameraPosition.region(
         MKCoordinateRegion(
             center: CLLocationCoordinate2D(
                 latitude: 37.773972,
@@ -22,37 +18,71 @@ struct SimulatorGeolocationView: View {
         )
     )
 
-    @State private var marker = CLLocationCoordinate2D(
+    var marker = CLLocationCoordinate2D(
         latitude: 37.773972,
         longitude: -122.431297
     )
 
+    init(sendEvent: @escaping (Event) -> Void) {
+        self.sendEvent = sendEvent
+    }
+
+    func didTapOnMap(converter: MapProxyConversion, position: CGPoint) {
+        if let coordinate = converter.convert(point: position) {
+            marker = coordinate
+        } else {
+            sendEvent(.didFailCoordinateProxy)
+        }
+    }
+
+    func didSelectSelectLocation(manager: SimulatorManager) {
+        guard let simulator = manager.selectedSimulator else { return }
+
+        switch manager.updateLocation(
+            in: simulator,
+            latitude: marker.latitude,
+            longtitude: marker.longitude
+        ) {
+        case .success:
+            sendEvent(.didUpdateLocation)
+        case .failure:
+            sendEvent(.didFailUpdateLocation)
+        }
+    }
+}
+
+struct SimulatorGeolocationView: View {
+    enum Event {
+        case didFailCoordinateProxy
+        case didFailUpdateLocation
+        case didUpdateLocation
+    }
+
+    @Environment(SimulatorManager.self) private var simManager
+    @State private var viewModel: SimulatorGeolocationViewModel
+
+    init(sendEvent: @escaping (Event) -> Void) {
+        self.viewModel = .init(sendEvent: sendEvent)
+    }
+
     var body: some View {
         MapReader { proxy in
-            Map(position: $position) {
-                Marker("Selected Location", coordinate: marker)
+            Map(position: $viewModel.position) {
+                Marker("Selected Location", coordinate: viewModel.marker)
             }
             .onTapGesture { position in
-                if let coordinate = proxy.convert(position, from: .local) {
-                    self.marker = coordinate
-                } else {
-                    sendEvent(.didFailCoordinateProxy)
-                }
+                viewModel.didTapOnMap(
+                    converter: MapProxyConverter(
+                        proxy: proxy,
+                        coordinateSpace: .local
+                    ),
+                    position: position
+                )
             }
         }
         .toolbar {
             Button("Select Location") {
-                guard let simulator = simManager.selectedSimulator else { return }
-                switch simManager.updateLocation(
-                    in: simulator,
-                    latitude: marker.latitude,
-                    longtitude: marker.longitude
-                ) {
-                case .success:
-                    sendEvent(.didUpdateLocation)
-                case .failure:
-                    sendEvent(.didFailUpdateLocation)
-                }
+                viewModel.didSelectSelectLocation(manager: simManager)
             }
         }
     }

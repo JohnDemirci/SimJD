@@ -19,7 +19,7 @@ final class SimulatorManager {
     let simulatorClient: SimulatorClient
     var simulators: OrderedDictionary<OS.Name, [Simulator]> = [:]
 
-    var selectedSimulator: Simulator? = nil {
+    private(set) var selectedSimulator: Simulator? = nil {
         didSet {
             if let selectedSimulator {
                 if selectedSimulator.state == "Booted" {

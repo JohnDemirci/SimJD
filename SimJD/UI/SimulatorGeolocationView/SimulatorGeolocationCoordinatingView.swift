@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-struct SimulatorGeolocationCoordinatingView: CoordinatingView {
+@Observable
+final class SimulatorGeolocationCoordinatingViewModel {
     enum Action {
         case simulatorGeolocationViewEvent(SimulatorGeolocationView.Event)
     }
@@ -22,33 +23,8 @@ struct SimulatorGeolocationCoordinatingView: CoordinatingView {
         }
     }
 
-    @Environment(SimulatorManager.self) private var simManager
-    @State var alert: Alert?
+    var alert: Alert?
 
-    var body: some View {
-        SimulatorGeolocationView(simManager: simManager) { event in
-            handleAction(.simulatorGeolocationViewEvent(event))
-        }
-        .clipShape(RoundedRectangle(cornerRadius: 20))
-        .nsAlert(item: $alert) { alert in
-            switch alert {
-            case .didFailCoordinateProxy:
-                return JDAlert(
-                    title: "Failure",
-                    message: "Could not locate the coordinates"
-                )
-
-            case .didFailUpdateLocation:
-                return JDAlert(title: "Could not update location")
-
-            case .didUpdateLocation:
-                return JDAlert(title: "Success")
-            }
-        }
-    }
-}
-
-extension SimulatorGeolocationCoordinatingView {
     func handleAction(_ action: Action) {
         switch action {
         case .simulatorGeolocationViewEvent(let event):
@@ -61,6 +37,33 @@ extension SimulatorGeolocationCoordinatingView {
 
             case .didUpdateLocation:
                 self.alert = .didUpdateLocation
+            }
+        }
+    }
+}
+
+struct SimulatorGeolocationCoordinatingView: CoordinatingView {
+    @Environment(SimulatorManager.self) private var simManager
+    @State private var viewModel = SimulatorGeolocationCoordinatingViewModel()
+
+    var body: some View {
+        SimulatorGeolocationView { event in
+            viewModel.handleAction(.simulatorGeolocationViewEvent(event))
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .nsAlert(item: $viewModel.alert) { alert in
+            switch alert {
+            case .didFailCoordinateProxy:
+                return JDAlert(
+                    title: "Failure",
+                    message: "Could not locate the coordinates"
+                )
+
+            case .didFailUpdateLocation:
+                return JDAlert(title: "Could not update location")
+
+            case .didUpdateLocation:
+                return JDAlert(title: "Success")
             }
         }
     }
