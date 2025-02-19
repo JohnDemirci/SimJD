@@ -14,10 +14,12 @@ struct Shell: Sendable {
 
     func execute(_ command: Shell.Command) -> Result<String?, Failure> {
         switch command {
+        case .updateLocation:
+            basicExecute(command)
+
         case .fetchBootedSimulators_Legacy,
              .shotdown,
              .uninstallApp,
-             .updateLocation,
              .simulatorLocale,
              .activeProcesses,
              .installedApps,
@@ -220,7 +222,7 @@ extension Shell {
                 ["simctl", "list", "devices", "--json"]
 
             case .updateLocation(let id, let lat, let long):
-                ["simctl", "location", id, "\(lat)", "\(long)"]
+                ["simctl", "location", id, "set", "\(lat)", "\(long)"]
 
             case .simulatorLocale(let simulatorID):
                 [

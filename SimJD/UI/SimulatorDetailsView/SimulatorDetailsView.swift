@@ -58,7 +58,7 @@ struct SimulatorDetailsView: View {
     }
 
     private var backgroundColor: Color {
-        colorScheme == .dark ? Color.black : Color.white
+        ColorPalette.background(colorScheme).color
     }
 
     var body: some View {
@@ -66,8 +66,8 @@ struct SimulatorDetailsView: View {
             leftColumnView
             rightColumnView
         }
-        .background(backgroundColor)
-        .onChange(of: selectedTab) { oldValue, newValue in
+        .background(ColorPalette.background(colorScheme).color)
+        .onChange(of: selectedTab) { _, newValue in
             switch newValue {
             case .installedApplications:
                 withAnimation {
@@ -190,8 +190,7 @@ private struct TabButtonsView: View {
     }
 
     private var colorSelection: Color {
-        colorScheme == .light ? Color.init(nsColor: .brown).opacity(0.2) :
-            Color.init(nsColor: .systemBrown)
+        ColorPalette.foreground(colorScheme).color
     }
 }
 

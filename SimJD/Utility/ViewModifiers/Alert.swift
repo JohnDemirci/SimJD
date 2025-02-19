@@ -107,7 +107,10 @@ struct BasicAlertModifier<Item: Hashable>: ViewModifier {
 }
 
 extension View {
-    func nsAlert<Item: Hashable>(item: Binding<Item?>, alert: @escaping (Item) -> JDAlert) -> some View {
+    func nsAlert<Item: Hashable>(
+        item: Binding<Item?>,
+        alert: @escaping (Item) -> JDAlert
+    ) -> some View {
         modifier(BasicAlertModifier(item: item, alert: alert))
     }
 }

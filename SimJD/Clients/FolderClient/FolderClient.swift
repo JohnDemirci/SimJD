@@ -61,39 +61,39 @@ extension FolderClient {
     )
 
     #if DEBUG
-    nonisolated(unsafe)
-    static var testing: FolderClient = .init(
-        _openAppSandboxFolder: { _ in fatalError("Not implemented") },
-        _openUserDefaults: { _,_ in fatalError("Not implemented") },
-        _removeUserDefaults: { _,_ in fatalError("Not implemented") },
-        _openSimulatorDocuments: { _ in fatalError("Not implemented") }
-    )
+        nonisolated(unsafe)
+        static var testing: FolderClient = .init(
+            _openAppSandboxFolder: { _ in fatalError("Not implemented") },
+            _openUserDefaults: { _, _ in fatalError("Not implemented") },
+            _removeUserDefaults: { _, _ in fatalError("Not implemented") },
+            _openSimulatorDocuments: { _ in fatalError("Not implemented") }
+        )
 
-    @discardableResult
-    mutating func mutate(
-        _openAppSandboxFolder:  ((String) -> Result<Void, Failure>)? = nil,
-        _openUserDefaults:  ((String, String) -> Result<Void, Failure>)? = nil,
-        _removeUserDefaults:  ((String, String) -> Result<Void, Failure>)? = nil,
-        _openSimulatorDocuments:  ((String) -> Result<Void, Failure>)? = nil
-    ) -> FolderClient {
-        if let _openAppSandboxFolder {
-            self._openAppSandboxFolder = _openAppSandboxFolder
+        @discardableResult
+        mutating func mutate(
+            _openAppSandboxFolder: ((String) -> Result<Void, Failure>)? = nil,
+            _openUserDefaults: ((String, String) -> Result<Void, Failure>)? = nil,
+            _removeUserDefaults: ((String, String) -> Result<Void, Failure>)? = nil,
+            _openSimulatorDocuments: ((String) -> Result<Void, Failure>)? = nil
+        ) -> FolderClient {
+            if let _openAppSandboxFolder {
+                self._openAppSandboxFolder = _openAppSandboxFolder
+            }
+
+            if let _openUserDefaults {
+                self._openUserDefaults = _openUserDefaults
+            }
+
+            if let _removeUserDefaults {
+                self._removeUserDefaults = _removeUserDefaults
+            }
+
+            if let _openSimulatorDocuments {
+                self._openSimulatorDocuments = _openSimulatorDocuments
+            }
+
+            return self
         }
-
-        if let _openUserDefaults {
-            self._openUserDefaults = _openUserDefaults
-        }
-
-        if let _removeUserDefaults {
-            self._removeUserDefaults = _removeUserDefaults
-        }
-
-        if let _openSimulatorDocuments {
-            self._openSimulatorDocuments = _openSimulatorDocuments
-        }
-
-        return self
-    }
     #endif
 }
 

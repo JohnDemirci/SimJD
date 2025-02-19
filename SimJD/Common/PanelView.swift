@@ -30,8 +30,7 @@ struct PanelView<Content: View>: View {
                         style: .circular
                     )
                     .fill(
-                        colorScheme == .light ? Color.init(nsColor: .brown).opacity(0.2) :
-                            Color.init(nsColor: .systemBrown)
+                        ColorPalette.foreground(colorScheme).color
                     )
                 )
 
@@ -41,14 +40,13 @@ struct PanelView<Content: View>: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 12)
-            .fill(colorScheme == .light ? Color.white : Color.black)
-            .shadow(
-                color: colorScheme == .light ? Color.init(nsColor: .brown).opacity(0.2) :
-                    Color.init(nsColor: .systemBrown),
-                radius: 5,
-                x: 1,
-                y: 0
-            )
+                .fill(ColorPalette.background(colorScheme).color)
+                .shadow(
+                    color: ColorPalette.foreground(colorScheme).color,
+                    radius: 5,
+                    x: 1,
+                    y: 0
+                )
         )
     }
 }
@@ -80,8 +78,7 @@ struct PanelWithToolbarView<
                         style: .circular
                     )
                     .fill(
-                        colorScheme == .light ? Color.init(nsColor: .brown).opacity(0.2) :
-                            Color.init(nsColor: .systemBrown)
+                        ColorPalette.foreground(colorScheme).color
                     )
                 )
                 .overlay(alignment: .leading) {
@@ -94,14 +91,15 @@ struct PanelWithToolbarView<
         }
         .background(
             RoundedRectangle(cornerRadius: 12)
-            .fill(colorScheme == .light ? Color.white : Color.black)
-            .shadow(
-                color: colorScheme == .light ? Color.init(nsColor: .brown).opacity(0.2) :
-                    Color.init(nsColor: .systemBrown),
-                radius: 5,
-                x: 1,
-                y: 0
-            )
+                .fill(
+                    ColorPalette.background(colorScheme).color
+                )
+                .shadow(
+                    color: ColorPalette.foreground(colorScheme).color,
+                    radius: 5,
+                    x: 1,
+                    y: 0
+                )
         )
     }
 }
