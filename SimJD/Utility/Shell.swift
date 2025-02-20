@@ -12,8 +12,22 @@ struct Shell: Sendable {
 
     private init() {}
 
+    private func trackCommandIfEnabled(_ command: any TrackableCommand) {
+        Task {
+            let shouldTrackCommand = UserDefaults.standard.bool(forKey: Setting.enableLogging.key)
+
+            if shouldTrackCommand {
+                await CommandHistoryTracker.shared.recordExecution(of: command)
+            }
+        }
+    }
+
     func execute(_ command: Shell.Command) -> Result<String?, Failure> {
-        switch command {
+        defer {
+            trackCommandIfEnabled(command)
+        }
+
+        return switch command {
         case .updateLocation:
             basicExecute(command)
 
@@ -142,9 +156,13 @@ struct Shell: Sendable {
         bootProcess.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
         bootProcess.arguments = ["simctl", "boot", uuid]
 
+        trackCommandIfEnabled(CustomTrackableCommand(fullCommand: "xcrun simctl boot \(uuid)"))
+
         let openProcess = Process()
         openProcess.executableURL = URL(fileURLWithPath: "/usr/bin/open")
         openProcess.arguments = ["-a", "Simulator", "--args", "-CurrentDeviceUDID", uuid]
+
+        trackCommandIfEnabled(CustomTrackableCommand(fullCommand: "open -a simulator --args -CurrentDeviceUDID \(uuid)"))
 
         do {
             try bootProcess.run()
@@ -162,7 +180,7 @@ struct Shell: Sendable {
 }
 
 extension Shell {
-    enum Command {
+    enum Command: Hashable, TrackableCommand {
         case fetchBootedSimulators_Legacy
         case fetchAllSimulators_Legacy
         case fetchSimulators

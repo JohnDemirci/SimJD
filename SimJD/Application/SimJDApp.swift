@@ -31,5 +31,9 @@ struct SimJDApp: App {
         }
         .environment(simulatorManager)
         .environment(folderManager)
+
+        Settings {
+            SettingsView()
+        }
     }
 }

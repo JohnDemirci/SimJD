@@ -98,12 +98,24 @@ extension FolderClient {
 }
 
 private extension FolderClient {
+    static func trackIfEnabled(_ command: any TrackableCommand) {
+        if UserDefaults.standard.bool(forKey: Setting.enableLogging.key) {
+            Task {
+                await CommandHistoryTracker.shared.recordExecution(of: command)
+            }
+        }
+    }
+}
+
+private extension FolderClient {
     static func handleOpenSandboxFolder(_ path: String) -> Result<Void, Failure> {
         let expandedPath = NSString(string: path).expandingTildeInPath
         let fileURL = URL(fileURLWithPath: expandedPath)
         if !NSWorkspace.shared.open(fileURL) {
             return .failure(Failure.message("Could not open Application Support Folder"))
         }
+
+        trackIfEnabled(CustomTrackableCommand(fullCommand: "open \(expandedPath)"))
 
         return .success(())
     }
@@ -117,6 +129,8 @@ private extension FolderClient {
             return .failure(Failure.message("Could not open User Defaults Folder"))
         }
 
+        trackIfEnabled(CustomTrackableCommand(fullCommand: "Swift API open file at \(newPath)"))
+
         return .success(())
     }
 
@@ -124,6 +138,8 @@ private extension FolderClient {
         let userDefaultsExtension = "\(bundleID).plist"
         let newPath = "\(container)/Library/Preferences/\(userDefaultsExtension)"
         let fileURL = URL(fileURLWithPath: newPath)
+
+        trackIfEnabled(CustomTrackableCommand(fullCommand: "Swift API Remove item at \(newPath)"))
 
         do {
             try FileManager.default.removeItem(at: fileURL)
@@ -141,6 +157,8 @@ private extension FolderClient {
         if !NSWorkspace.shared.open(fileURL) {
             return .failure(Failure.message("Could not open \(fileURL)"))
         }
+
+        trackIfEnabled(CustomTrackableCommand(fullCommand: "Swift API open file at \(expandedPath)"))
 
         return .success(())
     }
