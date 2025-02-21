@@ -20,15 +20,6 @@ final class FolderManager {
         self.simulatorClient = simulatorClient
     }
 
-    func openDocumentsFolder(_ simulator: Simulator) -> Result<Void, Failure> {
-        switch client.openSimulatorDocuments(simulator.id) {
-        case .success:
-            return .success(())
-        case .failure(let error):
-            return .failure(.message(error.localizedDescription))
-        }
-    }
-
     func openUserDefaultsFolder(_ app: InstalledAppDetail) -> Result<Void, Failure> {
         guard let folderPath = app.dataContainer else {
             return .failure(.message("No User Defaults Folder"))
@@ -39,20 +30,6 @@ final class FolderManager {
         }
 
         switch client.openUserDefaults(container: folderPath, bundleID: bundleIdentifier) {
-        case .success:
-            return .success(())
-
-        case .failure(let error):
-            return .failure(.message(error.localizedDescription))
-        }
-    }
-
-    func openApplicationSupport(_ app: InstalledAppDetail) -> Result<Void, Failure> {
-        guard let folderPath = app.dataContainer else {
-            return .failure(.message("No Application Support Folder"))
-        }
-
-        switch client.openAppSandboxFolder(folderPath) {
         case .success:
             return .success(())
 

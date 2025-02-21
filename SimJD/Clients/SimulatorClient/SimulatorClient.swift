@@ -125,6 +125,8 @@ extension SimulatorClient {
     )
 
     #if DEBUG
+    // implementations will purposefully crash
+    // the expected usecase for the testing variable is to use the mutate function to provide implementation
     nonisolated(unsafe)
     static var testing: SimulatorClient = .init(
         _shutdownSimulator: { _ in fatalError("not implemented") },

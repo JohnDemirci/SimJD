@@ -10,7 +10,7 @@ import AppKit
 
 /// Alerts in SwiftUI are hierarchy based
 /// When the parent view has the alert modifier, the alert modifiers in child views won't work
-/// To get around this, we are going to be used the NSAlert
+/// To get around this, we are going to be using the NSAlert
 @MainActor
 final class AlertManager {
     private(set) var isDisplayingAlert: Bool = false

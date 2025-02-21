@@ -31,13 +31,11 @@ struct Shell: Sendable {
         case .updateLocation:
             basicExecute(command)
 
-        case .fetchBootedSimulators_Legacy,
-             .shotdown,
+        case .shotdown,
              .uninstallApp,
              .simulatorLocale,
              .activeProcesses,
-             .installedApps,
-             .fetchAllSimulators_Legacy:    basicExecute(command)
+             .installedApps:                basicExecute(command)
 
         case .eraseContents(let uuid):      eraseContent(uuid: uuid)
 
@@ -181,8 +179,6 @@ struct Shell: Sendable {
 
 extension Shell {
     enum Command: Hashable, TrackableCommand {
-        case fetchBootedSimulators_Legacy
-        case fetchAllSimulators_Legacy
         case fetchSimulators
         case shotdown(String)
         case openSimulator(String)
@@ -196,7 +192,7 @@ extension Shell {
 
         var path: Path {
             switch self {
-            case .fetchBootedSimulators_Legacy, .fetchAllSimulators_Legacy, .activeProcesses:
+            case .activeProcesses:
                 .bash
 
             case .shotdown, .installedApps, .eraseContents, .uninstallApp, .deleteSimulator, .fetchSimulators, .updateLocation, .simulatorLocale:
@@ -217,12 +213,6 @@ extension Shell {
 
             case .deleteSimulator(let id):
                 ["simctl", "delete", id]
-
-            case .fetchBootedSimulators_Legacy:
-                ["-c", "xcrun simctl list devices | grep Booted"]
-
-            case .fetchAllSimulators_Legacy:
-                ["-c", "xcrun simctl list devices"]
 
             case .shotdown(let uuid):
                 ["simctl", "shutdown", uuid]

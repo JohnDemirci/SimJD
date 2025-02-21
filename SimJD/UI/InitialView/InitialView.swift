@@ -33,5 +33,23 @@ struct InitialView: View {
                     .frame(width: 50, height: 50)
             }
         }
+        .onAppear {
+            addKeyboardShortcut()
+        }
+    }
+
+    private func addKeyboardShortcut() {
+        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
+            guard event.charactersIgnoringModifiers != "e" else {
+                toggleSidebar()
+                return nil
+            }
+
+            return event
+        }
+    }
+
+    private func toggleSidebar() {
+        visibility = (visibility == .doubleColumn) ? .detailOnly : .doubleColumn
     }
 }
