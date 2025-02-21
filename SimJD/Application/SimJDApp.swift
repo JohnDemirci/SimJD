@@ -5,25 +5,12 @@
 //  Created by John Demirci on 11/29/24.
 //
 
-import AppKit
 import SwiftUI
 
 @main
 struct SimJDApp: App {
-    @State private var simulatorManager: SimulatorManager
-    @State private var folderManager: FolderManager
-
-    init() {
-        let simulatorClient: SimulatorClient = .live
-        let folderClient: FolderClient = .live
-
-        self.simulatorManager = SimulatorManager(simulatorClient: simulatorClient)
-
-        self.folderManager = FolderManager(
-            client: folderClient,
-            simulatorClient: simulatorClient
-        )
-    }
+    @State private var simulatorManager: SimulatorManager = .init()
+    @State private var folderManager: FolderManager = .init()
 
     var body: some Scene {
         WindowGroup {

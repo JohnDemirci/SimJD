@@ -88,7 +88,7 @@ struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
                     title: "Remove Application from Simulator",
                     message: "Are you sure about removing the application?",
                     button1: AlertButton(title: "Remove") {
-                        switch folderManager.uninstall(
+                        switch simulatorManager.uninstall(
                             installedApplication,
                             simulatorID: simulator.id
                         ) {

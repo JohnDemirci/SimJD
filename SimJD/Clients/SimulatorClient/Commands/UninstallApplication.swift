@@ -7,9 +7,17 @@
 
 extension SimulatorClient {
     static func handleUninstallApplication(
-        _ bundleID: String,
+        _ app: InstalledAppDetail,
         simulatorID: String
     ) -> Result<Void, Failure> {
+        if app.applicationType == "System" {
+            return .failure(.message("cannot remove system apps"))
+        }
+
+        guard let bundleID = app.bundleIdentifier else {
+            return .failure(.message("No Bundle Identifier"))
+        }
+
         switch Shell.shared.execute(.uninstallApp(simulatorID, bundleID)) {
         case .success:
             return .success(())

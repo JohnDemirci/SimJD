@@ -14,7 +14,7 @@ struct SimulatorClient {
     fileprivate var _activeProcesses: (String) -> Result<[ProcessInfo], Failure>
     fileprivate var _eraseContentAndSettings: (String) -> Result<Void, Failure>
     fileprivate var _installedApps: (String) -> Result<[InstalledAppDetail], Failure>
-    fileprivate var _uninstallApp: (String, String) -> Result<Void, Failure>
+    fileprivate var _uninstallApp: (InstalledAppDetail, String) -> Result<Void, Failure>
     fileprivate var _deleteSimulator: (String) -> Result<Void, Failure>
     fileprivate var _fetchSimulatorDictionary: () -> Result<OrderedDictionary<OS.Name, [Simulator]>, Failure>
     fileprivate var _updateLocation: (String, Double, Double) -> Result<Void, Failure>
@@ -26,7 +26,7 @@ struct SimulatorClient {
         _activeProcesses: @escaping (String) -> Result<[ProcessInfo], Failure>,
         _eraseContentAndSettings: @escaping (String) -> Result<Void, Failure>,
         _installedApps: @escaping (String) -> Result<[InstalledAppDetail], Failure>,
-        _uninstallApp: @escaping (String, String) -> Result<Void, Failure>,
+        _uninstallApp: @escaping (InstalledAppDetail, String) -> Result<Void, Failure>,
         _deleteSimulator: @escaping (String) -> Result<Void, Failure>,
         _fetchSimulatorDictionary: @escaping () -> Result<OrderedDictionary<OS.Name, [Simulator]>, Failure>,
         _updateLocation: @escaping (String, Double, Double) -> Result<Void, Failure>,
@@ -64,8 +64,8 @@ struct SimulatorClient {
         return _installedApps(simulator)
     }
 
-    func uninstallApp(_ bundleID: String, at simulatorID: String) -> Result<Void, Failure> {
-        return _uninstallApp(bundleID, simulatorID)
+    func uninstallApp(app: InstalledAppDetail, at simulatorID: String) -> Result<Void, Failure> {
+        return _uninstallApp(app, simulatorID)
     }
 
     func deleteSimulator(simulator: String) -> Result<Void, Failure> {
@@ -152,7 +152,7 @@ extension SimulatorClient {
         _activeProcesses:  ((String) -> Result<[ProcessInfo], Failure>)? = nil,
         _eraseContentAndSettings:  ((String) -> Result<Void, Failure>)? = nil,
         _installedApps:  ((String) -> Result<[InstalledAppDetail], Failure>)? = nil,
-        _uninstallApp:  ((String, String) -> Result<Void, Failure>)? = nil,
+        _uninstallApp:  ((InstalledAppDetail, String) -> Result<Void, Failure>)? = nil,
         _deleteSimulator: ((String) -> Result<Void, Failure>)? = nil,
         _fetchSimulatorDictionary: (() -> Result<OrderedDictionary<OS.Name, [Simulator]>, Failure>)? = nil,
         _updateLocation: ((String, Double, Double) -> Result<Void, Failure>)? = nil,

@@ -246,6 +246,13 @@ extension SimulatorManager {
             break
         }
     }
+
+    func uninstall(
+        _ app: InstalledAppDetail,
+        simulatorID: String
+    ) -> Result<Void, Failure> {
+        simulatorClient.uninstallApp(app: app, at: simulatorID)
+    }
 }
 
 private extension SimulatorManager {
