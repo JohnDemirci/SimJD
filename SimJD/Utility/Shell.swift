@@ -230,7 +230,7 @@ extension Shell {
                 ["simctl", "list", "devices", "--json"]
 
             case .updateLocation(let id, let lat, let long):
-                ["simctl", "location", id, "set", "\(lat)", "\(long)"]
+                ["simctl", "location", id, "set", "\(lat),\(long)"]
 
             case .simulatorLocale(let simulatorID):
                 [
