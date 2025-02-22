@@ -62,26 +62,30 @@ struct SimulatorDetailsView: View {
     }
 
     var body: some View {
-        HStack(spacing: 10) {
-            leftColumnView
-            rightColumnView
-        }
-        .background(ColorPalette.background(colorScheme).color)
-        .onChange(of: selectedTab) { _, newValue in
-            switch newValue {
-            case .installedApplications:
-                withAnimation {
-                    navigator.resetTo(.installedApplications)
-                }
-            case .documents:
-                guard let selectedSimulator = simManager.selectedSimulator else { return }
-                withAnimation {
-                    navigator.resetTo(.fileSystem(url: URL(fileURLWithPath: selectedSimulator.dataPath ?? "")))
-                }
-            default:
-                break
-            }
-        }
+		GeometryReader { geometry in
+			HStack(spacing: 10) {
+				leftColumnView
+					.frame(width: geometry.size.width * 0.33)
+				rightColumnView
+					.frame(width: geometry.size.width * 0.66)
+			}
+			.background(ColorPalette.background(colorScheme).color)
+			.onChange(of: selectedTab) { _, newValue in
+				switch newValue {
+				case .installedApplications:
+					withAnimation {
+						navigator.resetTo(.installedApplications)
+					}
+				case .documents:
+					guard let selectedSimulator = simManager.selectedSimulator else { return }
+					withAnimation {
+						navigator.resetTo(.fileSystem(url: URL(fileURLWithPath: selectedSimulator.dataPath ?? "")))
+					}
+				default:
+					break
+				}
+			}
+		}
     }
 }
 
