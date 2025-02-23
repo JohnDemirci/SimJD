@@ -23,7 +23,7 @@ struct InitialView: View {
             }
         )
         .toolbarBackground(
-            colorScheme == .dark ? Color.black : Color.white,
+            ColorPalette.background(colorScheme).color,
             for: .windowToolbar
         )
         .toolbar {

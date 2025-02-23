@@ -5,7 +5,6 @@
 //  Created by John Demirci on 11/30/24.
 //
 
-import Combine
 import SwiftUI
 
 struct SimulatorDetailsView: View {
@@ -92,7 +91,11 @@ struct SimulatorDetailsView: View {
 private extension SimulatorDetailsView {
     var leftColumnView: some View {
         ScrollView {
-            TabButtonsView(selectedTab: $selectedTab, columnWidth: columnWidth)
+            TabButtonsView(
+                selectedTab: $selectedTab,
+                columnWidth: columnWidth
+            )
+            .padding(10)
             OptionalView(simManager.selectedSimulator) { simulator in
                 SimulatorSettingsView(
                     columnWidth: columnWidth,
@@ -100,9 +103,11 @@ private extension SimulatorDetailsView {
                     sendEvent: { handleAction(.actionsViewEvent($0)) }
                 )
             }
+            .padding(10)
             OptionalView(simManager.selectedSimulator) { simulator in
                 SimulatorInformationView(columnWidth: columnWidth, simulator: simulator)
             }
+            .padding(10)
         }
         .scrollIndicators(.hidden)
     }
@@ -131,6 +136,7 @@ private extension SimulatorDetailsView {
             )
             .environmentObject(navigator)
         }
+        .padding(.vertical, 10)
     }
 }
 
