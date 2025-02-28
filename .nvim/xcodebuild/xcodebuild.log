@@ -1,0 +1,238 @@
+Resolving Package Graph
+Resolved source packages
+swift-collections - https://github.com/apple/swift-collections.git @ 1.1.4
+[!]  --- xcodebuild: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, id:00006021-001461441A43C01E, name:My Mac }
+{ platform:macOS, arch:x86_64, id:00006021-001461441A43C01E, name:My Mac }
+[SimJDTests] Write Auxiliary File SimJDTests.SwiftFileList
+[SimJDTests] Write Auxiliary File SimJDTests.SwiftConstValuesFileList
+[SimJDTests] Write Auxiliary File SimJDTests.LinkFileList
+[SimJD] Processing empty-SimJD.plist
+Signing libXCTestBundleInject.dylib (in target 'SimJD' from project 'SimJD')
+Signing XCTest.framework (in target 'SimJD' from project 'SimJD')
+Signing XCTestSupport.framework (in target 'SimJD' from project 'SimJD')
+Signing XCUnit.framework (in target 'SimJD' from project 'SimJD')
+Signing XCTAutomationSupport.framework (in target 'SimJD' from project 'SimJD')
+Signing libXCTestSwiftSupport.dylib (in target 'SimJD' from project 'SimJD')
+Signing XCTestCore.framework (in target 'SimJD' from project 'SimJD')
+Signing Testing.framework (in target 'SimJD' from project 'SimJD')
+Signing XCUIAutomation.framework (in target 'SimJD' from project 'SimJD')
+[SimJD] Compiling InitialView.swift
+[SimJDTests] Compiling SimulatorGeolocationCoordinatingViewModelTests.swift
+[SimJDTests] Compiling SimulatorManagerTests.swift
+[SimJDTests] Compiling SimulatorGeolocationViewModelTests.swift
+[SimJDTests] Compiling FileSystemNavigatorTests.swift
+[SimJDTests] Compiling FolderManagerTests.swift
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:20:64: extra argument 'simulatorClient' in call
+        manager = .init(client: folderClient, simulatorClient: simulatorClient)
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:29:64: extra argument 'simulatorClient' in call
+        manager = .init(client: folderClient, simulatorClient: simulatorClient)
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:37:54: extra argument '_openSimulatorDocuments' in call
+        folderClient.mutate(_openSimulatorDocuments: { _ in
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:38:21: cannot infer contextual base in reference to member 'success'
+            return .success(())
+                   ~^~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:43:24: value of type 'FolderManager' has no member 'openDocumentsFolder'
+        switch manager.openDocumentsFolder(.bootedSimulator) {
+               ~~~~~~~ ^~~~~~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:43:45: cannot infer contextual base in reference to member 'bootedSimulator'
+        switch manager.openDocumentsFolder(.bootedSimulator) {
+                                           ~^~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:52:54: extra argument '_openSimulatorDocuments' in call
+        folderClient.mutate(_openSimulatorDocuments: { _ in
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:53:21: cannot infer contextual base in reference to member 'failure'
+            return .failure(Failure.message("Error"))
+                   ~^~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:58:24: value of type 'FolderManager' has no member 'openDocumentsFolder'
+        switch manager.openDocumentsFolder(.bootedSimulator) {
+               ~~~~~~~ ^~~~~~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:58:45: cannot infer contextual base in reference to member 'bootedSimulator'
+        switch manager.openDocumentsFolder(.bootedSimulator) {
+                                           ~^~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:119:52: extra argument '_openAppSandboxFolder' in call
+        folderClient.mutate(_openAppSandboxFolder: { _ in
+                           ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:120:21: cannot infer contextual base in reference to member 'success'
+            return .success(())
+                   ~^~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:125:24: value of type 'FolderManager' has no member 'openApplicationSupport'
+        switch manager.openApplicationSupport(.withContainerAndBundleID) {
+               ~~~~~~~ ^~~~~~~~~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:125:48: cannot infer contextual base in reference to member 'withContainerAndBundleID'
+        switch manager.openApplicationSupport(.withContainerAndBundleID) {
+                                              ~^~~~~~~~~~~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:134:52: extra argument '_openAppSandboxFolder' in call
+        folderClient.mutate(_openAppSandboxFolder: { _ in
+                           ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:135:21: cannot infer contextual base in reference to member 'failure'
+            return .failure(Failure.message("Errpr"))
+                   ~^~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:140:24: value of type 'FolderManager' has no member 'openApplicationSupport'
+        switch manager.openApplicationSupport(.withContainerAndBundleID) {
+               ~~~~~~~ ^~~~~~~~~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:140:48: cannot infer contextual base in reference to member 'withContainerAndBundleID'
+        switch manager.openApplicationSupport(.withContainerAndBundleID) {
+                                              ~^~~~~~~~~~~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:149:24: value of type 'FolderManager' has no member 'openApplicationSupport'
+        switch manager.openApplicationSupport(.withOnlyBundleID) {
+               ~~~~~~~ ^~~~~~~~~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:149:48: cannot infer contextual base in reference to member 'withOnlyBundleID'
+        switch manager.openApplicationSupport(.withOnlyBundleID) {
+                                              ~^~~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:217:24: value of type 'FolderManager' has no member 'uninstall'
+        switch manager.uninstall(.withContainerAndBundleID, simulatorID: "something") {
+               ~~~~~~~ ^~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:217:35: cannot infer contextual base in reference to member 'withContainerAndBundleID'
+        switch manager.uninstall(.withContainerAndBundleID, simulatorID: "something") {
+                                 ~^~~~~~~~~~~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:231:24: value of type 'FolderManager' has no member 'uninstall'
+        switch manager.uninstall(.withContainerAndBundleID, simulatorID: "something") {
+               ~~~~~~~ ^~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:231:35: cannot infer contextual base in reference to member 'withContainerAndBundleID'
+        switch manager.uninstall(.withContainerAndBundleID, simulatorID: "something") {
+                                 ~^~~~~~~~~~~~~~~~~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:245:24: value of type 'FolderManager' has no member 'uninstall'
+        switch manager.uninstall(.systemApp, simulatorID: "uid") {
+               ~~~~~~~ ^~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:245:35: cannot infer contextual base in reference to member 'systemApp'
+        switch manager.uninstall(.systemApp, simulatorID: "uid") {
+                                 ~^~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:259:24: value of type 'FolderManager' has no member 'uninstall'
+        switch manager.uninstall(.withOnlyContainer, simulatorID: "uid") {
+               ~~~~~~~ ^~~~~~~~~
+[x] /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:259:35: cannot infer contextual base in reference to member 'withOnlyContainer'
+        switch manager.uninstall(.withOnlyContainer, simulatorID: "uid") {
+                                 ~^~~~~~~~~~~~~~~~~
+[SimJDTests] Compiling FileSystemCoordinatingViewModelTests.swift
+[SimJDTests] Compiling RunningProcessesCoordinatingViewModelTests.swift
+[SimJDTests] Compiling FailureTests.swift
+[SimJDTests] Processing empty-SimJDTests.plist
+[SimJDTests] Touching SimJDTests.xctest
+Signing SimJD.debug.dylib (in target 'SimJD' from project 'SimJD')
+Signing __preview.dylib (in target 'SimJD' from project 'SimJD')
+Signing SimJD.app (in target 'SimJD' from project 'SimJD')
+
+-----------------------------
+-- xcodebuild.nvim summary --
+-----------------------------
+
+Errors:
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:20:64
+    extra argument 'simulatorClient' in call
+            manager = .init(client: folderClient, simulatorClient: simulatorClient)
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:29:64
+    extra argument 'simulatorClient' in call
+            manager = .init(client: folderClient, simulatorClient: simulatorClient)
+                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:37:54
+    extra argument '_openSimulatorDocuments' in call
+            folderClient.mutate(_openSimulatorDocuments: { _ in
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:38:21
+    cannot infer contextual base in reference to member 'success'
+                return .success(())
+                       ~^~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:43:24
+    value of type 'FolderManager' has no member 'openDocumentsFolder'
+            switch manager.openDocumentsFolder(.bootedSimulator) {
+                   ~~~~~~~ ^~~~~~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:43:45
+    cannot infer contextual base in reference to member 'bootedSimulator'
+            switch manager.openDocumentsFolder(.bootedSimulator) {
+                                               ~^~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:52:54
+    extra argument '_openSimulatorDocuments' in call
+            folderClient.mutate(_openSimulatorDocuments: { _ in
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:53:21
+    cannot infer contextual base in reference to member 'failure'
+                return .failure(Failure.message("Error"))
+                       ~^~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:58:24
+    value of type 'FolderManager' has no member 'openDocumentsFolder'
+            switch manager.openDocumentsFolder(.bootedSimulator) {
+                   ~~~~~~~ ^~~~~~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:58:45
+    cannot infer contextual base in reference to member 'bootedSimulator'
+            switch manager.openDocumentsFolder(.bootedSimulator) {
+                                               ~^~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:119:52
+    extra argument '_openAppSandboxFolder' in call
+            folderClient.mutate(_openAppSandboxFolder: { _ in
+                               ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:120:21
+    cannot infer contextual base in reference to member 'success'
+                return .success(())
+                       ~^~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:125:24
+    value of type 'FolderManager' has no member 'openApplicationSupport'
+            switch manager.openApplicationSupport(.withContainerAndBundleID) {
+                   ~~~~~~~ ^~~~~~~~~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:125:48
+    cannot infer contextual base in reference to member 'withContainerAndBundleID'
+            switch manager.openApplicationSupport(.withContainerAndBundleID) {
+                                                  ~^~~~~~~~~~~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:134:52
+    extra argument '_openAppSandboxFolder' in call
+            folderClient.mutate(_openAppSandboxFolder: { _ in
+                               ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:135:21
+    cannot infer contextual base in reference to member 'failure'
+                return .failure(Failure.message("Errpr"))
+                       ~^~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:140:24
+    value of type 'FolderManager' has no member 'openApplicationSupport'
+            switch manager.openApplicationSupport(.withContainerAndBundleID) {
+                   ~~~~~~~ ^~~~~~~~~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:140:48
+    cannot infer contextual base in reference to member 'withContainerAndBundleID'
+            switch manager.openApplicationSupport(.withContainerAndBundleID) {
+                                                  ~^~~~~~~~~~~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:149:24
+    value of type 'FolderManager' has no member 'openApplicationSupport'
+            switch manager.openApplicationSupport(.withOnlyBundleID) {
+                   ~~~~~~~ ^~~~~~~~~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:149:48
+    cannot infer contextual base in reference to member 'withOnlyBundleID'
+            switch manager.openApplicationSupport(.withOnlyBundleID) {
+                                                  ~^~~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:217:24
+    value of type 'FolderManager' has no member 'uninstall'
+            switch manager.uninstall(.withContainerAndBundleID, simulatorID: "something") {
+                   ~~~~~~~ ^~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:217:35
+    cannot infer contextual base in reference to member 'withContainerAndBundleID'
+            switch manager.uninstall(.withContainerAndBundleID, simulatorID: "something") {
+                                     ~^~~~~~~~~~~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:231:24
+    value of type 'FolderManager' has no member 'uninstall'
+            switch manager.uninstall(.withContainerAndBundleID, simulatorID: "something") {
+                   ~~~~~~~ ^~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:231:35
+    cannot infer contextual base in reference to member 'withContainerAndBundleID'
+            switch manager.uninstall(.withContainerAndBundleID, simulatorID: "something") {
+                                     ~^~~~~~~~~~~~~~~~~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:245:24
+    value of type 'FolderManager' has no member 'uninstall'
+            switch manager.uninstall(.systemApp, simulatorID: "uid") {
+                   ~~~~~~~ ^~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:245:35
+    cannot infer contextual base in reference to member 'systemApp'
+            switch manager.uninstall(.systemApp, simulatorID: "uid") {
+                                     ~^~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:259:24
+    value of type 'FolderManager' has no member 'uninstall'
+            switch manager.uninstall(.withOnlyContainer, simulatorID: "uid") {
+                   ~~~~~~~ ^~~~~~~~~
+  ✖ /Users/johndemirci/Documents/SwiftApps/Blacksmith/SimJD/SimJDTests/FolderManagerTests.swift:259:35
+    cannot infer contextual base in reference to member 'withOnlyContainer'
+            switch manager.uninstall(.withOnlyContainer, simulatorID: "uid") {
+                                     ~^~~~~~~~~~~~~~~~~
+
+  Build Failed
+

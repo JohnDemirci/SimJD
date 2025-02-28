@@ -16,6 +16,7 @@ struct SimJDApp: App {
         WindowGroup {
             InitialView()
         }
+        // TODO: - Move away from globally injecting the managers
         .environment(simulatorManager)
         .environment(folderManager)
 

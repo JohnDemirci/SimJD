@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct InitialView: View {
-	@AppStorage("sidebarVisibility") private var visibility: NavigationSplitViewVisibility = .doubleColumn
+    @AppStorage(Setting.sidebarVisibility.key) private var visibility: NavigationSplitViewVisibility = .doubleColumn
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -50,8 +50,8 @@ struct InitialView: View {
     }
 
     private func toggleSidebar() {
-		withAnimation {
-			visibility = (visibility == .doubleColumn) ? .detailOnly : .doubleColumn
-		}
+        withAnimation {
+            visibility = (visibility == .doubleColumn) ? .detailOnly : .doubleColumn
+        }
     }
 }
