@@ -7,28 +7,12 @@
 
 import SwiftUI
 
-struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
-    enum Action {
-        case installedApplicationDetailViewEvent(InstalledApplicationDetailView.Event)
-    }
-
-    enum Alert: Hashable, Identifiable {
-        case couldNotOpenUserDefaults
-        case couldNotRemoveApplication
-        case couldNotRemoveUserDefaults
-        case didSelectRemoveUserDefaults
-        case didSelectUnisntallApplication(Simulator)
-        case didUnisntallApplication(InstalledAppDetail)
-        case didRemoveUserDefaults
-
-        var id: AnyHashable { self }
-    }
-
+struct InstalledApplicationDetailCoordinatingView: View {
     @Environment(FolderManager.self) private var folderManager
     @Environment(SimulatorManager.self) private var simulatorManager
     @EnvironmentObject private var navigator: FileSystemNavigator
 
-    @State var alert: Alert?
+    @State private var viewModel = InstalledApplicationsDetailCoordinatorViewModel()
 
     private let installedApplication: InstalledAppDetail
 
@@ -40,10 +24,10 @@ struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
         InstalledApplicationDetailView(
             installedApplication: installedApplication,
             sendEvent: {
-                handleAction(.installedApplicationDetailViewEvent($0))
+                viewModel.handleAction(.installedApplicationDetailViewEvent($0))
             }
         )
-        .nsAlert(item: $alert) {
+        .nsAlert(item: $viewModel.alert) {
             return switch $0 {
             case .couldNotOpenUserDefaults:
                 JDAlert(title: "Unable to open User Defaults Folder")
@@ -64,7 +48,7 @@ struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
                                     try? await Task.sleep(for: .seconds(1))
 
                                     await MainActor.run {
-                                        self.alert = .didRemoveUserDefaults
+                                        viewModel.alert = .didRemoveUserDefaults
                                     }
                                 }
                             case .failure:
@@ -72,7 +56,7 @@ struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
                                     try? await Task.sleep(for: .seconds(1))
 
                                     await MainActor.run {
-                                        self.alert = .couldNotRemoveUserDefaults
+                                        self.viewModel.alert = .couldNotRemoveUserDefaults
                                     }
                                 }
                             }
@@ -97,7 +81,7 @@ struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
                                 try? await Task.sleep(for: .seconds(1))
 
                                 await MainActor.run {
-                                    self.alert = .didUnisntallApplication(installedApplication)
+                                    viewModel.alert = .didUnisntallApplication(installedApplication)
                                 }
                             }
 
@@ -106,7 +90,7 @@ struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
                                 try? await Task.sleep(for: .seconds(1))
 
                                 await MainActor.run {
-                                    self.alert = .couldNotRemoveApplication
+                                    viewModel.alert = .couldNotRemoveApplication
                                 }
                             }
                         }
@@ -117,24 +101,6 @@ struct InstalledApplicationDetailCoordinatingView: CoordinatingView {
                 JDAlert(title: "Successfully Uninstalled Application")
             case .didRemoveUserDefaults:
                 JDAlert(title: "User Defaults Removed")
-            }
-        }
-    }
-}
-
-extension InstalledApplicationDetailCoordinatingView {
-    func handleAction(_ action: Action) {
-        switch action {
-        case .installedApplicationDetailViewEvent(let event):
-            switch event {
-            case .couldNotOpenUserDefaults:
-                self.alert = .couldNotOpenUserDefaults
-
-            case .didSelectRemoveUserDefaults:
-                self.alert = .didSelectRemoveUserDefaults
-
-            case .didSelectUninstallApplication(let simulator):
-                self.alert = .didSelectUnisntallApplication(simulator)
             }
         }
     }

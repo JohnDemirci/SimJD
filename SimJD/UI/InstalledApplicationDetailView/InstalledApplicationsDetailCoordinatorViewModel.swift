@@ -27,4 +27,20 @@ final class InstalledApplicationsDetailCoordinatorViewModel {
     }
 
     var alert: Alert?
+    
+    func handleAction(_ action: Action) {
+        switch action {
+        case .installedApplicationDetailViewEvent(let event):
+            switch event {
+            case .couldNotOpenUserDefaults:
+                self.alert = .couldNotOpenUserDefaults
+
+            case .didSelectRemoveUserDefaults:
+                self.alert = .didSelectRemoveUserDefaults
+
+            case .didSelectUninstallApplication(let simulator):
+                self.alert = .didSelectUnisntallApplication(simulator)
+            }
+        }
+    }
 }

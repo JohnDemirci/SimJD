@@ -7,21 +7,8 @@
 
 import SwiftUI
 
-struct SimulatorDetailsViewCoordinator: CoordinatingView {
-    enum Action {
-        case simulatorDetailsViewEvent(SimulatorDetailsView.Event)
-    }
-
-    enum Alert: Hashable, Identifiable {
-        case didDeleteSimulator
-        case didFailToDeleteSimulator
-        case didFailToEraseContents
-        case didSelectDeleteSimulator(Simulator)
-        case didSelectEraseData(Simulator)
-
-        var id: AnyHashable { self }
-    }
-
+struct SimulatorDetailsViewCoordinator: View {
+    @State private var viewModel = SimulatorDetailsCoordinatingViewModel()
     @Environment(FolderManager.self) private var folderManager
     @Environment(SimulatorManager.self) private var simManager
 
@@ -29,9 +16,9 @@ struct SimulatorDetailsViewCoordinator: CoordinatingView {
 
     var body: some View {
         SimulatorDetailsView { event in
-            handleAction(.simulatorDetailsViewEvent(event))
+            viewModel.handleAction(.simulatorDetailsViewEvent(event))
         }
-        .nsAlert(item: $alert) {
+        .nsAlert(item: $viewModel.alert) {
             switch $0 {
             case .didDeleteSimulator:
                 JDAlert(title: "Simulator deleted")
@@ -43,18 +30,6 @@ struct SimulatorDetailsViewCoordinator: CoordinatingView {
                 self.didSelectDeleteSimulatorAlert(simulator)
             case .didSelectEraseData(let simulator):
                 self.didSelectEraseDataAlert(simulator: simulator)
-            }
-        }
-    }
-
-    func handleAction(_ action: Action) {
-        switch action {
-        case .simulatorDetailsViewEvent(let event):
-            switch event {
-            case .didSelectDeleteSimulator(let simulator):
-                self.alert = .didSelectDeleteSimulator(simulator)
-            case .didSelectEraseContentAndSettings(let simulator):
-                self.alert = .didSelectEraseData(simulator)
             }
         }
     }
@@ -74,7 +49,7 @@ private extension SimulatorDetailsViewCoordinator {
                         try? await Task.sleep(for: .seconds(1))
 
                         await MainActor.run {
-                            self.alert = .didDeleteSimulator
+                            viewModel.alert = .didDeleteSimulator
                         }
                     }
                 case .failure:
@@ -82,7 +57,7 @@ private extension SimulatorDetailsViewCoordinator {
                         try? await Task.sleep(for: .seconds(1))
 
                         await MainActor.run {
-                            self.alert = .didFailToDeleteSimulator
+                            viewModel.alert = .didFailToDeleteSimulator
                         }
                     }
                 }
@@ -106,7 +81,7 @@ private extension SimulatorDetailsViewCoordinator {
                             try? await Task.sleep(for: .seconds(1))
 
                             await MainActor.run {
-                                self.alert = .didFailToEraseContents
+                                viewModel.alert = .didFailToEraseContents
                             }
                         }
                     }
