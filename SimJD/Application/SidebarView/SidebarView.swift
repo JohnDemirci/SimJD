@@ -12,7 +12,17 @@ struct SidebarView: View {
 	@Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
+        @Bindable var simManager = simulatorManager
         List {
+            Button(
+                action: {
+                    simulatorManager.fetchRuntimes()
+                    simulatorManager.fetchAvailableDeviceTypes()
+                },
+                label: {
+                    Image(systemName: "plus")
+                }
+            )
             ForEach(simulatorManager.simulators.keys) { key in
                 Section(key.name) {
                     ForEach(simulatorManager.simulators[key] ?? []) { simulator in
@@ -26,5 +36,11 @@ struct SidebarView: View {
         }
         .scrollContentBackground(.hidden)
         .background(colorScheme == .dark ? Color.black : Color.white)
+        .sheet(isPresented: Binding($simManager.availableDeviceTypes)) {
+            CreateSimulatorView(
+                deviceTypes: simManager.availableDeviceTypes!,
+                runtimes: simManager.availableRuntimes!
+            )
+        }
     }
 }

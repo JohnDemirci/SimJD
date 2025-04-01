@@ -28,13 +28,14 @@ struct Shell: Sendable {
         }
 
         return switch command {
-        case .updateLocation:
-            basicExecute(command)
-
         case .shotdown,
              .uninstallApp,
              .simulatorLocale,
              .activeProcesses,
+             .createSimulator,
+             .getDeviceTypes,
+             .getRuntimes,
+             .updateLocation,
              .installedApps:                basicExecute(command)
 
         case .eraseContents(let uuid):      eraseContent(uuid: uuid)
@@ -184,6 +185,9 @@ extension Shell {
         case openSimulator(String)
         case activeProcesses(String)
         case eraseContents(String) // do not exclusively call this when executing command use the helper function
+        case getDeviceTypes
+        case getRuntimes
+        case createSimulator(String, String, String) // name, deviceType, runtime
         case installedApps(String)
         case deleteSimulator(String)
         case uninstallApp(String, String)
@@ -195,7 +199,7 @@ extension Shell {
             case .activeProcesses:
                 .bash
 
-            case .shotdown, .installedApps, .eraseContents, .uninstallApp, .deleteSimulator, .fetchSimulators, .updateLocation, .simulatorLocale:
+            case .shotdown, .installedApps, .eraseContents, .uninstallApp, .deleteSimulator, .fetchSimulators, .updateLocation, .simulatorLocale, .getDeviceTypes, .getRuntimes, .createSimulator:
                 .xcrun
 
             case .openSimulator:
@@ -211,6 +215,9 @@ extension Shell {
             case .eraseContents(let id):
                 ["simctl", "erase", id]
 
+            case .createSimulator(let name, let deviceType, let runtime):
+                ["simctl", "create", name, deviceType, runtime]
+
             case .deleteSimulator(let id):
                 ["simctl", "delete", id]
 
@@ -222,6 +229,12 @@ extension Shell {
 
             case .openSimulator:
                 []
+
+            case .getDeviceTypes:
+                ["simctl", "list", "devicetypes"]
+
+            case .getRuntimes:
+                ["simctl", "list", "runtimes"]
 
             case .uninstallApp(let simulatorUUID, let bundleID):
                 ["simctl", "uninstall", simulatorUUID, bundleID]

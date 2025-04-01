@@ -32,6 +32,8 @@ final class SimulatorManager {
     var processes: [Simulator.ID: [ProcessInfo]] = [:]
     var installedApplications: [Simulator.ID: [InstalledAppDetail]] = [:]
     var locales: [Simulator.ID: String] = [:]
+    var availableDeviceTypes: [String]? = nil
+    var availableRuntimes: [String]? = nil
 
     init(
         simulatorClient: SimulatorClient = .live
@@ -46,6 +48,48 @@ extension SimulatorManager {
     func didSelectSimulator(_ simulator: Simulator) {
         guard let _ = getSimulatorIfExists(simulator) else { return }
         self.selectedSimulator = simulator
+    }
+
+    @discardableResult
+    func createSimulator(
+        name: String,
+        deviceIdentifier: String,
+        runtimeIdentifier: String
+    ) -> Result<Void, Failure> {
+        switch simulatorClient.createSimulator(
+            name: name,
+            deviceIdentifier: deviceIdentifier,
+            runtimeIdentifier: runtimeIdentifier
+        ) {
+        case .success:
+            let _ = fetchSimulators()
+            return .success(())
+        case .failure(let failure):
+            return .failure(failure)
+        }
+    }
+
+    @discardableResult
+    func fetchAvailableDeviceTypes() -> Result<[String], Failure> {
+        switch simulatorClient.getDeviceList() {
+        case .success(let devices):
+            self.availableDeviceTypes = devices
+            return .success(devices)
+        case .failure(let failure):
+            return .failure(failure)
+        }
+    }
+
+    @discardableResult
+    func fetchRuntimes() -> Result<[String], Failure> {
+        switch simulatorClient.getRuntimes() {
+        case .success(let runtimes):
+            self.availableRuntimes = runtimes
+            return .success(runtimes)
+
+        case .failure(let failure):
+            return .failure(failure)
+        }
     }
 
     @discardableResult
