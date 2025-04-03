@@ -20,8 +20,9 @@ struct InstalledApplicationsCoordinatingView: CoordinatingView {
         var id: AnyHashable { self }
     }
 
-    @Environment(FolderManager.self) private var folderManager: FolderManager
-    @Environment(SimulatorManager.self) private var simulatorManager: SimulatorManager
+    private let folderManager: FolderManager = .live
+    private let simulatorManager: SimulatorManager = .live
+    
     @EnvironmentObject private var navigator: FileSystemNavigator
 
     @State var alert: Alert?

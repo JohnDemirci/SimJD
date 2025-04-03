@@ -7,9 +7,14 @@
 
 import SwiftUI
 
-@Observable
-final class FolderManager {
+final class FolderManager: Sendable {
     private let client: FolderClient
+
+#if DEBUG
+    static let debug = FolderManager(.testing)
+#endif
+    static let live = FolderManager(.live)
+
 
     init(_ client: FolderClient = .live) {
         self.client = client

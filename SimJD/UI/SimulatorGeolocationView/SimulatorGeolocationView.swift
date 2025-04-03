@@ -58,7 +58,7 @@ struct SimulatorGeolocationView: View {
         case didUpdateLocation
     }
 
-    @Environment(SimulatorManager.self) private var simManager
+    private let simManager: SimulatorManager = .live
     @State private var viewModel: SimulatorGeolocationViewModel
 
     init(sendEvent: @escaping (Event) -> Void) {

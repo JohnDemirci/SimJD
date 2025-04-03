@@ -9,8 +9,9 @@ import SwiftUI
 
 struct SimulatorDetailsViewCoordinator: View {
     @State private var viewModel = SimulatorDetailsCoordinatingViewModel()
-    @Environment(FolderManager.self) private var folderManager
-    @Environment(SimulatorManager.self) private var simManager
+    
+    private let folderManager: FolderManager = .live
+    private let simManager: SimulatorManager = .live
 
     @State var alert: Alert?
 

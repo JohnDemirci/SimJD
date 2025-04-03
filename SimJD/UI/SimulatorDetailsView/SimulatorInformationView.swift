@@ -9,7 +9,7 @@ import SwiftUI
 import AppKit
 
 struct SimulatorInformationView: View {
-    @Environment(SimulatorManager.self) private var simManager
+    private let simManager: SimulatorManager = .live
 
     let columnWidth: CGFloat
     let simulator: Simulator

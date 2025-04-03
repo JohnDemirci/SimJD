@@ -43,7 +43,7 @@ final class SimulatorGeolocationCoordinatingViewModel {
 }
 
 struct SimulatorGeolocationCoordinatingView: CoordinatingView {
-    @Environment(SimulatorManager.self) private var simManager
+    private let simManager: SimulatorManager = .live
     @State private var viewModel = SimulatorGeolocationCoordinatingViewModel()
 
     var body: some View {

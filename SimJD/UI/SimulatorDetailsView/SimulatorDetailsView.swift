@@ -34,8 +34,9 @@ struct SimulatorDetailsView: View {
     }
 
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(FolderManager.self) private var folderManager
-    @Environment(SimulatorManager.self) private var simManager
+
+    private let folderManager: FolderManager = .live
+    private let simManager: SimulatorManager = .live
 
     @State private var selectedTab: Tab = .activeProcesses
     @StateObject private var navigator = FileSystemNavigator()

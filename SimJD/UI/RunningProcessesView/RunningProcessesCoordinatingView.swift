@@ -35,7 +35,7 @@ final class RunningProcessesCoordinatingViewModel {
 }
 
 struct RunningProcessesCoordinatingView: CoordinatingView {
-    @Environment(SimulatorManager.self) private var simManager
+    private let simManager: SimulatorManager = .live
     @State private var viewModel = RunningProcessesCoordinatingViewModel()
 
     var body: some View {

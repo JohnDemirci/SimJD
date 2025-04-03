@@ -35,13 +35,18 @@ final class SimulatorManager {
     var availableDeviceTypes: [String]? = nil
     var availableRuntimes: [String]? = nil
 
-    init(
+    private init(
         simulatorClient: SimulatorClient = .live
     ) {
         self.simulatorClient = simulatorClient
         self.registerObserver()
         self.fetchSimulators()
     }
+
+#if DEBUG
+    static let debug = SimulatorManager(simulatorClient: .testing)
+#endif
+    static let live = SimulatorManager()
 }
 
 extension SimulatorManager {

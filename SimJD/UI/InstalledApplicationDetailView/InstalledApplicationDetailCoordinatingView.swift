@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct InstalledApplicationDetailCoordinatingView: View {
-    @Environment(FolderManager.self) private var folderManager
-    @Environment(SimulatorManager.self) private var simulatorManager
+    private let folderManager: FolderManager = .live
+    private let simulatorManager: SimulatorManager = .live
+
     @EnvironmentObject private var navigator: FileSystemNavigator
 
     @State private var viewModel = InstalledApplicationsDetailCoordinatorViewModel()

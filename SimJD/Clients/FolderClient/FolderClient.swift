@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct FolderClient {
+struct FolderClient: @unchecked Sendable {
     fileprivate var _openUserDefaults: (String, String) -> Result<Void, Failure>
     fileprivate var _removeUserDefaults: (String, String) -> Result<Void, Failure>
 

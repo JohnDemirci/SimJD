@@ -12,7 +12,7 @@ struct RunningProcessesView: View {
         case didFailToFetchProcesses
     }
 
-    @Environment(SimulatorManager.self) private var simManager: SimulatorManager
+    private let simManager: SimulatorManager = .live
 
     private let sendEvent: (Event) -> Void
 

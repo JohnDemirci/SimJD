@@ -15,8 +15,8 @@ struct InstalledApplicationsView: View {
         case simulatorNotBooted
     }
 
-    @Environment(SimulatorManager.self) private var simulatorManager
-    @Environment(FolderManager.self) private var folderManager
+    private let folderManager: FolderManager = .live
+    private let simulatorManager: SimulatorManager = .live
 
     @State private var selectedApp: InstalledAppDetail.ID?
 
