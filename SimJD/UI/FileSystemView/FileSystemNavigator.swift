@@ -8,6 +8,7 @@
 import SwiftUI
 
 @MainActor
+@Observable
 final class FileSystemNavigator: ObservableObject {
     enum ViewDestination: Hashable {
         case fileSystem(url: URL)
@@ -17,28 +18,23 @@ final class FileSystemNavigator: ObservableObject {
     
     private(set) var stack: [ViewDestination]
 
-    init(initialDestination: ViewDestination) {
-        self.stack = [initialDestination]
-    }
-
-    init() {
+    private init() {
         self.stack = []
     }
+
+    static let shared = FileSystemNavigator()
 
     var last: ViewDestination? { stack.last }
 
     func add(_ destination: ViewDestination) {
         stack.append(destination)
-        self.objectWillChange.send()
     }
 
     func pop() {
         stack.removeLast()
-        self.objectWillChange.send()
     }
 
     func resetTo(_ destination: ViewDestination) {
         stack = [destination]
-        self.objectWillChange.send()
     }
 }

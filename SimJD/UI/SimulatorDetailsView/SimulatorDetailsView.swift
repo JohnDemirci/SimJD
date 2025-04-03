@@ -39,7 +39,7 @@ struct SimulatorDetailsView: View {
     private let simManager: SimulatorManager = .live
 
     @State private var selectedTab: Tab = .activeProcesses
-    @StateObject private var navigator = FileSystemNavigator()
+    private let navigator = FileSystemNavigator.shared
 
     private let columnWidth: CGFloat = 400
     private let sendEvent: (Event) -> Void

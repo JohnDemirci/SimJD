@@ -15,7 +15,7 @@ struct FileSystemView: View {
     }
 
     @Environment(\.colorScheme) private var colorScheme
-    @EnvironmentObject private var navigator: FileSystemNavigator
+    private let navigator = FileSystemNavigator.shared
 
     @State private var items: [FileItem] = []
     @State private var selection: FileItem.ID?

@@ -11,7 +11,7 @@ struct InstalledApplicationDetailCoordinatingView: View {
     private let folderManager: FolderManager = .live
     private let simulatorManager: SimulatorManager = .live
 
-    @EnvironmentObject private var navigator: FileSystemNavigator
+    private let navigator = FileSystemNavigator.shared
 
     @State private var viewModel = InstalledApplicationsDetailCoordinatorViewModel()
 

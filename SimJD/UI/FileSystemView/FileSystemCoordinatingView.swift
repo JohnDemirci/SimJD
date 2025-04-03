@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct FileSystemCoordinatingView: CoordinatingView {
-    @EnvironmentObject private var navigator: FileSystemNavigator
+    private let navigator = FileSystemNavigator.shared
     @State private var viewModel = FileSystemCoordinatingViewModel()
 
     var body: some View {
