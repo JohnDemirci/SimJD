@@ -44,9 +44,11 @@ final class SimulatorManager {
     }
 
 #if DEBUG
-    static let debug = SimulatorManager(simulatorClient: .testing)
+    init(client: SimulatorClient = .testing) {
+        self.simulatorClient = client
+    }
 #endif
-    static let live = SimulatorManager()
+    static let live = SimulatorManager(simulatorClient: .live)
 }
 
 extension SimulatorManager {
@@ -206,6 +208,7 @@ extension SimulatorManager {
             if let index {
                 simulators[os]?[index].state = "Shutdown"
                 selectedSimulator = simulators[os]?[index]
+                processes[simulator.id] = nil
             }
 
             return .success(())
