@@ -30,7 +30,6 @@ struct FolderClient: @unchecked Sendable {
 }
 
 extension FolderClient {
-    nonisolated(unsafe)
     static let live: FolderClient = .init(
         _openUserDefaults: {
             handleOpenUserDefaults(container: $0, bundleID: $1)
