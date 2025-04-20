@@ -27,6 +27,9 @@ final class RunningProcessesViewModelTests: XCTestCase {
                         .init(pid: "1", status: "1", label: "1")
                     ])
                 },
+                _installedApps: { _ in
+                    return  .success([])
+                },
                 _fetchLocale: { _ in
                     return .success("en-US")
                 }

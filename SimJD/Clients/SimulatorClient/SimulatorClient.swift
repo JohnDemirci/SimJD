@@ -8,7 +8,7 @@
 import Foundation
 import OrderedCollections
 
-struct SimulatorClient {
+struct SimulatorClient: @unchecked Sendable {
     fileprivate var _shutdownSimulator: (String) -> Result<Void, Failure>
     fileprivate var _openSimulator: (String) -> Result<Void, Failure>
     fileprivate var _createSimulator: (String, String, String) -> Result<Void, Failure>
@@ -107,7 +107,6 @@ struct SimulatorClient {
 }
 
 extension SimulatorClient {
-    nonisolated(unsafe)
     static let live: SimulatorClient = .init(
         _shutdownSimulator: {
             handleShutdownSimulator(id: $0)

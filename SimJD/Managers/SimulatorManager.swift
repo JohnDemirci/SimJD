@@ -14,17 +14,18 @@ import SwiftUI
 @Observable
 final class SimulatorManager {
     @ObservationIgnored
+    nonisolated(unsafe)
     private var cancellables: [AnyCancellable] = []
 
-    let simulatorClient: SimulatorClient
+    nonisolated
+    private let simulatorClient: SimulatorClient
+
     var simulators: OrderedDictionary<OS.Name, [Simulator]> = [:]
 
     private(set) var selectedSimulator: Simulator? = nil {
         didSet {
             if let selectedSimulator {
-                if selectedSimulator.state == "Booted" {
-                    self.fetchLocale(simulator: selectedSimulator)
-                }
+                didChangeSelectedSimulator()
             }
         }
     }
@@ -226,7 +227,6 @@ extension SimulatorManager {
 
         switch simulatorClient.activeProcesses(simulator: simulator.id) {
         case .success(let processInfo):
-            self.processes[simulator.id] = processInfo
             return .success(processInfo)
 
         case .failure(let error):
@@ -244,7 +244,6 @@ extension SimulatorManager {
 
         switch simulatorClient.installedApps(simulator: simulator.id) {
         case .success(let installedApps):
-            self.installedApplications[simulator.id] = installedApps
             return .success(installedApps)
         case .failure(let error):
             return .failure(error)
@@ -260,9 +259,7 @@ extension SimulatorManager {
         let result = simulatorClient.eraseContents(simulator: simulator.id)
 
         if case .success = result {
-            fetchInstalledApplications(for: simulator)
-            fetchRunningProcesses(for: simulator)
-            fetchLocale(simulator: simulator)
+            didChangeSelectedSimulator()
         }
 
         return result
@@ -285,18 +282,12 @@ extension SimulatorManager {
         )
     }
 
-    private func fetchLocale(simulator: Simulator)  {
-        guard let _ = getSimulatorIfExists(simulator) else { return }
-
-        switch simulatorClient.fetchLocale(simulator.id) {
-        case .success(let locale):
-            if !locale.isEmpty {
-                self.locales[simulator.id] = locale
-            }
-
-        case .failure:
-            break
+    private func fetchLocale(simulator: Simulator) -> Result<String, Failure>  {
+        guard let _ = getSimulatorIfExists(simulator) else {
+            return .failure(Failure.message("Simulator does not exists"))
         }
+
+        return simulatorClient.fetchLocale(simulator.id)
     }
 
     func uninstall(
@@ -328,5 +319,19 @@ extension SimulatorManager {
                 _ = self.fetchSimulators()
             }
             .store(in: &cancellables)
+    }
+
+    func didChangeSelectedSimulator() {
+        guard let selectedSimulator else { return }
+
+        if selectedSimulator.state == "Booted" {
+            let fetchInstalledApplicationsResult = fetchInstalledApplications(for: selectedSimulator)
+            let fetchLocaleResult = fetchLocale(simulator: selectedSimulator)
+            let fetchProcessesResult = fetchRunningProcesses(for: selectedSimulator)
+
+            installedApplications.handleResult(fetchInstalledApplicationsResult, for: selectedSimulator.id)
+            processes.handleResult(fetchProcessesResult, for: selectedSimulator.id)
+            locales.handleResult(fetchLocaleResult, for: selectedSimulator.id)
+        }
     }
 }

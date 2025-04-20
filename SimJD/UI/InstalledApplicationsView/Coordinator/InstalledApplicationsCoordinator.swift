@@ -43,8 +43,16 @@ final class InstalledApplicationsCoordinator {
     var alert: Alert?
     var destination: [Destination] = []
 
-    private let folderManager: FolderManager = .live
-    private let simulatorManager: SimulatorManager = .live
+    private let folderManager: FolderManager
+    private let simulatorManager: SimulatorManager
+
+    init(
+        folderManager: FolderManager = .live,
+        simulatorManager: SimulatorManager = .live
+    ) {
+        self.folderManager = folderManager
+        self.simulatorManager = simulatorManager
+    }
 
     func handleAction(_ action: Action) {
         switch action {

@@ -98,27 +98,25 @@ private extension SimulatorDetailsView {
     }
 
     var rightColumnView: some View {
-        VStack {
-            PanelView(
-                title: selectedTab.title,
-                columnWidth: .infinity,
-                content: {
-                    Group {
-                        switch selectedTab {
-                        case .activeProcesses:
-                            RunningProcessesCoordinatingView()
-                        case .documents:
-                            DocumentFolderCoordinatingView()
-                        case .installedApplications:
-                            InstalledApplicationsCoordinatingView()
-                        case .geolocation:
-                            SimulatorGeolocationCoordinatingView()
-                        }
+        PanelView(
+            title: selectedTab.title,
+            columnWidth: .infinity,
+            content: {
+                VStack {
+                    switch selectedTab {
+                    case .activeProcesses:
+                        RunningProcessesCoordinatingView()
+                    case .documents:
+                        DocumentFolderCoordinatingView()
+                    case .installedApplications:
+                        InstalledApplicationsCoordinatingView()
+                    case .geolocation:
+                        SimulatorGeolocationCoordinatingView()
                     }
-                    .id(simManager.selectedSimulator)
                 }
-            )
-        }
+                .id(simManager.selectedSimulator)
+            }
+        )
         .padding(.vertical, 10)
     }
 }

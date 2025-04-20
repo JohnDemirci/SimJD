@@ -10,7 +10,7 @@ import SwiftUI
 @MainActor
 @Observable
 final class InstalledApplicationDetailViewModel {
-    enum Event {
+    enum Event: Equatable {
         case couldNotOpenUserDefaults(InstalledAppDetail)
         case didSelectApplicationSandboxData(InstalledAppDetail)
         case didSelectOpenUserDefaults(InstalledAppDetail)

@@ -10,7 +10,7 @@ import SwiftUI
 @MainActor
 @Observable
 final class InstalledApplicationsViewModel {
-    enum Event {
+    enum Event: Equatable {
         case didFailToFetchInstalledApps(Failure)
         case didFailToRetrieveApplication
         case didSelectApp(InstalledAppDetail)
@@ -19,43 +19,36 @@ final class InstalledApplicationsViewModel {
 
     private let simulatorManager: SimulatorManager
     private let sendEvent: (Event) -> Void
-
-    var selectedApp: InstalledAppDetail.ID?
+    private let copyBoard: CopyBoardProtocol
     private(set) var installedApplications: [InstalledAppDetail]?
 
+    var selectedApp: InstalledAppDetail.ID?
+
     init(
+        copyBoard: CopyBoardProtocol = CopyBoard(),
         simulatorManager: SimulatorManager = .live,
         sendEvent: @escaping (Event) -> Void
     ) {
         self.simulatorManager = simulatorManager
         self.sendEvent = sendEvent
+        self.copyBoard = copyBoard
     }
 }
 
-// computed properties
 extension InstalledApplicationsViewModel {
     var selectedSimulator: Simulator? {
         simulatorManager.selectedSimulator
     }
 }
 
-// actions
 extension InstalledApplicationsViewModel {
     func fetchInstalledApplications() {
-        guard let selectedSimulator else { return }
-
-        switch simulatorManager.fetchInstalledApplications(for: selectedSimulator) {
-        case .success:
-            if selectedSimulator.state != "Booted" {
-                sendEvent(.simulatorNotBooted)
-            }
-            
-            installedApplications = simulatorManager.installedApplications[selectedSimulator.id]
-
-        case .failure(let error):
-            sendEvent(.didFailToFetchInstalledApps(error))
-            installedApplications = nil
+        guard let selectedSimulator else {
+            self.installedApplications = nil
+            return
         }
+
+        self.installedApplications = simulatorManager.installedApplications[selectedSimulator.id]
     }
 
     func didSelectCopyBundleID(_ apps: Set<InstalledAppDetail.ID>) {
@@ -116,14 +109,10 @@ extension InstalledApplicationsViewModel {
     }
 }
 
-// private
 private extension InstalledApplicationsViewModel {
-    // TODO: - use protocols to make clipboard testable
-
     func copyToClipboard(_ text: String) {
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(text, forType: .string)
+        copyBoard.clear()
+        copyBoard.copy(text)
     }
 
     func getInstalledAppFromSelections(
