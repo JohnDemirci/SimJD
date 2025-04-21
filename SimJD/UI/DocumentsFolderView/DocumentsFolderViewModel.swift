@@ -10,7 +10,7 @@ import SwiftUI
 @MainActor
 @Observable
 final class DocumentsFolderViewModel {
-    enum Event {
+	enum Event: Equatable {
         case didFailToFetchFiles
         case didFailToFindSelectedFile
         case didFailToOpenFile
@@ -23,12 +23,18 @@ final class DocumentsFolderViewModel {
 
     private let sendEvent: (Event) -> Void
     private let folderURL: URL
+	private let copyBoard: CopyBoardProtocol
+	private let folderManager: FolderManager
 
     init(
         folderURL: URL,
+		copyBoard: CopyBoardProtocol = CopyBoard(),
+		folderManager: FolderManager = .live,
         sendEvent: @escaping (Event) -> Void
     ) {
         self.folderURL = folderURL
+		self.copyBoard = copyBoard
+		self.folderManager = folderManager
         self.sendEvent = sendEvent
     }
 
@@ -64,40 +70,17 @@ final class DocumentsFolderViewModel {
             fileItem.id == selectedItem
         }) else { return }
 
-        let pasteboard = NSPasteboard.general
-        pasteboard.clearContents()
-        pasteboard.setString(item.url.absoluteString, forType: .string)
+
+		copyBoard.clear()
+		copyBoard.copy(item.url.absoluteString)
     }
 
-    func fetchFileItems() {
-        let fileManager = FileManager.default
-        do {
-            let fileURLs = try fileManager.contentsOfDirectory(
-                at: folderURL,
-                includingPropertiesForKeys: [.isDirectoryKey],
-                options: [.skipsHiddenFiles]
-            )
-            let items = fileURLs.compactMap { url -> FileItem? in
-                guard let resourceValues = try? url.resourceValues(forKeys: [
-                    .isDirectoryKey,
-                    .creationDateKey,
-                    .contentModificationDateKey,
-                    .totalFileSizeKey
-                ]
-                ) else { return nil }
-
-                return FileItem(
-                    name: url.lastPathComponent,
-                    url: url,
-                    isDirectory: resourceValues.isDirectory == true,
-                    creationDate: resourceValues.creationDate,
-                    modificationDate: resourceValues.contentModificationDate,
-                    size: resourceValues.totalFileSize
-                )
-            }
-            self.items = items
-        } catch {
-            sendEvent(.didFailToFetchFiles)
-        }
-    }
+	func fetchFileItems() {
+		switch folderManager.fetchFileItems(at: folderURL) {
+		case .success(let items):
+			self.items = items
+		case .failure(let error):
+			self.sendEvent(.didFailToFetchFiles)
+		}
+	}
 }

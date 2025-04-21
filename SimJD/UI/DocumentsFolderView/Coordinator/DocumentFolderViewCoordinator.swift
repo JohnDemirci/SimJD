@@ -26,6 +26,11 @@ final class DocumentFolderCoordinator {
 
     var alert: Alert?
     var destination: [Destination] = []
+	private let folderManager: FolderManager
+
+	init(folderManager: FolderManager = .live) {
+		self.folderManager = folderManager
+	}
 
     func handleAction(_ action: Action) {
         switch action {
@@ -45,14 +50,15 @@ final class DocumentFolderCoordinator {
                 case true:
                     self.destination.append(.folder(item.url))
                 case false:
-                    guard !NSWorkspace.shared.open(item.url) else { return }
-                    alert = .didFailToOpenFile
+					if case .failure = folderManager.openFile(item.url) {
+						alert = .didFailToOpenFile
+					}
                 }
 
             case .didSelectOpenInFinder(let item):
-                if !NSWorkspace.shared.open(item.url) {
-                    alert = .didFailToOpenFile
-                }
+				if case .failure = folderManager.openFile(item.url) {
+					alert = .didFailToOpenFile
+				}
             }
         }
     }

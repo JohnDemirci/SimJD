@@ -19,6 +19,7 @@ struct DocumentFolderCoordinatingView: View {
                     DocumentsFolderView(
                         viewModel: .init(
                             folderURL: URL(fileURLWithPath: selectedSimulator.dataPath ?? ""),
+							copyBoard: CopyBoard(),
                             sendEvent: {
                                 coordinator.handleAction(.documentFolderViewEvent($0))
                             }
@@ -35,6 +36,7 @@ struct DocumentFolderCoordinatingView: View {
                     DocumentsFolderView(
                         viewModel: .init(
                             folderURL: url,
+							copyBoard: CopyBoard(),
                             sendEvent: {
                                 coordinator.handleAction(.documentFolderViewEvent($0))
                             }

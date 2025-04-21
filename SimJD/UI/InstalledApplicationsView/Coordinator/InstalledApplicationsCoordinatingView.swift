@@ -25,6 +25,7 @@ struct InstalledApplicationsCoordinatingView: View {
                     DocumentsFolderView(
                         viewModel: .init(
                             folderURL: url,
+							copyBoard: CopyBoard(),
                             sendEvent: { event in
                                 coordinator.handleAction(.documentFolderViewModelEvent(event))
                             }

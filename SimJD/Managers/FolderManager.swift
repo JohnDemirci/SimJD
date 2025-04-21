@@ -55,4 +55,12 @@ final class FolderManager: Sendable {
             return .failure(.message(error.localizedDescription))
         }
     }
+
+	func openFile(_ url: URL) -> Result<Void, Failure> {
+		client.openFile(url)
+	}
+
+	func fetchFileItems(at url: URL) -> Result<[FileItem], Failure> {
+		client.fetchFileItems(at: url)
+	}
 }

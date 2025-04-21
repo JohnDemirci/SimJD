@@ -178,10 +178,131 @@ extension InstalledApplicationsCoordinatorTests {
     }
 
     func testDidSelectUninstallApplicationWhenSelectedSimulatorNil() {
-        coordinator.handleAction(.installedApplicationDetailViewEvent(.didSelectUninstallApplication(.apple)))
+		let client = SimulatorClient.testing
+		let manager = SimulatorManager(client: client)
+
+		coordinator = .init(simulatorManager: manager)
+		coordinator.handleAction(
+			.installedApplicationDetailViewEvent(
+				.didSelectUninstallApplication(.apple)
+			)
+		)
 
         XCTAssertEqual(coordinator.alert, .noSelectedSimulator)
     }
+
+	func testDidSelectApplicationSandboxData() {
+		coordinator.handleAction(.installedApplicationDetailViewEvent(.didSelectApplicationSandboxData(.apple)))
+
+		guard let path = InstalledAppDetail.apple.dataContainer else {
+			XCTFail("unexpexted")
+			return
+		}
+
+		let expandedPath = NSString(string: path).expandingTildeInPath
+		let fileURL = URL(fileURLWithPath: expandedPath)
+
+		XCTAssertEqual(coordinator.destination, [.folder(fileURL)])
+	}
+
+	func testDidSelectApplicationSandboxDataWhenContainerPathIsNik() {
+		coordinator.handleAction(.installedApplicationDetailViewEvent(.didSelectApplicationSandboxData(.containerless)))
+
+		guard let _ = InstalledAppDetail.containerless.dataContainer else {
+			XCTAssertTrue(coordinator.destination.isEmpty)
+			return
+		}
+
+		XCTFail("unexpected")
+	}
+
+	func testDidSelectOpenUserDefaults() {
+		let folderClient = FolderClient
+			.testing
+			.mutate(_openUserDefaults: { _, _ in
+				return .success(())
+			})
+
+		let manager = FolderManager(folderClient)
+
+		coordinator = .init(folderManager: manager)
+
+		coordinator.handleAction(.installedApplicationDetailViewEvent(.didSelectOpenUserDefaults(.apple)))
+
+		XCTAssertNil(coordinator.alert)
+	}
+
+	func testDidSelectOpenUserDefaultsFailure() {
+		let folderClient = FolderClient
+			.testing
+			.mutate(_openUserDefaults: { _, _ in
+				return .failure(Failure.message("Error"))
+			})
+
+		let manager = FolderManager(folderClient)
+
+		coordinator = .init(folderManager: manager)
+
+		coordinator.handleAction(.installedApplicationDetailViewEvent(.didSelectOpenUserDefaults(.apple)))
+
+		XCTAssertEqual(coordinator.alert, .couldNotOpenUserDefaults)
+	}
+
+	func testDidFailToFetchFiles() {
+		coordinator.handleAction(.documentFolderViewModelEvent(.didFailToFetchFiles))
+
+		XCTAssertEqual(coordinator.alert, .didFailToFetchFiles)
+	}
+
+	func testCouldNotFindSelectedFile() {
+		coordinator.handleAction(.documentFolderViewModelEvent(.didFailToFindSelectedFile))
+
+		XCTAssertEqual(coordinator.alert, .didFailToFindSelectedFile)
+	}
+
+	func testDidFailToOpenFile() {
+		coordinator.handleAction(.documentFolderViewModelEvent(.didFailToOpenFile))
+
+		XCTAssertEqual(coordinator.alert, .didFailToOpenFile)
+	}
+
+	func testHandleDidSelectFile() {
+		coordinator.handleAction(.documentFolderViewModelEvent(.didSelect(.sample)))
+
+		XCTAssertEqual(coordinator.destination, [.folder(FileItem.sample.url)])
+	}
+
+	func testHandleDidSelectOpenInFinder() {
+		let folderClient = FolderClient
+			.testing
+			.mutate(_openFile: { _ in
+				return .success(())
+			})
+
+		let folderManager = FolderManager(folderClient)
+
+		coordinator = .init(folderManager: folderManager)
+
+		coordinator.handleAction(.documentFolderViewModelEvent(.didSelectOpenInFinder(.sample)))
+
+		XCTAssertNil(coordinator.alert)
+	}
+
+	func testHandleDidSelectOpenInFinderFailure() {
+		let folderClient = FolderClient
+			.testing
+			.mutate(_openFile: { _ in
+				return .failure(Failure.message("Error"))
+			})
+
+		let folderManager = FolderManager(folderClient)
+
+		coordinator = .init(folderManager: folderManager)
+
+		coordinator.handleAction(.documentFolderViewModelEvent(.didSelectOpenInFinder(.sample)))
+
+		XCTAssertEqual(coordinator.alert, .didFailToOpenFile)
+	}
 }
 
 private extension InstalledAppDetail {
@@ -206,6 +327,28 @@ private extension InstalledAppDetail {
         dataContainer: "SamsungContainer",
         path: "SamsungPath"
     )
+
+	static let containerless: Self = .init(
+		applicationType: "User",
+		bundle: "Containerless",
+		displayName: "Containerless",
+		bundleIdentifier: "Containerless",
+		bundleName: "Containerless",
+		bundleVersion: "1.2.3",
+		dataContainer: nil,
+		path: "Containerless"
+	)
+}
+
+private extension FileItem {
+	static let sample: Self = .init(
+		name: "one",
+		url: .applicationDirectory,
+		isDirectory: true,
+		creationDate: nil,
+		modificationDate: nil,
+		size: nil
+	)
 }
 
 private extension Simulator {

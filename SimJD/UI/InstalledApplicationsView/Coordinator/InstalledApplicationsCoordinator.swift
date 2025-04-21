@@ -111,7 +111,7 @@ private extension InstalledApplicationsCoordinator {
             let result = folderManager.openUserDefaultsFolder(installedApplication)
 
             if case .failure = result {
-                self.alert = .couldNotRemoveApplication
+				self.alert = .couldNotOpenUserDefaults
             }
         }
     }
@@ -127,9 +127,9 @@ private extension InstalledApplicationsCoordinator {
         case .didSelect(let fileItem):
             destination.append(.folder(fileItem.url))
         case .didSelectOpenInFinder(let fileItem):
-            if !NSWorkspace.shared.open(fileItem.url) {
-                self.alert = .didFailToOpenFile
-            }
+			if case .failure = folderManager.openFile(fileItem.url) {
+				self.alert = .didFailToOpenFile
+			}
         }
     }
 }
