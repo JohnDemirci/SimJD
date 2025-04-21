@@ -15,7 +15,7 @@ extension Dictionary {
         switch result {
         case .success(let value):
             self[key] = value
-        case .failure(let failure):
+        case .failure:
             break
         }
     }

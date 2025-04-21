@@ -79,7 +79,7 @@ final class DocumentsFolderViewModel {
 		switch folderManager.fetchFileItems(at: folderURL) {
 		case .success(let items):
 			self.items = items
-		case .failure(let error):
+		case .failure:
 			self.sendEvent(.didFailToFetchFiles)
 		}
 	}

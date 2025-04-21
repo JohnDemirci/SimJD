@@ -24,7 +24,7 @@ final class SimulatorManager {
 
     private(set) var selectedSimulator: Simulator? = nil {
         didSet {
-            if let selectedSimulator {
+            if selectedSimulator != nil {
                 didChangeSelectedSimulator()
             }
         }
