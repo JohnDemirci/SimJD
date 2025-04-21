@@ -21,7 +21,7 @@ extension SimulatorClient {
             )
         ) {
         case .success(let maybeOutput):
-            guard let output = maybeOutput else {
+            guard maybeOutput != nil else {
                 return .failure(Failure.message("no output"))
             }
 

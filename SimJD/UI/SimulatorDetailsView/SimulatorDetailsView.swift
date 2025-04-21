@@ -34,11 +34,11 @@ struct SimulatorDetailsView: View {
     }
 
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(FolderManager.self) private var folderManager
-    @Environment(SimulatorManager.self) private var simManager
+
+    private let folderManager: FolderManager = .live
+    private let simManager: SimulatorManager = .live
 
     @State private var selectedTab: Tab = .activeProcesses
-    @StateObject private var navigator = FileSystemNavigator()
 
     private let columnWidth: CGFloat = 400
     private let sendEvent: (Event) -> Void
@@ -69,21 +69,6 @@ struct SimulatorDetailsView: View {
 					.frame(width: geometry.size.width * 0.66)
 			}
 			.background(ColorPalette.background(colorScheme).color)
-			.onChange(of: selectedTab) { _, newValue in
-				switch newValue {
-				case .installedApplications:
-					withAnimation {
-						navigator.resetTo(.installedApplications)
-					}
-				case .documents:
-					guard let selectedSimulator = simManager.selectedSimulator else { return }
-					withAnimation {
-						navigator.resetTo(.fileSystem(url: URL(fileURLWithPath: selectedSimulator.dataPath ?? "")))
-					}
-				default:
-					break
-				}
-			}
 		}
     }
 }
@@ -113,48 +98,26 @@ private extension SimulatorDetailsView {
     }
 
     var rightColumnView: some View {
-        VStack {
-            PanelWithToolbarView(
-                title: selectedTab.title,
-                columnWidth: .infinity,
-                content: {
-                    Group {
-                        switch selectedTab {
-                        case .activeProcesses:
-                            RunningProcessesCoordinatingView()
-                        case .documents, .installedApplications:
-                            FileSystemCoordinatingView()
-                        case .geolocation:
-                            SimulatorGeolocationCoordinatingView()
-                        }
+        PanelView(
+            title: selectedTab.title,
+            columnWidth: .infinity,
+            content: {
+                VStack {
+                    switch selectedTab {
+                    case .activeProcesses:
+                        RunningProcessesCoordinatingView()
+                    case .documents:
+                        DocumentFolderCoordinatingView()
+                    case .installedApplications:
+                        InstalledApplicationsCoordinatingView()
+                    case .geolocation:
+                        SimulatorGeolocationCoordinatingView()
                     }
-                    .id(simManager.selectedSimulator)
-                },
-                toolbar: {
-                    fileSystemBackButtonView
                 }
-            )
-            .environmentObject(navigator)
-        }
-        .padding(.vertical, 10)
-    }
-}
-
-private extension SimulatorDetailsView {
-    var fileSystemBackButtonView: some View {
-        Button("", systemImage: "chevron.left") {
-            withAnimation {
-                navigator.pop()
+                .id(simManager.selectedSimulator)
             }
-        }
-        .buttonStyle(.plain)
-        .foregroundStyle(Color.black)
-        .padding()
-        .bold()
-        .font(.largeTitle)
-        .inCase(!navigatableView || navigator.stack.count < 2) {
-            EmptyView()
-        }
+        )
+        .padding(.vertical, 10)
     }
 }
 
@@ -165,6 +128,7 @@ private extension SimulatorDetailsView {
             switch event {
             case .didSelectDeleteSimulator(let simulator):
                 sendEvent(.didSelectDeleteSimulator(simulator))
+
             case .didSelectEraseContentAndSettings(let simulator):
                 sendEvent(.didSelectEraseContentAndSettings(simulator))
             }

@@ -8,67 +8,24 @@
 import SwiftUI
 
 struct RunningProcessesView: View {
-    enum Event {
-        case didFailToFetchProcesses
-    }
+    private let viewModel: RunningProcessesViewModel
 
-    @Environment(SimulatorManager.self) private var simManager: SimulatorManager
-
-    private let sendEvent: (Event) -> Void
-
-    init(sendEvent: @escaping (Event) -> Void) {
-        self.sendEvent = sendEvent
+    init(viewModel: RunningProcessesViewModel) {
+        self.viewModel = viewModel
     }
 
     var body: some View {
         List {
-            OptionalView(
-                data: simManager.selectedSimulator,
-                unwrappedData: { selectedSimulator in
-                    OptionalView(
-                        data: simManager.processes[selectedSimulator.id],
-                        unwrappedData: { processes in
-                            ForEach(processes) { process in
-                                Text(process.label)
-                            }
-                            .inCase(simManager.processes[selectedSimulator.id] == []) {
-                                NoProcessView {
-                                    simManager.openSimulator(selectedSimulator)
-                                    handleFetchProcesses()
-                                }
-                            }
-                        },
-                        placeholderView: {
-                            NoProcessView {
-                                simManager.openSimulator(selectedSimulator)
-                                handleFetchProcesses()
-                            }
-                        }
-                    )
-                },
-                placeholderView: {
-                    Text("There is no selected Simulator")
+            ForEach(viewModel.processes) { process in
+                Text(process.label)
+            }
+            .inCase(viewModel.processes == []) {
+                NoProcessView {
+                    viewModel.emptyProcesses()
                 }
-            )
+            }
         }
         .scrollContentBackground(.hidden)
-        .onChange(of: simManager.selectedSimulator, initial: true) {
-            handleFetchProcesses()
-        }
-    }
-}
-
-private extension RunningProcessesView {
-    func handleFetchProcesses() {
-        guard let selectedSimulator = simManager.selectedSimulator else { return }
-
-        switch simManager.fetchRunningProcesses(for: selectedSimulator) {
-        case .success:
-            break
-
-        case .failure:
-            sendEvent(.didFailToFetchProcesses)
-        }
     }
 }
 

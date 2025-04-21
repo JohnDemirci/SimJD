@@ -1,0 +1,29 @@
+{
+  "configurations" : [
+    {
+      "id" : "8268868A-95F1-4A5C-B1EF-94E3C27AA6B6",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:SimJD.xcodeproj",
+      "identifier" : "58F6CEBE2CFADADB003B945F",
+      "name" : "SimJD"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:SimJD.xcodeproj",
+        "identifier" : "587ACB562D32E713002E4232",
+        "name" : "SimJDTests"
+      }
+    }
+  ],
+  "version" : 1
+}

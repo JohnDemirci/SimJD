@@ -8,16 +8,22 @@
 import Foundation
 import SwiftUI
 
-struct FolderClient {
+struct FolderClient: @unchecked Sendable {
     fileprivate var _openUserDefaults: (String, String) -> Result<Void, Failure>
     fileprivate var _removeUserDefaults: (String, String) -> Result<Void, Failure>
+	fileprivate var _openFile: (URL) -> Result<Void, Failure>
+	fileprivate var _fetchFileItems: (URL) -> Result<[FileItem], Failure>
 
     private init(
         _openUserDefaults: @escaping (String, String) -> Result<Void, Failure>,
-        _removeUserDefaults: @escaping (String, String) -> Result<Void, Failure>
+        _removeUserDefaults: @escaping (String, String) -> Result<Void, Failure>,
+		_openFile: @escaping (URL) -> Result<Void, Failure>,
+		_fetchFileItems: @escaping (URL) -> Result<[FileItem], Failure>
     ) {
         self._openUserDefaults = _openUserDefaults
         self._removeUserDefaults = _removeUserDefaults
+		self._openFile = _openFile
+		self._fetchFileItems = _fetchFileItems
     }
 
     func openUserDefaults(container: String, bundleID: String) -> Result<Void, Failure> {
@@ -27,30 +33,47 @@ struct FolderClient {
     func removeUserDefaults(container: String, bundleID: String) -> Result<Void, Failure> {
         _removeUserDefaults(container, bundleID)
     }
+
+	func openFile(_ url: URL) -> Result<Void, Failure> {
+		_openFile(url)
+	}
+
+	func fetchFileItems(at url: URL) -> Result<[FileItem], Failure> {
+		_fetchFileItems(url)
+	}
 }
 
 extension FolderClient {
-    nonisolated(unsafe)
     static let live: FolderClient = .init(
         _openUserDefaults: {
             handleOpenUserDefaults(container: $0, bundleID: $1)
         },
         _removeUserDefaults: {
             handleRemoveUserDefaults(container: $0, bundleID: $1)
-        }
+        },
+		_openFile: {
+			handleOpenFile($0)
+		},
+		_fetchFileItems: {
+			handleFetchFileItems(at: $0)
+		}
     )
 
 #if DEBUG
     nonisolated(unsafe)
     static var testing: FolderClient = .init(
         _openUserDefaults: { _, _ in fatalError("Not implemented") },
-        _removeUserDefaults: { _, _ in fatalError("Not implemented") }
+        _removeUserDefaults: { _, _ in fatalError("Not implemented") },
+		_openFile: { _ in fatalError("Not implemented") },
+		_fetchFileItems: { _ in fatalError("Not implemented") }
     )
 
     @discardableResult
     mutating func mutate(
         _openUserDefaults: ((String, String) -> Result<Void, Failure>)? = nil,
-        _removeUserDefaults: ((String, String) -> Result<Void, Failure>)? = nil
+        _removeUserDefaults: ((String, String) -> Result<Void, Failure>)? = nil,
+		_openFile: ((URL) -> Result<Void, Failure>)? = nil,
+		_fetchFileItems: ((URL) -> Result<[FileItem], Failure>)? = nil
     ) -> FolderClient {
         if let _openUserDefaults {
             self._openUserDefaults = _openUserDefaults
@@ -59,6 +82,14 @@ extension FolderClient {
         if let _removeUserDefaults {
             self._removeUserDefaults = _removeUserDefaults
         }
+
+		if let _openFile {
+			self._openFile = _openFile
+		}
+
+		if let _fetchFileItems {
+			self._fetchFileItems = _fetchFileItems
+		}
 
         return self
     }
@@ -104,4 +135,46 @@ private extension FolderClient {
             return .failure(Failure.message("Could not remove User Defaults File"))
         }
     }
+
+	static func handleOpenFile(_ url: URL) -> Result<Void, Failure> {
+		if NSWorkspace.shared.open(url) {
+			return .success(())
+		}
+
+		return .failure(Failure.message("Could not open file"))
+	}
+
+	static func handleFetchFileItems(at url: URL) -> Result<[FileItem], Failure> {
+		let fileManager = FileManager.default
+
+		do {
+			let fileURLs = try fileManager.contentsOfDirectory(
+				at: url,
+				includingPropertiesForKeys: [.isDirectoryKey],
+				options: [.skipsHiddenFiles]
+			)
+
+			let items = fileURLs.compactMap { url -> FileItem? in
+				guard let resourceValues = try? url.resourceValues(forKeys: [
+					.isDirectoryKey,
+					.creationDateKey,
+					.contentModificationDateKey,
+					.totalFileSizeKey
+				]) else { return nil }
+
+				return FileItem(
+					name: url.lastPathComponent,
+					url: url,
+					isDirectory: resourceValues.isDirectory == true,
+					creationDate: resourceValues.creationDate,
+					modificationDate: resourceValues.contentModificationDate,
+					size: resourceValues.totalFileSize
+				)
+			}
+
+			return .success(items)
+		} catch {
+			return .failure(Failure.message(error.localizedDescription))
+		}
+	}
 }

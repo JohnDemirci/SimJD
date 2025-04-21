@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SidebarView: View {
-    @Environment(SimulatorManager.self) private var simulatorManager
+    private let simulatorManager: SimulatorManager = .live
 	@Environment(\.colorScheme) private var colorScheme
 
     var body: some View {

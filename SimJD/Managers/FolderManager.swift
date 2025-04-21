@@ -7,9 +7,14 @@
 
 import SwiftUI
 
-@Observable
-final class FolderManager {
+final class FolderManager: Sendable {
     private let client: FolderClient
+
+#if DEBUG
+    static let debug = FolderManager(.testing)
+#endif
+    static let live = FolderManager(.live)
+
 
     init(_ client: FolderClient = .live) {
         self.client = client
@@ -50,4 +55,12 @@ final class FolderManager {
             return .failure(.message(error.localizedDescription))
         }
     }
+
+	func openFile(_ url: URL) -> Result<Void, Failure> {
+		client.openFile(url)
+	}
+
+	func fetchFileItems(at url: URL) -> Result<[FileItem], Failure> {
+		client.fetchFileItems(at: url)
+	}
 }

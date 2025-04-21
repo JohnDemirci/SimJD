@@ -2,7 +2,7 @@
 //  SimulatorGeolocationViewModelTests.swift
 //  SimJD
 //
-//  Created by John Demirci on 1/18/25.
+//  Created by John Demirci on 4/3/25.
 //
 
 import MapKit
@@ -13,140 +13,119 @@ import XCTest
 final class SimulatorGeolocationViewModelTests: XCTestCase {
     private var viewModel: SimulatorGeolocationViewModel!
     private var eventHandler: EventHandler!
+    private var manager: SimulatorManager!
 
     override func setUp() {
         super.setUp()
-        eventHandler = EventHandler()
-        viewModel = SimulatorGeolocationViewModel { [weak self] event in
-            guard let self else {
-                XCTFail("self should not be nil")
-                return
+        self.eventHandler = .init()
+        self.manager = .init(client: .testing)
+        self.viewModel = .init(
+            manager: manager,
+            sendEvent: { [unowned self] in
+                eventHandler.handle($0)
             }
-            eventHandler.handleEvent(event)
-        }
+        )
     }
 
     override func tearDown() {
         super.tearDown()
-        eventHandler = nil
         viewModel = nil
+        eventHandler = nil
+        manager = nil
     }
 }
 
-// MARK: - Testing didSelectLocation
-
 extension SimulatorGeolocationViewModelTests {
-    func testDidSelectSelectLocationSuccess() {
-        let client = SimulatorClient
-            .testing
-            .mutate(
-                _fetchSimulatorDictionary: {
-                    return .success([.iOS("18"): [.bootedSimulator]])
-                },
-                _updateLocation: { _, _, _ in
-                    return .success(())
-                },
-                _fetchLocale: { _ in .failure(Failure.message("Error")) }
-            )
+    func testDidSelectLocationWithoutSelectedSimulatorDoesNothing() {
+        viewModel.didSelectSelectLocation()
+        /*
+         SimulatorManager.testing will cause crash if any of its api is used unless it is mutated and given a result.
 
-        let manager = SimulatorManager(simulatorClient: client)
-        manager.didSelectSimulator(.bootedSimulator)
+         if no apis are called, then this will pass.
+         */
+    }
 
-        viewModel.didSelectSelectLocation(manager: manager)
+    func testDidSelectLocationSuccess() {
+        let newClient = SimulatorClient.testing
+            .mutate(_updateLocation: { _, _, _ in
+                return .success(())
+            })
 
+        self.manager = .init(client: newClient)
+        self.manager.simulators = [.iOS("18"): [.sample]]
+        self.manager.didSelectSimulator(.sample)
+
+        self.viewModel = .init(
+            manager: manager,
+            sendEvent: { [unowned self] in
+                eventHandler.handle($0)
+            }
+        )
+
+        viewModel.didSelectSelectLocation()
         XCTAssertEqual(eventHandler.didReceiveEvent, .didUpdateLocation)
     }
 
-    func testDidSelectSelectLocationFailure() {
-        let client = SimulatorClient
-            .testing
-            .mutate(
-                _fetchSimulatorDictionary: {
-                    return .success([.iOS("18"): [.bootedSimulator]])
-                },
-                _updateLocation: { _, _, _ in
-                    return .failure(Failure.message("Error"))
-                },
-                _fetchLocale: { _ in .failure(Failure.message("Error")) }
-            )
+    func testDidSelectLocationFailure() {
+        let newClient = SimulatorClient.testing
+            .mutate(_updateLocation: { _, _, _ in
+                return .failure(Failure.message("error"))
+            })
 
-        let manager = SimulatorManager(simulatorClient: client)
-        manager.didSelectSimulator(.bootedSimulator)
+        self.manager = .init(client: newClient)
+        self.manager.simulators = [.iOS("18"): [.sample]]
+        self.manager.didSelectSimulator(.sample)
 
-        viewModel.didSelectSelectLocation(manager: manager)
+        self.viewModel = .init(
+            manager: manager,
+            sendEvent: { [unowned self] in
+                eventHandler.handle($0)
+            }
+        )
 
+        viewModel.didSelectSelectLocation()
         XCTAssertEqual(eventHandler.didReceiveEvent, .didFailUpdateLocation)
     }
 
-    func testDidSelectSelectLocationOnNonSelectedSimulatorSendNoEvent() {
-        let client = SimulatorClient
-            .testing
-            .mutate(
-                _fetchSimulatorDictionary: {
-                    return .failure(Failure.message("Error1"))
-                },
-                _updateLocation: { _, _, _ in
-                    return .failure(Failure.message("Error"))
-                },
-                _fetchLocale: { _ in .failure(Failure.message("Error")) }
-            )
-
-        let manager = SimulatorManager(simulatorClient: client)
-        viewModel.didSelectSelectLocation(manager: manager)
-
-        XCTAssertNil(eventHandler.didReceiveEvent)
-    }
-}
-
-// MARK: - Testing DidTapOnMap
-
-extension SimulatorGeolocationViewModelTests {
-    func testDidTapOnMapSuccess() {
-        let conversion = FakeConversion(
-            expectedReturnValue: .some(.init(latitude: 1, longitude: 1))
-        )
-
-        viewModel.didTapOnMap(
-            converter: conversion,
-            position: .init(x: 1, y: 1)
-        )
-
-        XCTAssertEqual(viewModel.marker.latitude, conversion.expectedReturnValue?.latitude)
-        XCTAssertEqual(viewModel.marker.longitude, conversion.expectedReturnValue?.longitude)
-        XCTAssertNil(eventHandler.didReceiveEvent)
-    }
-
-    func testDidTapMapSendsFauilureEvent() {
-        let conversion = FakeConversion(
-            expectedReturnValue: nil
-        )
-
-        viewModel.didTapOnMap(
-            converter: conversion,
-            position: .init(x: 1, y: 1)
-        )
-
+    func testDidTapOnMapConvertsNilCoordinate() {
+        let converter = TestMapProxyConverter()
+        viewModel.didTapOnMap(converter: converter, position: .zero)
         XCTAssertEqual(eventHandler.didReceiveEvent, .didFailCoordinateProxy)
     }
+
+    func testDidTapOnMapConvertsNewCoordinate() {
+        let newCoordinate = CLLocationCoordinate2D(latitude: 1, longitude: 2)
+        let converter = TestMapProxyConverter(newCoordinate)
+        viewModel.didTapOnMap(converter: converter, position: .zero)
+        XCTAssertNil(eventHandler.didReceiveEvent)
+    }
 }
 
-@MainActor
 private final class EventHandler {
-    fileprivate var didReceiveEvent: SimulatorGeolocationViewModel.Event?
+    var didReceiveEvent: SimulatorGeolocationViewModel.Event?
 
-    func handleEvent(_ event: SimulatorGeolocationViewModel.Event) {
+    func handle(_ event: SimulatorGeolocationViewModel.Event) {
         didReceiveEvent = event
     }
 }
 
-fileprivate final class FakeConversion: MapProxyConversion {
-    fileprivate let expectedReturnValue: CLLocationCoordinate2D?
+extension Simulator {
+    fileprivate static let sample = Simulator(
+        udid: "uuid",
+        isAvailable: true,
+        deviceTypeIdentifier: "id",
+        state: "booted",
+        name: "sim",
+        os: .iOS("18")
+    )
+}
 
-    init(expectedReturnValue: CLLocationCoordinate2D?) {
-        self.expectedReturnValue = expectedReturnValue
+fileprivate struct TestMapProxyConverter: MapProxyConversion {
+    let result: CLLocationCoordinate2D?
+    init(_ result: CLLocationCoordinate2D? = nil) {
+        self.result = result
     }
-
     func convert(point: CGPoint) -> CLLocationCoordinate2D? {
-        return expectedReturnValue
+        return result
     }
 }

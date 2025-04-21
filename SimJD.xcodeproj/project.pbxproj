@@ -21,6 +21,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		584272DE2D9FC10400566D78 /* SimJD.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = SimJD.xctestplan; sourceTree = "<group>"; };
 		587ACB572D32E713002E4232 /* SimJDTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SimJDTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		58F6CEBF2CFADADB003B945F /* SimJD.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimJD.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -60,6 +61,7 @@
 		58F6CEB62CFADADB003B945F = {
 			isa = PBXGroup;
 			children = (
+				584272DE2D9FC10400566D78 /* SimJD.xctestplan */,
 				58F6CEC12CFADADB003B945F /* SimJD */,
 				587ACB582D32E713002E4232 /* SimJDTests */,
 				58F6CEC02CFADADB003B945F /* Products */,
