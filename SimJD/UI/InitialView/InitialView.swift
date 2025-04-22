@@ -19,7 +19,7 @@ struct InitialView: View {
                     .navigationSplitViewColumnWidth(300)
             },
             detail: {
-                SimulatorDetailsViewCoordinator()
+                SimulatorDetailsVCoordinatingView()
             }
         )
         .toolbarBackground(

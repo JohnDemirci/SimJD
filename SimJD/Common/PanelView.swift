@@ -38,11 +38,6 @@ struct PanelView<Content: View>: View {
                 .frame(maxWidth: columnWidth, alignment: .leading)
                 .padding(5)
         }
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(ColorPalette.background(colorScheme).color)
-                .stroke(ColorPalette.foreground(colorScheme).color)
-        )
     }
 }
 
@@ -84,10 +79,5 @@ struct PanelWithToolbarView<
                 .frame(maxWidth: columnWidth, alignment: .leading)
                 .padding(5)
         }
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(ColorPalette.background(colorScheme).color)
-                .stroke(ColorPalette.foreground(colorScheme).color)
-        )
     }
 }
