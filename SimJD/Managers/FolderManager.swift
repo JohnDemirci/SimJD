@@ -34,7 +34,7 @@ final class FolderManager: Sendable {
             return .success(())
 
         case .failure(let error):
-            return .failure(.message(error.localizedDescription))
+            return .failure(error)
         }
     }
 
@@ -52,7 +52,7 @@ final class FolderManager: Sendable {
             return .success(())
 
         case .failure(let error):
-            return .failure(.message(error.localizedDescription))
+            return .failure(error)
         }
     }
 
