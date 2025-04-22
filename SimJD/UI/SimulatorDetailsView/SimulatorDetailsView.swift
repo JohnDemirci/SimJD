@@ -8,56 +8,11 @@
 import SwiftUI
 
 struct SimulatorDetailsView: View {
-    enum Action {
-        case actionsViewEvent(SimulatorSettingsView.Event)
-    }
-
-    enum Event {
-        case didSelectEraseContentAndSettings(Simulator)
-        case didSelectDeleteSimulator(Simulator)
-    }
-
-    enum Tab: Hashable, CaseIterable {
-        case activeProcesses
-        case documents
-        case geolocation
-        case installedApplications
-
-        var title: String {
-            switch self {
-            case .activeProcesses:          return "Active Processes"
-            case .documents:                return "Documents"
-            case .geolocation:              return "Geolocation"
-            case .installedApplications:    return "Installed Applications"
-            }
-        }
-    }
-
     @Environment(\.colorScheme) private var colorScheme
+    @State private var viewModel: SimulatorDetailsViewModel
 
-    private let folderManager: FolderManager = .live
-    private let simManager: SimulatorManager = .live
-
-    @State private var selectedTab: Tab = .activeProcesses
-
-    private let columnWidth: CGFloat = 400
-    private let sendEvent: (Event) -> Void
-
-    init(sendEvent: @escaping (Event) -> Void) {
-        self.sendEvent = sendEvent
-    }
-
-    private var navigatableView: Bool {
-        switch selectedTab {
-        case .activeProcesses, .geolocation:
-            return false
-        case .documents, .installedApplications:
-            return true
-        }
-    }
-
-    private var backgroundColor: Color {
-        ColorPalette.background(colorScheme).color
+    init(viewModel: SimulatorDetailsViewModel) {
+        self.viewModel = viewModel
     }
 
     var body: some View {
@@ -68,7 +23,7 @@ struct SimulatorDetailsView: View {
 				rightColumnView
 					.frame(width: geometry.size.width * 0.66)
 			}
-			.background(ColorPalette.background(colorScheme).color)
+            .background(viewModel.getBackgroundColor(scheme: colorScheme))
 		}
     }
 }
@@ -77,20 +32,22 @@ private extension SimulatorDetailsView {
     var leftColumnView: some View {
         ScrollView {
             TabButtonsView(
-                selectedTab: $selectedTab,
-                columnWidth: columnWidth
+                selectedTab: $viewModel.selectedTab,
+                columnWidth: viewModel.columnWidth
             )
             .padding(10)
-            OptionalView(simManager.selectedSimulator) { simulator in
+            OptionalView(viewModel.selectedSimulator) { simulator in
                 SimulatorSettingsView(
-                    columnWidth: columnWidth,
+                    columnWidth: viewModel.columnWidth,
                     selectedSimulator: simulator,
-                    sendEvent: { handleAction(.actionsViewEvent($0)) }
+                    sendEvent: {
+                        self.viewModel.handle(action: .actionsViewEvent($0))
+                    }
                 )
             }
             .padding(10)
-            OptionalView(simManager.selectedSimulator) { simulator in
-                SimulatorInformationView(columnWidth: columnWidth, simulator: simulator)
+            OptionalView(viewModel.selectedSimulator) { simulator in
+                SimulatorInformationView(columnWidth: viewModel.columnWidth, simulator: simulator)
             }
             .padding(10)
         }
@@ -99,11 +56,11 @@ private extension SimulatorDetailsView {
 
     var rightColumnView: some View {
         PanelView(
-            title: selectedTab.title,
+            title: viewModel.selectedTab.title,
             columnWidth: .infinity,
             content: {
                 VStack {
-                    switch selectedTab {
+                    switch viewModel.selectedTab {
                     case .activeProcesses:
                         RunningProcessesCoordinatingView()
                     case .documents:
@@ -114,30 +71,15 @@ private extension SimulatorDetailsView {
                         SimulatorGeolocationCoordinatingView()
                     }
                 }
-                .id(simManager.selectedSimulator)
+                .id(viewModel.selectedSimulator)
             }
         )
         .padding(.vertical, 10)
     }
 }
 
-private extension SimulatorDetailsView {
-    func handleAction(_ action: Action) {
-        switch action {
-        case .actionsViewEvent(let event):
-            switch event {
-            case .didSelectDeleteSimulator(let simulator):
-                sendEvent(.didSelectDeleteSimulator(simulator))
-
-            case .didSelectEraseContentAndSettings(let simulator):
-                sendEvent(.didSelectEraseContentAndSettings(simulator))
-            }
-        }
-    }
-}
-
 private struct TabButtonsView: View {
-    @Binding var selectedTab: SimulatorDetailsView.Tab
+    @Binding var selectedTab: SimulatorDetailsViewModel.Tab
     @Environment(\.colorScheme) private var colorScheme
 
     let columnWidth: CGFloat
@@ -148,7 +90,7 @@ private struct TabButtonsView: View {
             columnWidth: columnWidth,
             content: {
                 VStack(alignment: .leading) {
-                    ForEach(SimulatorDetailsView.Tab.allCases, id: \.self) { tab in
+                    ForEach(SimulatorDetailsViewModel.Tab.allCases, id: \.self) { tab in
                         Button(tab.title) {
                             withAnimation(.spring) {
                                 selectedTab = tab
