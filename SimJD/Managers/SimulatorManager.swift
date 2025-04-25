@@ -176,7 +176,7 @@ extension SimulatorManager {
         }
     }
 
-    func handleDeleteSimulator(_ simulator: Simulator) {
+    private func handleDeleteSimulator(_ simulator: Simulator) {
         guard let os = simulator.os else { return }
 
         let index = simulators[os]?.firstIndex {
@@ -198,7 +198,11 @@ extension SimulatorManager {
         guard let _ = getSimulatorIfExists(simulator) else {
             return .failure(Failure.message("Simulator Does not Exist"))
         }
-        guard let os = simulator.os else { return .failure(Failure.message("Simulator has no OS")) }
+
+        guard let os = simulator.os else {
+            // if getSimulatorIfExists goes through, then it should be inpossible to reach here
+            return .failure(Failure.message("Simulator has no OS"))
+        }
 
         switch simulatorClient.shutdownSimulator(simulator: simulator.id) {
         case .success:
@@ -210,6 +214,8 @@ extension SimulatorManager {
                 simulators[os]?[index].state = "Shutdown"
                 selectedSimulator = simulators[os]?[index]
                 processes[simulator.id] = nil
+                installedApplications[simulator.id] = nil
+                locales[simulator.id] = nil
             }
 
             return .success(())
@@ -292,9 +298,24 @@ extension SimulatorManager {
 
     func uninstall(
         _ app: InstalledAppDetail,
-        simulatorID: String
+        simulator: Simulator
     ) -> Result<Void, Failure> {
-        simulatorClient.uninstallApp(app: app, at: simulatorID)
+        guard let _ = getSimulatorIfExists(simulator) else {
+            return .failure(Failure.message("Simulator does not exist. Please check your selection and try again."))
+        }
+
+        let result = simulatorClient.uninstallApp(
+            app: app,
+            at: simulator.id
+        )
+
+        if case .success = result {
+            self.installedApplications[simulator.id]?.removeAll(where: {
+                $0 == app
+            })
+        }
+
+        return result
     }
 }
 
