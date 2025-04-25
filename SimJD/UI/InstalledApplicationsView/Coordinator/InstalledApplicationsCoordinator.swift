@@ -194,7 +194,7 @@ extension InstalledApplicationsCoordinator {
                 button1: AlertButton(title: "Remove") { [unowned self] in
                     switch self.simulatorManager.uninstall(
                         details,
-                        simulatorID: simulator.id
+                        simulator: simulator
                     ) {
                     case .success:
                         Task {
