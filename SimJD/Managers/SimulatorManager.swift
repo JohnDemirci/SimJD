@@ -20,6 +20,9 @@ final class SimulatorManager {
     nonisolated
     private let simulatorClient: SimulatorClient
 
+    @ObservationIgnored
+    private var backgroundRefreshTask: Task<Void, Never>?
+
     var simulators: OrderedDictionary<OS.Name, [Simulator]> = [:]
 
     private(set) var selectedSimulator: Simulator? = nil {
@@ -42,6 +45,11 @@ final class SimulatorManager {
         self.simulatorClient = simulatorClient
         self.registerObserver()
         self.fetchSimulators()
+    }
+
+    deinit {
+        backgroundRefreshTask?.cancel()
+        backgroundRefreshTask = nil
     }
 
 #if DEBUG
@@ -337,7 +345,25 @@ extension SimulatorManager {
             .default
             .publisher(for: NSApplication.didBecomeActiveNotification)
             .sink { [unowned self] _ in
-                _ = self.fetchSimulators()
+                backgroundRefreshTask?.cancel()
+                backgroundRefreshTask = nil
+            }
+            .store(in: &cancellables)
+
+
+        NotificationCenter
+            .default
+            .publisher(for: NSApplication.didResignActiveNotification)
+            .sink { [unowned self] _ in
+                backgroundRefreshTask?.cancel()
+
+                backgroundRefreshTask = Task { [weak self] in
+                    try? await Task.sleep(for: .seconds(5))
+
+                    guard let self = self, !Task.isCancelled else { return }
+
+                    self.fetchSimulators()
+                }
             }
             .store(in: &cancellables)
     }
@@ -353,10 +379,7 @@ extension SimulatorManager {
             installedApplications.handleResult(fetchInstalledApplicationsResult, for: selectedSimulator.id)
             processes.handleResult(fetchProcessesResult, for: selectedSimulator.id)
             locales.handleResult(fetchLocaleResult, for: selectedSimulator.id)
-            return
-        }
-
-        if selectedSimulator.state == "Shutdown" {
+        } else if selectedSimulator.state == "Shutdown" {
             if self.processes[selectedSimulator.id] != nil {
                 self.processes[selectedSimulator.id] = nil
             }
