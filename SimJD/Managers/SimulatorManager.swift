@@ -353,6 +353,21 @@ extension SimulatorManager {
             installedApplications.handleResult(fetchInstalledApplicationsResult, for: selectedSimulator.id)
             processes.handleResult(fetchProcessesResult, for: selectedSimulator.id)
             locales.handleResult(fetchLocaleResult, for: selectedSimulator.id)
+            return
+        }
+
+        if selectedSimulator.state == "Shutdown" {
+            if self.processes[selectedSimulator.id] != nil {
+                self.processes[selectedSimulator.id] = nil
+            }
+
+            if self.installedApplications[selectedSimulator.id] != nil {
+                self.installedApplications[selectedSimulator.id] = nil
+            }
+
+            if self.locales[selectedSimulator.id] != nil {
+                self.locales[selectedSimulator.id] = nil
+            }
         }
     }
 }

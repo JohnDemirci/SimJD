@@ -1,2 +1,4 @@
 SimJD.xcodeproj/project.xcworkspace/xcuserdata/johndemirci.xcuserdatad/.*
 .DS_Store
+*.xcuserstate
+*.xcbkptlist
