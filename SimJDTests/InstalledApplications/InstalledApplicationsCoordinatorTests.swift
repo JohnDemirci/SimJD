@@ -303,6 +303,42 @@ extension InstalledApplicationsCoordinatorTests {
 
 		XCTAssertEqual(coordinator.alert, .didFailToOpenFile)
 	}
+
+    func testDidSelectInofPlistSuccess() {
+        let folderClient = FolderClient
+            .testing
+            .mutate(_openFile: { _ in
+                return .success(())
+            })
+
+        let folderManager = FolderManager(folderClient)
+
+        coordinator = .init(folderManager: folderManager)
+        coordinator.handleAction(.installedApplicationDetailViewEvent(.didSelectInfoPlist(.apple)))
+
+        XCTAssertNil(coordinator.alert)
+    }
+
+    func testDidSelectInfoPlistFailure() {
+        let folderClient = FolderClient
+            .testing
+            .mutate(_openFile: { _ in
+                return .failure(Failure.message("Error"))
+            })
+
+        let folderManager = FolderManager(folderClient)
+
+        coordinator = .init(folderManager: folderManager)
+        coordinator.handleAction(.installedApplicationDetailViewEvent(.didSelectInfoPlist(.apple)))
+
+        XCTAssertEqual(coordinator.alert, .didFailToOpenFile)
+    }
+
+    func testDidSelectInfoPlistOnAPathlessInstalledApplication() {
+        let installedApp = InstalledAppDetail()
+        coordinator.handleAction(.installedApplicationDetailViewEvent(.didSelectInfoPlist(installedApp)))
+        XCTAssertEqual(coordinator.alert, .couldNotFindPathToApplication)
+    }
 }
 
 private extension InstalledAppDetail {

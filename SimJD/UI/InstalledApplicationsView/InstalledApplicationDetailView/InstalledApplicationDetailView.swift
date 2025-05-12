@@ -22,7 +22,14 @@ struct InstalledApplicationDetailView: View {
         }
         .contextMenu(
             forSelectionType: InstalledApplicationAction.ID.self,
-            menu: { _ in EmptyView() },
+            menu: {
+                switch $0.first {
+                case "Info.plist":
+                    EmptyView()
+                default:
+                    EmptyView()
+                }
+            },
             primaryAction: { selections in
                 viewModel.didSelectAction(selections)
             }

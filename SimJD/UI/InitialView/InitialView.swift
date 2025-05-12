@@ -33,20 +33,19 @@ struct InitialView: View {
                     .frame(width: 50, height: 50)
             }
         }
-        .onAppear {
-            addKeyboardShortcut()
+        .task {
+            await addKeyboardShortcut()
         }
     }
 
-    private func addKeyboardShortcut() {
-        NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            guard event.charactersIgnoringModifiers != "e" else {
+    nonisolated private func addKeyboardShortcut() async {
+        await KeyboardEvent.shared.set {
+            Task { @MainActor in
                 toggleSidebar()
-                return nil
             }
-
-            return event
         }
+
+        await KeyboardEvent.shared.watchEvent()
     }
 
     private func toggleSidebar() {
@@ -55,3 +54,4 @@ struct InitialView: View {
         }
     }
 }
+

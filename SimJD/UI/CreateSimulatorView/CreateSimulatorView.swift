@@ -8,17 +8,19 @@
 import SwiftUI
 
 struct CreateSimulatorView: View {
-    @Environment(SimulatorManager.self) private var manager
     @State private var viewModel = CreateSimulatorViewModel()
     private let deviceTypes: [String]
     private let runtimes: [String]
+    private let manager: SimulatorManager
 
     init(
         deviceTypes: [String],
-        runtimes: [String]
+        runtimes: [String],
+        manager: SimulatorManager = .live
     ) {
         self.deviceTypes = deviceTypes
         self.runtimes = runtimes
+        self.manager = manager
     }
 
     var body: some View {
@@ -41,6 +43,14 @@ struct CreateSimulatorView: View {
             .buttonStyle(.borderedProminent)
         }
         .padding()
+        .task {
+            await KeyboardEvent.shared.removeObservation()
+        }
+        .onDisappear {
+            Task {
+                await KeyboardEvent.shared.watchEvent()
+            }
+        }
     }
 }
 

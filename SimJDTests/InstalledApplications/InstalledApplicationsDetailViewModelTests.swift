@@ -21,7 +21,8 @@ final class InstalledApplicationsDetailViewModelTests: XCTestCase {
             "Application Sandbox Data",
             "Open User Defaults",
             "Remove UserDefaults",
-            "Uninstall Application"
+            "Uninstall Application",
+            "Info.plist"
         ])
     }
 
@@ -59,6 +60,8 @@ final class InstalledApplicationsDetailViewModelTests: XCTestCase {
                 XCTAssertEqual(mock.event, .didSelectRemoveUserDefaults(.apple))
             case "Uninstall Application":
                 XCTAssertEqual(mock.event, .didSelectUninstallApplication(.apple))
+            case "Info.plist":
+                XCTAssertEqual(mock.event, .didSelectInfoPlist(.apple))
             default:
                 XCTFail("Unexpected action name: \(action.name)")
             }

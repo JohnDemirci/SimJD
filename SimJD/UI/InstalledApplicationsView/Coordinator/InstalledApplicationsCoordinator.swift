@@ -36,6 +36,7 @@ final class InstalledApplicationsCoordinator {
         case didUnisntallApplication(InstalledAppDetail)
         case didRemoveUserDefaults
         case noSelectedSimulator
+        case couldNotFindPathToApplication
 
         var id: AnyHashable { self }
     }
@@ -112,6 +113,20 @@ private extension InstalledApplicationsCoordinator {
 
             if case .failure = result {
 				self.alert = .couldNotOpenUserDefaults
+            }
+
+        case .didSelectInfoPlist(let details):
+            guard let appPath = details.path else {
+                self.alert = .couldNotFindPathToApplication
+                return
+            }
+
+            let plistPath = URL(fileURLWithPath: appPath).appendingPathComponent("Info.plist")
+            switch folderManager.openFile(plistPath) {
+            case .success:
+                break
+            case .failure:
+                self.alert = .didFailToOpenFile
             }
         }
     }
@@ -229,6 +244,8 @@ extension InstalledApplicationsCoordinator {
             JDAlert(title: "Failed to Open File")
         case .noSelectedSimulator:
             JDAlert(title: "No Simulator Selected")
+        case .couldNotFindPathToApplication:
+            JDAlert(title: "Could nto find the application path the installed application")
         }
     }
 }
