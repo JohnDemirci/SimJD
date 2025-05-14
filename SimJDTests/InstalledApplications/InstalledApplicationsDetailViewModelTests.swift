@@ -10,7 +10,6 @@ import XCTest
 
 @MainActor
 final class InstalledApplicationsDetailViewModelTests: XCTestCase {
-
     func testActionsList_containsAllExpectedActions() {
         let mock = EventHandlerMock()
         let viewModel = InstalledApplicationDetailViewModel(installedApplication: .apple, sendEvent: mock.handle)
