@@ -59,9 +59,9 @@ struct CreateSimulatorView: View {
 @MainActor
 @Observable
 final class CreateSimulatorViewModel {
+    fileprivate var name: String = ""
     fileprivate var selectedDeviceType: String = ""
     fileprivate var selectedRuntime: String = ""
-    fileprivate var name: String = ""
 
     func handleDidSelectCreate(_ manager: SimulatorManager) {
         let deviceIdentifier = trimIdentifier(selectedDeviceType)

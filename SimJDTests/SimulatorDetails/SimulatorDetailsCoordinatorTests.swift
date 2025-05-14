@@ -197,13 +197,13 @@ extension SimulatorDetailsCoordinatorTests {
 extension SimulatorDetailsCoordinatorTests {
     func testHandleActionDidSelectDeleteSimulator() {
         let simulator = Simulator.sample
-        coordinator.handleAction(.simulatorDetailsViewEvent(.didSelectDeleteSimulator(simulator)))
+        coordinator.handleAction(.simulatorDetailsViewModelEvent(.didSelectDeleteSimulator(simulator)))
         XCTAssertEqual(coordinator.alert, .didSelectDeleteSimulator(simulator))
     }
 
     func testHandleActionDidSelectEraseContentAndSettings() {
         let simulator = Simulator.sample
-        coordinator.handleAction(.simulatorDetailsViewEvent(.didSelectEraseContentAndSettings(simulator)))
+        coordinator.handleAction(.simulatorDetailsViewModelEvent(.didSelectEraseContentAndSettings(simulator)))
         XCTAssertEqual(coordinator.alert, .didSelectEraseData(simulator))
     }
 }
@@ -212,13 +212,13 @@ private extension Simulator {
     static let sample = Simulator(
         dataPath: "123",
         dataPathSize: 1,
-        logPath: "123",
-        udid: "123",
-        isAvailable: true,
+        deviceImage: .appleWatch,
         deviceTypeIdentifier: "123",
-        state: "123",
+        isAvailable: true,
+        logPath: "123",
         name: "123",
         os: .iOS("18"),
-        deviceImage: .appleWatch
+        state: "123",
+        udid: "123"
     )
 }

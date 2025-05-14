@@ -116,21 +116,21 @@ extension DocumentFolderCoordinatorTests {
 }
 
 private extension FileItem {
-	static let directory: Self = .init(
-		name: "Directory",
-		url: .applicationDirectory,
-		isDirectory: true,
-		creationDate: nil,
-		modificationDate: nil,
-		size: nil
-	)
+    static let directory: Self = FileItem(
+        creationDate: nil,
+        isDirectory: true,
+        modificationDate: nil,
+        name: "Directory",
+        size: nil,
+        url: .applicationDirectory
+    )
 
 	static let nonDirectory: Self = .init(
-		name: "Non-directory",
-		url: .applicationDirectory,
-		isDirectory: false,
-		creationDate: nil,
-		modificationDate: nil,
-		size: nil
+        creationDate: nil,
+        isDirectory: false,
+        modificationDate: nil,
+        name: "non-directory",
+        size: nil,
+        url: .userDirectory
 	)
 }

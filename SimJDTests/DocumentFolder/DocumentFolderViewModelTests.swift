@@ -293,30 +293,30 @@ private final class MockCopyboard: CopyBoardProtocol {
 }
 
 private extension FileItem {
-	static let sample1: Self = .init(
-		name: "Sample1",
-		url: .applicationDirectory,
-		isDirectory: true,
-		creationDate: nil,
-		modificationDate: nil,
-		size: nil
+    static let sample1: Self = FileItem(
+        creationDate: nil,
+        isDirectory: true,
+        modificationDate: nil,
+        name: "sample",
+        size: nil,
+        url: .applicationDirectory
 	)
 
-	static let sample2: Self = .init(
-		name: "Sample2",
-		url: .applicationDirectory,
-		isDirectory: true,
-		creationDate: nil,
-		modificationDate: nil,
-		size: nil
+	static let sample2: Self = FileItem(
+        creationDate: nil,
+        isDirectory: true,
+        modificationDate: nil,
+        name: "sample2",
+        size: nil,
+        url: .applicationDirectory
 	)
 
-	static let sample3: Self = .init(
-		name: "Sample3",
-		url: .applicationDirectory,
-		isDirectory: true,
-		creationDate: nil,
-		modificationDate: nil,
-		size: nil
+	static let sample3: Self = FileItem(
+        creationDate: nil,
+        isDirectory: true,
+        modificationDate: nil,
+        name: "sample3",
+        size: nil,
+        url: .applicationDirectory
 	)
 }

@@ -8,11 +8,11 @@
 import Foundation
 
 enum Device: Codable, Hashable, Equatable {
-    case iphone(iPhone)
     case appleWatch
+    case ipad(iPad)
+    case iphone(iPhone)
     case tv
     case vision
-    case ipad(iPad)
 
     init?(key: String) {
         if key.localizedStandardContains("iphone") {
@@ -34,14 +34,14 @@ enum Device: Codable, Hashable, Equatable {
         switch self {
         case .appleWatch:
             "applewatch"
+        case .ipad(let ipad):
+            ipad.systemImage
         case .iphone(let iphoneGen):
             iphoneGen.systemImage
         case .tv:
             "appletv"
         case .vision:
             "vision.pro"
-        case .ipad(let ipad):
-            ipad.systemImage
         }
     }
 }

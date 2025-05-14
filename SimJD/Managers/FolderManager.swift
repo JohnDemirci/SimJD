@@ -20,6 +20,14 @@ final class FolderManager: Sendable {
         self.client = client
     }
 
+    func fetchFileItems(at url: URL) -> Result<[FileItem], Failure> {
+        client.fetchFileItems(at: url)
+    }
+
+    func openFile(_ url: URL) -> Result<Void, Failure> {
+        client.openFile(url)
+    }
+
     func openUserDefaultsFolder(_ app: InstalledAppDetail) -> Result<Void, Failure> {
         guard let folderPath = app.dataContainer else {
             return .failure(.message("No User Defaults Folder"))
@@ -55,12 +63,4 @@ final class FolderManager: Sendable {
             return .failure(error)
         }
     }
-
-	func openFile(_ url: URL) -> Result<Void, Failure> {
-		client.openFile(url)
-	}
-
-	func fetchFileItems(at url: URL) -> Result<[FileItem], Failure> {
-		client.fetchFileItems(at: url)
-	}
 }

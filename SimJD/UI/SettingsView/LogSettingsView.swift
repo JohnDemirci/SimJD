@@ -10,8 +10,8 @@ import SwiftUI
 
 enum Setting {
     case enableLogging
-    case simulatorDirectory
     case sidebarVisibility
+    case simulatorDirectory
 
     static var defaultSimulatorDirectory: String { "~/Library/Developer/CoreSimulator/Devices/" }
 
@@ -19,10 +19,10 @@ enum Setting {
         switch self {
         case .enableLogging:
             return "enableLogging"
-        case .simulatorDirectory:
-            return "simulatorDirectory"
         case .sidebarVisibility:
             return "sidebarVisibility"
+        case .simulatorDirectory:
+            return "simulatorDirectory"
         }
     }
 }

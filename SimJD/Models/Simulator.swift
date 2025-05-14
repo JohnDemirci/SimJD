@@ -11,37 +11,37 @@ import SwiftUI
 struct Simulator: Codable, Hashable, Identifiable {
     var dataPath: String?
     var dataPathSize: Int?
-    var logPath: String?
-    var udid: String?
-    var isAvailable: Bool?
+    var deviceImage: Device?
     var deviceTypeIdentifier: String?
-    var state: String?
+    var isAvailable: Bool?
+    var logPath: String?
     var name: String?
     var os: OS.Name?
-    var deviceImage: Device?
+    var state: String?
+    var udid: String?
 
     init(
         dataPath: String? = nil,
         dataPathSize: Int? = nil,
-        logPath: String? = nil,
-        udid: String? = nil,
-        isAvailable: Bool? = nil,
+        deviceImage: Device? = nil,
         deviceTypeIdentifier: String? = nil,
-        state: String? = nil,
+        isAvailable: Bool? = nil,
+        logPath: String? = nil,
         name: String? = nil,
         os: OS.Name? = nil,
-        deviceImage: Device? = nil
+        state: String? = nil,
+        udid: String? = nil
     ) {
         self.dataPath = dataPath
         self.dataPathSize = dataPathSize
-        self.logPath = logPath
-        self.udid = udid
-        self.isAvailable = isAvailable
+        self.deviceImage = deviceImage
         self.deviceTypeIdentifier = deviceTypeIdentifier
-        self.state = state
+        self.isAvailable = isAvailable
+        self.logPath = logPath
         self.name = name
         self.os = os
-        self.deviceImage = deviceImage
+        self.state = state
+        self.udid = udid
     }
 
     var id: String { udid ?? UUID().uuidString }

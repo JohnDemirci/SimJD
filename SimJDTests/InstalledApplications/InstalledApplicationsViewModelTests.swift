@@ -219,6 +219,14 @@ extension InstalledApplicationsViewModelTests {
         let client = SimulatorClient
             .testing
             .mutate(
+                _fetchSimulatorDictionary: {
+                    return .success(
+                        [
+                            .ios17: [.iphone16],
+                            .ios18: [.iphone16ProMax]
+                        ]
+                    )
+                },
                 _installedApps: { simulator in
                     if simulator == sim1.id {
                         return .success([.sample1])
@@ -227,14 +235,6 @@ extension InstalledApplicationsViewModelTests {
                     } else {
                         fatalError("should never be here")
                     }
-                },
-                _fetchSimulatorDictionary: {
-                    return .success(
-                        [
-                            .ios17: [.iphone16],
-                            .ios18: [.iphone16ProMax]
-                        ]
-                    )
                 }
             )
 
@@ -288,17 +288,17 @@ extension InstalledApplicationsViewModelTests {
                 _activeProcesses: {
                     activeProcesses($0)
                 },
+                _fetchLocale: {
+                    locale($0)
+                },
+                _fetchSimulatorDictionary: {
+                    simulatorDictionary()
+                },
                 _installedApps: {
                     installedApps($0)
                 },
                 _uninstallApp: {
                     uninstallApp($0, $1)
-                },
-                _fetchSimulatorDictionary: {
-                    simulatorDictionary()
-                },
-                _fetchLocale: {
-                    locale($0)
                 }
             )
 
@@ -331,9 +331,9 @@ fileprivate final class EventHandler {
 
 private extension SimJD.ProcessInfo {
     static let sample: Self = .init(
+        label: "sample",
         pid: "sample",
-        status: "sample",
-        label: "sample"
+        status: "sample"
     )
 }
 
@@ -341,33 +341,25 @@ private extension InstalledAppDetail {
     static let sample1: Self = .init(
         applicationType: "System",
         bundle: "sampleBundle",
-        displayName: "sample",
         bundleIdentifier: "sample",
         bundleName: "sample",
         bundleVersion: "1",
         dataContainer: "sampleContainer",
+        displayName: "sample",
         path: "samplePath"
     )
 
     static let sample2: Self = .init(
         applicationType: "User",
         bundle: "sample2Bundle",
-        displayName: "sample2",
-        bundleIdentifier: "sample2",
-        bundleName: "sample2",
-        bundleVersion: "2",
-        dataContainer: "sample2Container",
+        bundleIdentifier: "sample2", bundleName: "sample2", bundleVersion: "2", dataContainer: "sample2Container", displayName: "sample2",
         path: "sample2Path"
     )
 
     static let nilBundleID: Self = .init(
         applicationType: "User",
         bundle: "sample2Bundle",
-        displayName: "sample2",
-        bundleIdentifier: nil,
-        bundleName: "sample2",
-        bundleVersion: "2",
-        dataContainer: "sample2Container",
+        bundleIdentifier: nil, bundleName: "sample2", bundleVersion: "2", dataContainer: "sample2Container", displayName: "sample2",
         path: "sample2Path"
     )
 }
@@ -381,26 +373,26 @@ private extension Simulator {
     static let iphone16ProMax: Self = .init(
         dataPath: "path",
         dataPathSize: 12,
-        logPath: "logPath",
-        udid: "id1",
-        isAvailable: true,
+        deviceImage: .iphone(.gen3),
         deviceTypeIdentifier: "deviceTypeIdentifier",
-        state: "Booted",
+        isAvailable: true,
+        logPath: "logPath",
         name: "iphone16ProMax",
         os: .ios18,
-        deviceImage: .iphone(.gen3)
+        state: "Booted",
+        udid: "id1"
     )
 
     static let iphone16: Self = .init(
         dataPath: "path2",
         dataPathSize: 12,
-        logPath: "logPath2",
-        udid: "id2",
-        isAvailable: true,
+        deviceImage: .iphone(.gen3),
         deviceTypeIdentifier: "deviceTypeIdentifier",
-        state: "Booted",
+        isAvailable: true,
+        logPath: "logPath2",
         name: "iphone16",
         os: .iOS("17"),
-        deviceImage: .iphone(.gen3)
+        state: "Booted",
+        udid: "id2"
     )
 }

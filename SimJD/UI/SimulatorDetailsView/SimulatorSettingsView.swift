@@ -9,9 +9,9 @@ import SwiftUI
 
 struct SimulatorSettingsView: View {
     enum Event {
+        case didSelectBatterySettings(Simulator)
         case didSelectEraseContentAndSettings(Simulator)
         case didSelectDeleteSimulator(Simulator)
-        case didSelectBatterySettings(Simulator)
     }
 
     private let columnWidth: CGFloat

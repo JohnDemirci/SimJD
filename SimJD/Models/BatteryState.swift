@@ -6,9 +6,9 @@
 //
 
 enum BatteryState: String, Hashable, Identifiable, CaseIterable {
+    case charged
     case charging
     case discharging
-    case charged
 
     var id: String { rawValue }
 }

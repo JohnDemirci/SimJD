@@ -18,10 +18,10 @@ final class BatteryStatusViewModelTests: XCTestCase {
         eventHandler = EventHandler()
 
         viewModel = BatterySettingsViewModel(
-            simulator: .sample,
-            manager: SimulatorManager(client: .testing),
-            state: .charged,
             level: 100,
+            manager: SimulatorManager(client: .testing),
+            simulator: .sample,
+            state: .charged,
             sendEvent: { [weak self] (event: BatterySettingsViewModel.Event) in
                 self?.eventHandler.handleEvent(event)
             }
@@ -46,10 +46,10 @@ final class BatteryStatusViewModelTests: XCTestCase {
         let manager = SimulatorManager(client: client)
 
         viewModel = BatterySettingsViewModel(
-            simulator: .sample,
-            manager: manager,
-            state: .discharging,
             level: 33,
+            manager: manager,
+            simulator: .sample,
+            state: .discharging,
             sendEvent: { [weak self] (event: BatterySettingsViewModel.Event) in
                 self?.eventHandler.handleEvent(event)
             }
@@ -71,17 +71,17 @@ final class BatteryStatusViewModelTests: XCTestCase {
         let manager = SimulatorManager(client: client)
 
         viewModel = BatterySettingsViewModel(
-            simulator: .sample,
-            manager: manager,
-            state: .discharging,
             level: 33,
+            manager: manager,
+            simulator: .sample,
+            state: .discharging,
             sendEvent: { [weak self] (event: BatterySettingsViewModel.Event) in
                 self?.eventHandler.handleEvent(event)
             }
         )
 
         viewModel.didSelectDone()
-        XCTAssertEqual(eventHandler.event, .didChangeState)
+        XCTAssertEqual(eventHandler.event, .didChangeBatteryState)
     }
 }
 
@@ -89,14 +89,11 @@ private extension Simulator {
     static let sample: Simulator = Simulator(
         dataPath: "path",
         dataPathSize: 1,
+        deviceImage: .iphone(.gen2), deviceTypeIdentifier: "identifier", isAvailable: true,
         logPath: "log",
-        udid: "id",
-        isAvailable: true,
-        deviceTypeIdentifier: "identifier",
-        state: "Booted",
         name: "name",
-        os: .iOS("18"),
-        deviceImage: .iphone(.gen2)
+        os: .iOS("18"), state: "Booted", 
+        udid: "id"
     )
 }
 

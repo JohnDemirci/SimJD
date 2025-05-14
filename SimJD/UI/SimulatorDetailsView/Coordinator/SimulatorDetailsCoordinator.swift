@@ -11,26 +11,26 @@ import SwiftUI
 @Observable
 final class SimulatorDetailsCoordinator {
     enum Action {
-        case simulatorDetailsViewEvent(SimulatorDetailsViewModel.Event)
-        case simulatorBatterySettingsViewModelEvent(BatterySettingsViewModel.Event)
+        case batterySettingsViewModelEvent(BatterySettingsViewModel.Event)
+        case simulatorDetailsViewModelEvent(SimulatorDetailsViewModel.Event)
     }
 
-    enum SheetDestination: Hashable, Identifiable {
-        case batterySettings(Simulator, BatteryState, Int)
+    enum Alert: Hashable, Identifiable {
+        case didChangeState
+        case didDeleteSimulator
+        case didFailToChangeState
+        case didFailToDeleteSimulator
+        case didFailToEraseContents
+        case didFailToRetrieveBatteryState
+        case didSelectDeleteSimulator(Simulator)
+        case didSelectEraseData(Simulator)
+        case simulatorNotBooted
 
         var id: AnyHashable { self }
     }
 
-    enum Alert: Hashable, Identifiable {
-        case didDeleteSimulator
-        case didFailToDeleteSimulator
-        case didFailToEraseContents
-        case didSelectDeleteSimulator(Simulator)
-        case didSelectEraseData(Simulator)
-        case simulatorNotBooted
-        case didFailToRetrieveBatteryState
-        case didChangeState
-        case didFailToChangeState
+    enum SheetDestination: Hashable, Identifiable {
+        case batterySettings(Simulator, BatteryState, Int)
 
         var id: AnyHashable { self }
     }
@@ -45,59 +45,38 @@ final class SimulatorDetailsCoordinator {
 
     func handleAction(_ action: Action) {
         switch action {
-        case .simulatorDetailsViewEvent(let event):
-            switch event {
-            case .didSelectDeleteSimulator(let simulator):
-                self.alert = .didSelectDeleteSimulator(simulator)
+        case .simulatorDetailsViewModelEvent(let event):
+            handleSimulatorDetailsViewModelEvent(event)
 
-            case .didSelectEraseContentAndSettings(let simulator):
-                self.alert = .didSelectEraseData(simulator)
-
-            case .didSelectBatterySettings(let simulator, let state, let level):
-                guard simulator.state == "Booted" else {
-                    self.alert = .simulatorNotBooted
-                    return
-                }
-
-                self.sheetDestination = .batterySettings(simulator, state, level)
-
-            case .didFailToRetrieveBatteryState:
-                self.alert = .didFailToRetrieveBatteryState
-            }
-
-        case .simulatorBatterySettingsViewModelEvent(let event):
-            switch event {
-            case .didChangeState:
-                self.alert = .didChangeState
-
-            case .didFailToChangeState:
-                self.alert = .didFailToChangeState
-            }
+        case .batterySettingsViewModelEvent(let event):
+            handleBatterySettingsViewModelEvent(event)
         }
     }
 }
 
+// MARK: - Alert
+
 extension SimulatorDetailsCoordinator {
     func getJDAlert(for alert: Alert) -> JDAlert {
         switch alert {
+        case .didChangeState:
+            JDAlert(title: "Simulator state changed ✅")
         case .didDeleteSimulator:
             JDAlert(title: "Simulator deleted")
+        case .didFailToChangeState:
+            JDAlert(title: "Failed to change simulator state")
         case .didFailToDeleteSimulator:
             JDAlert(title: "Simulator deletion failed")
         case .didFailToEraseContents:
             JDAlert(title: "Simulator contents erasure failed")
+        case .didFailToRetrieveBatteryState:
+            JDAlert(title: "Failed to retrieve battery state")
         case .didSelectDeleteSimulator(let simulator):
             self.didSelectDeleteSimulatorAlert(simulator)
         case .didSelectEraseData(let simulator):
             self.didSelectEraseDataAlert(simulator: simulator)
         case .simulatorNotBooted:
             JDAlert(title: "Simulator not booted")
-        case .didFailToRetrieveBatteryState:
-            JDAlert(title: "Failed to retrieve battery state")
-        case .didChangeState:
-            JDAlert(title: "Simulator state changed ✅")
-        case .didFailToChangeState:
-            JDAlert(title: "Failed to change simulator state")
         }
     }
 
@@ -163,6 +142,45 @@ private extension SimulatorDetailsCoordinator {
                 try? await Task.sleep(for: .seconds(1))
                 self.alert = .didFailToEraseContents
             }
+        }
+    }
+}
+
+// MARK: - Battery Settings View Model Event
+
+private extension SimulatorDetailsCoordinator {
+    func handleBatterySettingsViewModelEvent(_ event: BatterySettingsViewModel.Event) {
+        switch event {
+        case .didChangeBatteryState:
+            self.alert = .didChangeState
+
+        case .didFailToChangeState:
+            self.alert = .didFailToChangeState
+        }
+    }
+}
+
+// MARK: - Simulator Details View Event
+
+private extension SimulatorDetailsCoordinator {
+    func handleSimulatorDetailsViewModelEvent(_ event: SimulatorDetailsViewModel.Event) {
+        switch event {
+        case .didSelectDeleteSimulator(let simulator):
+            self.alert = .didSelectDeleteSimulator(simulator)
+
+        case .didSelectEraseContentAndSettings(let simulator):
+            self.alert = .didSelectEraseData(simulator)
+
+        case .didSelectBatterySettings(let simulator, let state, let level):
+            guard simulator.state == "Booted" else {
+                self.alert = .simulatorNotBooted
+                return
+            }
+
+            self.sheetDestination = .batterySettings(simulator, state, level)
+
+        case .didFailToRetrieveBatteryState:
+            self.alert = .didFailToRetrieveBatteryState
         }
     }
 }

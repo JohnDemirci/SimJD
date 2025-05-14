@@ -9,15 +9,14 @@ import SwiftUI
 
 struct SimulatorDetailsVCoordinatingView: View {
     @State private var coordinator = SimulatorDetailsCoordinator()
+    @State var alert: Alert?
 
     private let simManager: SimulatorManager = .live
-
-    @State var alert: Alert?
 
     var body: some View {
         SimulatorDetailsView(
             viewModel: SimulatorDetailsViewModel(sendEvent: { (event: SimulatorDetailsViewModel.Event) in
-                coordinator.handleAction(.simulatorDetailsViewEvent(event))
+                coordinator.handleAction(.simulatorDetailsViewModelEvent(event))
             })
         )
         .nsAlert(item: $coordinator.alert) { (alert: SimulatorDetailsCoordinator.Alert) in
@@ -28,12 +27,12 @@ struct SimulatorDetailsVCoordinatingView: View {
             case .batterySettings(let simulator, let state, let level):
                 BatterySettingsView(
                     viewModel: BatterySettingsViewModel(
-                        simulator: simulator,
-                        manager: simManager,
-                        state: state,
                         level: level,
+                        manager: simManager,
+                        simulator: simulator,
+                        state: state,
                         sendEvent: { (event: BatterySettingsViewModel.Event) in
-                            coordinator.handleAction(.simulatorBatterySettingsViewModelEvent(event))
+                            coordinator.handleAction(.batterySettingsViewModelEvent(event))
                         }
                     )
                 )

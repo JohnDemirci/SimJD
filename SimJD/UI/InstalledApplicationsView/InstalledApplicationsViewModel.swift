@@ -17,9 +17,10 @@ final class InstalledApplicationsViewModel {
         case simulatorNotBooted
     }
 
-    private let simulatorManager: SimulatorManager
-    private let sendEvent: (Event) -> Void
     private let copyBoard: CopyBoardProtocol
+    private let sendEvent: (Event) -> Void
+    private let simulatorManager: SimulatorManager
+
     private(set) var installedApplications: [InstalledAppDetail]?
 
     var selectedApp: InstalledAppDetail.ID?
@@ -29,9 +30,9 @@ final class InstalledApplicationsViewModel {
         simulatorManager: SimulatorManager = .live,
         sendEvent: @escaping (Event) -> Void
     ) {
-        self.simulatorManager = simulatorManager
-        self.sendEvent = sendEvent
         self.copyBoard = copyBoard
+        self.sendEvent = sendEvent
+        self.simulatorManager = simulatorManager
     }
 }
 
@@ -51,15 +52,12 @@ extension InstalledApplicationsViewModel {
         self.installedApplications = simulatorManager.installedApplications[selectedSimulator.id]
     }
 
-    func didSelectCopyBundleID(_ apps: Set<InstalledAppDetail.ID>) {
-        guard
-            let installedApp = getInstalledAppFromSelections(apps),
-            let bundleID = installedApp.bundleIdentifier
-        else {
+    func didSelectApp(_ apps: Set<InstalledAppDetail.ID>) {
+        guard let installedApp = getInstalledAppFromSelections(apps) else {
             return
         }
 
-        copyToClipboard(bundleID)
+        sendEvent(.didSelectApp(installedApp))
     }
 
     func didSelectCopyApplicationPath(_ apps: Set<InstalledAppDetail.ID>) {
@@ -73,15 +71,15 @@ extension InstalledApplicationsViewModel {
         copyToClipboard(dataContainer)
     }
 
-    func didSelectCopyDataContainerPath(_ apps: Set<InstalledAppDetail.ID>) {
+    func didSelectCopyBundleID(_ apps: Set<InstalledAppDetail.ID>) {
         guard
             let installedApp = getInstalledAppFromSelections(apps),
-            let path = installedApp.path
+            let bundleID = installedApp.bundleIdentifier
         else {
             return
         }
 
-        copyToClipboard(path)
+        copyToClipboard(bundleID)
     }
 
     func didSelectCopyBundlePath(_ apps: Set<InstalledAppDetail.ID>) {
@@ -95,12 +93,15 @@ extension InstalledApplicationsViewModel {
         copyToClipboard(bundle)
     }
 
-    func didSelectApp(_ apps: Set<InstalledAppDetail.ID>) {
-        guard let installedApp = getInstalledAppFromSelections(apps) else {
+    func didSelectCopyDataContainerPath(_ apps: Set<InstalledAppDetail.ID>) {
+        guard
+            let installedApp = getInstalledAppFromSelections(apps),
+            let path = installedApp.path
+        else {
             return
         }
 
-        sendEvent(.didSelectApp(installedApp))
+        copyToClipboard(path)
     }
 
     func fetchAndObserve() {

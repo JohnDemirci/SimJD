@@ -18,9 +18,7 @@ final class SimulatorGeolocationCoordinator {
         case didFailUpdateLocation
         case didUpdateLocation
 
-        var id: AnyHashable {
-            self
-        }
+        var id: AnyHashable { self }
     }
 
     var alert: Alert?
