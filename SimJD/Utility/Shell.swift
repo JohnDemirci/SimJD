@@ -33,6 +33,8 @@ struct Shell: Sendable {
              .simulatorLocale,
              .activeProcesses,
              .createSimulator,
+             .batteryStatusUpdate,
+             .retrieveOverrides,
              .getDeviceTypes,
              .getRuntimes,
              .updateLocation,
@@ -193,13 +195,15 @@ extension Shell {
         case uninstallApp(String, String)
         case updateLocation(String, Double, Double)
         case simulatorLocale(String)
+        case batteryStatusUpdate(String, String, String)
+        case retrieveOverrides(String)
 
         var path: Path {
             switch self {
             case .activeProcesses:
                 .bash
 
-            case .shotdown, .installedApps, .eraseContents, .uninstallApp, .deleteSimulator, .fetchSimulators, .updateLocation, .simulatorLocale, .getDeviceTypes, .getRuntimes, .createSimulator:
+            case .shotdown, .installedApps, .eraseContents, .uninstallApp, .deleteSimulator, .fetchSimulators, .updateLocation, .simulatorLocale, .getDeviceTypes, .getRuntimes, .createSimulator, .batteryStatusUpdate, .retrieveOverrides:
                 .xcrun
 
             case .openSimulator:
@@ -254,6 +258,26 @@ extension Shell {
                     "read",
                     "-globalDomain",
                     "AppleLanguages"
+                ]
+
+            case .batteryStatusUpdate(let simulatorID, let state, let level):
+                [
+                    "simctl",
+                    "status_bar",
+                    simulatorID,
+                    "override",
+                    "--batteryState",
+                    state,
+                    "--batteryLevel",
+                    level
+                ]
+
+            case .retrieveOverrides(let id):
+                [
+                    "simctl",
+                    "status_bar",
+                    id,
+                    "list"
                 ]
             }
         }

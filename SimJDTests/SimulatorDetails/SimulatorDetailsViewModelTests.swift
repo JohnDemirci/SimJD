@@ -101,6 +101,50 @@ extension SimulatorDetailsViewModelTests {
 
         XCTAssertEqual(eventHandler.event, .didSelectEraseContentAndSettings(.sample))
     }
+
+    func testDidSelectBatterySettingsSuccess() {
+        let client = SimulatorClient
+            .testing
+            .mutate(
+                _retrieveBatteryState: { _ in
+                    return .success((BatteryState.charging, 33))
+                }
+            )
+
+        let manager = SimulatorManager(client: client)
+
+        self.viewModel = .init(
+            simulatorManager: manager,
+            sendEvent: { [weak self] (event: SimulatorDetailsViewModel.Event) in
+                self?.eventHandler.handle(event)
+            }
+        )
+
+        viewModel.handle(action: .actionsViewEvent(.didSelectBatterySettings(.sample)))
+        XCTAssertEqual(eventHandler.event, .didSelectBatterySettings(.sample, .charging, 33))
+    }
+
+    func testDidSelectBatterySettingsFailure() {
+        let client = SimulatorClient
+            .testing
+            .mutate(
+                _retrieveBatteryState: { _ in
+                    return .failure(Failure.message("Error"))
+                }
+            )
+
+        let manager = SimulatorManager(client: client)
+
+        self.viewModel = .init(
+            simulatorManager: manager,
+            sendEvent: { [weak self] (event: SimulatorDetailsViewModel.Event) in
+                self?.eventHandler.handle(event)
+            }
+        )
+
+        viewModel.handle(action: .actionsViewEvent(.didSelectBatterySettings(.sample)))
+        XCTAssertEqual(eventHandler.event, .didFailToRetrieveBatteryState)
+    }
 }
 
 private final class EventHandler {

@@ -11,6 +11,7 @@ struct SimulatorSettingsView: View {
     enum Event {
         case didSelectEraseContentAndSettings(Simulator)
         case didSelectDeleteSimulator(Simulator)
+        case didSelectBatterySettings(Simulator)
     }
 
     private let columnWidth: CGFloat
@@ -39,6 +40,10 @@ struct SimulatorSettingsView: View {
 
                     Button("Delete Simulator") {
                         sendEvent(.didSelectDeleteSimulator(selectedSimulator))
+                    }
+
+                    Button("Battery Settings") {
+                        sendEvent(.didSelectBatterySettings(selectedSimulator))
                     }
                 }
                 .buttonStyle(.borderedProminent)

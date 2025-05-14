@@ -22,6 +22,8 @@ struct SimulatorClient: @unchecked Sendable {
     fileprivate var _getDeviceList: () -> Result<[String], Failure>
     fileprivate var _getRuntimes: () -> Result<[String], Failure>
     fileprivate var _fetchLocale: (String) -> Result<String, Failure>
+    fileprivate var _updateBatteryState: (String, BatteryState, Int) -> Result<Void, Failure>
+    fileprivate var _retrieveBatteryState: (String) -> Result<(BatteryState, Int), Failure>
 
     private init(
         _shutdownSimulator: @escaping (String) -> Result<Void, Failure>,
@@ -36,7 +38,9 @@ struct SimulatorClient: @unchecked Sendable {
         _updateLocation: @escaping (String, Double, Double) -> Result<Void, Failure>,
         _getDeviceList: @escaping () -> Result<[String], Failure>,
         _getRuntimes: @escaping () -> Result<[String], Failure>,
-        _fetchLocale: @escaping (String) -> Result<String, Failure>
+        _fetchLocale: @escaping (String) -> Result<String, Failure>,
+        _updateBatteryState: @escaping (String, BatteryState, Int) -> Result<Void, Failure>,
+        _retrieveBatteryState: @escaping (String) -> Result<(BatteryState, Int), Failure>
     ) {
         self._shutdownSimulator = _shutdownSimulator
         self._openSimulator = _openSimulator
@@ -51,6 +55,8 @@ struct SimulatorClient: @unchecked Sendable {
         self._getDeviceList = _getDeviceList
         self._getRuntimes = _getRuntimes
         self._fetchLocale = _fetchLocale
+        self._updateBatteryState = _updateBatteryState
+        self._retrieveBatteryState = _retrieveBatteryState
     }
 
     func shutdownSimulator(simulator: String) -> Result<Void, Failure> {
@@ -104,38 +110,52 @@ struct SimulatorClient: @unchecked Sendable {
     func fetchLocale(_ id: String) -> Result<String, Failure> {
         return _fetchLocale(id)
     }
+
+    func updateBatteryState(
+        id: String,
+        state: BatteryState,
+        level: Int
+    ) -> Result<Void, Failure> {
+        return _updateBatteryState(id, state, level)
+    }
+
+    func retrieveStatusBarState(
+        id: String
+    ) -> Result<(BatteryState, Int), Failure> {
+        return _retrieveBatteryState(id)
+    }
 }
 
 extension SimulatorClient {
     static let live: SimulatorClient = .init(
-        _shutdownSimulator: {
-            handleShutdownSimulator(id: $0)
+        _shutdownSimulator: { (id: String) in
+            handleShutdownSimulator(id: id)
         },
-        _openSimulator: {
-            handleOpenSimulator($0)
+        _openSimulator: { (id: String) in
+            handleOpenSimulator(id)
         },
         _createSimulator: {
             handleCreateSimulator(name: $0, deviceIdentifier: $1, runtimeIdentifier: $2)
         },
-        _activeProcesses: {
-            handleRunningProcesses($0)
+        _activeProcesses: { (id: String) in
+            handleRunningProcesses(id)
         },
-        _eraseContentAndSettings: {
-            handleEraseContentAndSettings($0)
+        _eraseContentAndSettings: { (id: String) in
+            handleEraseContentAndSettings(id)
         },
-        _installedApps: {
-            handleInstalledApplications($0)
+        _installedApps: { (id: String) in
+            handleInstalledApplications(id)
         },
-        _uninstallApp: {
-            handleUninstallApplication($0, simulatorID: $1)
+        _uninstallApp: { (installedApp: InstalledAppDetail, id: String) in
+            handleUninstallApplication(installedApp, simulatorID: id)
         },
-        _deleteSimulator: {
-            handleDeleteSimulator($0)
+        _deleteSimulator: { (id: String) in
+            handleDeleteSimulator(id)
         },
         _fetchSimulatorDictionary: {
             handleFetchSimulators()
         },
-        _updateLocation: { simulatorID, latitude, longtitude in
+        _updateLocation: { (simulatorID: String, latitude: Double, longtitude: Double) in
             handleUpdateLocation(
                 simulatorID: simulatorID,
                 latitude: latitude,
@@ -148,8 +168,14 @@ extension SimulatorClient {
         _getRuntimes: {
             handleGetRuntimes()
         },
-        _fetchLocale: { id in
+        _fetchLocale: { (id: String) in
             handleFetchLocale(id)
+        },
+        _updateBatteryState: { (id: String, state: BatteryState, level: Int) in
+            handleUpdateBatteryState(id: id, state: state, level: level)
+        },
+        _retrieveBatteryState: { (id: String) in
+            handleRetrieveBatteryState(id: id)
         }
     )
 
@@ -170,7 +196,9 @@ extension SimulatorClient {
         _updateLocation: { _, _, _ in fatalError("not implemented") },
         _getDeviceList: { fatalError("not implemented") },
         _getRuntimes: { fatalError("not implemented") },
-        _fetchLocale: { _ in fatalError("not implemented") }
+        _fetchLocale: { _ in fatalError("not implemented") },
+        _updateBatteryState: { _, _, _ in fatalError("not implemented") },
+        _retrieveBatteryState: { _ in fatalError("not implemented") }
     )
     #endif
 }
@@ -191,7 +219,9 @@ extension SimulatorClient {
         _updateLocation: ((String, Double, Double) -> Result<Void, Failure>)? = nil,
         _getDeviceList: ( () -> Result<[String], Failure> )? = nil,
         _getRuntimes: ( () -> Result<[String], Failure> )? = nil,
-        _fetchLocale: ((String) -> Result<String, Failure>)? = nil
+        _fetchLocale: ((String) -> Result<String, Failure>)? = nil,
+        _updateBatteryState: ((String, BatteryState, Int) -> Result<Void, Failure>)? = nil,
+        _retrieveBatteryState: ((String) -> Result<(BatteryState, Int), Failure>)? = nil
     ) -> Self {
         if let _shutdownSimulator = _shutdownSimulator {
             self._shutdownSimulator = _shutdownSimulator
@@ -243,6 +273,14 @@ extension SimulatorClient {
 
         if let _fetchLocale = _fetchLocale {
             self._fetchLocale = _fetchLocale
+        }
+
+        if let _updateBatteryState {
+            self._updateBatteryState = _updateBatteryState
+        }
+
+        if let _retrieveBatteryState {
+            self._retrieveBatteryState = _retrieveBatteryState
         }
 
         return self
