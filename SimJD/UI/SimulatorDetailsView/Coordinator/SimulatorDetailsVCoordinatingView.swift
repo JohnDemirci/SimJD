@@ -16,12 +16,28 @@ struct SimulatorDetailsVCoordinatingView: View {
 
     var body: some View {
         SimulatorDetailsView(
-            viewModel: .init(sendEvent: { event in
+            viewModel: SimulatorDetailsViewModel(sendEvent: { (event: SimulatorDetailsViewModel.Event) in
                 coordinator.handleAction(.simulatorDetailsViewEvent(event))
             })
         )
-        .nsAlert(item: $coordinator.alert) {
-            coordinator.getJDAlert(for: $0)
+        .nsAlert(item: $coordinator.alert) { (alert: SimulatorDetailsCoordinator.Alert) in
+            coordinator.getJDAlert(for: alert)
+        }
+        .sheet(item: $coordinator.sheetDestination) { (destination: SimulatorDetailsCoordinator.SheetDestination) in
+            switch destination {
+            case .batterySettings(let simulator, let state, let level):
+                BatterySettingsView(
+                    viewModel: BatterySettingsViewModel(
+                        simulator: simulator,
+                        manager: simManager,
+                        state: state,
+                        level: level,
+                        sendEvent: { (event: BatterySettingsViewModel.Event) in
+                            coordinator.handleAction(.simulatorBatterySettingsViewModelEvent(event))
+                        }
+                    )
+                )
+            }
         }
     }
 }

@@ -393,4 +393,18 @@ extension SimulatorManager {
             }
         }
     }
+
+    @discardableResult
+    func updateBatteryState(
+        id: String,
+        state: BatteryState,
+        level: Int
+    ) -> Result<Void, Failure> {
+        simulatorClient.updateBatteryState(id: id, state: state, level: level)
+    }
+
+    @discardableResult
+    func retrieveBatteryState(id: String) -> Result<(BatteryState, Int), Failure> {
+        simulatorClient.retrieveStatusBarState(id: id)
+    }
 }

@@ -24,27 +24,29 @@ struct CreateSimulatorView: View {
     }
 
     var body: some View {
-        VStack {
-            Picker("Device Type", selection: $viewModel.selectedDeviceType) {
-                ForEach(deviceTypes, id: \.self) { deviceType in
-                    Text(deviceType)
+        PanelView(title: "Create Simulator", columnWidth: 400) {
+            VStack {
+                Picker("Device Type", selection: $viewModel.selectedDeviceType) {
+                    ForEach(deviceTypes, id: \.self) { deviceType in
+                        Text(deviceType)
+                    }
                 }
-            }
-            Picker("Runtime", selection: $viewModel.selectedRuntime) {
-                ForEach(runtimes, id: \.self) { runtime in
-                    Text(runtime)
+                Picker("Runtime", selection: $viewModel.selectedRuntime) {
+                    ForEach(runtimes, id: \.self) { runtime in
+                        Text(runtime)
+                    }
                 }
-            }
-            TextField("Title", text: $viewModel.name)
+                TextField("Title", text: $viewModel.name)
 
-            Button("Create") {
-                viewModel.handleDidSelectCreate(manager)
+                Button("Create") {
+                    viewModel.handleDidSelectCreate(manager)
+                }
+                .buttonStyle(.borderedProminent)
             }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding()
-        .task {
-            await KeyboardEvent.shared.removeObservation()
+            .padding()
+            .task {
+                await KeyboardEvent.shared.removeObservation()
+            }
         }
         .onDisappear {
             Task {

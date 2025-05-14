@@ -17,6 +17,8 @@ final class SimulatorDetailsViewModel {
     enum Event: Equatable {
         case didSelectEraseContentAndSettings(Simulator)
         case didSelectDeleteSimulator(Simulator)
+        case didSelectBatterySettings(Simulator, BatteryState, Int)
+        case didFailToRetrieveBatteryState
     }
 
     var selectedTab: Tab = .documents
@@ -59,6 +61,13 @@ extension SimulatorDetailsViewModel {
                 sendEvent(.didSelectDeleteSimulator(sim))
             case .didSelectEraseContentAndSettings(let sim):
                 sendEvent(.didSelectEraseContentAndSettings(sim))
+            case .didSelectBatterySettings(let sim):
+                switch simulatorManager.retrieveBatteryState(id: sim.id) {
+                case .success(let stateAndLevel):
+                    sendEvent(.didSelectBatterySettings(sim, stateAndLevel.0, stateAndLevel.1))
+                case .failure:
+                    sendEvent(.didFailToRetrieveBatteryState)
+                }
             }
         }
     }
