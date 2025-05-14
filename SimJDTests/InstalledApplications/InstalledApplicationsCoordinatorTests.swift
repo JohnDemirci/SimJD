@@ -345,46 +345,46 @@ private extension InstalledAppDetail {
     static let apple: Self = .init(
         applicationType: "User",
         bundle: "AppleBundle",
-        displayName: "Apple",
         bundleIdentifier: "Apple",
         bundleName: "Apple",
         bundleVersion: "1.2.3",
         dataContainer: "AppleContainer",
+        displayName: "Apple",
         path: "ApplePath"
     )
 
     static let samsung: Self = .init(
         applicationType: "User",
         bundle: "SamsungBundle",
-        displayName: "Samsung",
         bundleIdentifier: "Samsung",
         bundleName: "Samsung",
         bundleVersion: "1.2.3",
         dataContainer: "SamsungContainer",
+        displayName: "Samsung",
         path: "SamsungPath"
     )
 
 	static let containerless: Self = .init(
 		applicationType: "User",
 		bundle: "Containerless",
-		displayName: "Containerless",
-		bundleIdentifier: "Containerless",
-		bundleName: "Containerless",
-		bundleVersion: "1.2.3",
-		dataContainer: nil,
+        bundleIdentifier: "Containerless",
+        bundleName: "Containerless",
+        bundleVersion: "1.2.3",
+        dataContainer: nil,
+        displayName: "Containerless",
 		path: "Containerless"
 	)
 }
 
 private extension FileItem {
-	static let sample: Self = .init(
-		name: "one",
-		url: .applicationDirectory,
-		isDirectory: true,
-		creationDate: nil,
-		modificationDate: nil,
-		size: nil
-	)
+    static let sample: Self = FileItem(
+        creationDate: nil,
+        isDirectory: true,
+        modificationDate: nil,
+        name: "one",
+        size: nil,
+        url: .applicationDirectory
+    )
 }
 
 private extension Simulator {

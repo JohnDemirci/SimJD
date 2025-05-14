@@ -8,11 +8,11 @@
 import Foundation
 
 struct FileItem: Identifiable, Hashable {
-    let id = UUID()
-    let name: String
-    let url: URL
-    let isDirectory: Bool
     let creationDate: Date?
+    let id = UUID()
+    let isDirectory: Bool
     let modificationDate: Date?
+    let name: String
     let size: Int?
+    let url: URL
 }

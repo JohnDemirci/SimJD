@@ -159,13 +159,13 @@ private extension Simulator {
     static let sample: Self = .init(
         dataPath: "path",
         dataPathSize: nil,
-        logPath: "path2",
-        udid: "123",
-        isAvailable: false,
+        deviceImage: .iphone(.gen3),
         deviceTypeIdentifier: "identifier",
-        state: "Shutdown",
+        isAvailable: false,
+        logPath: "path2",
         name: "name",
         os: .iOS("18"),
-        deviceImage: .iphone(.gen3)
+        state: "Shutdown",
+        udid: "123"
     )
 }

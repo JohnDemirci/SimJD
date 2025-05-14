@@ -19,19 +19,19 @@ final class RunningProcessesViewModelTests: XCTestCase {
         super.setUp()
         self.client = SimulatorClient.testing
             .mutate(
-                _openSimulator: { _ in
-                    return .success(())
-                },
                 _activeProcesses: { _ in
                     return .success([
-                        .init(pid: "1", status: "1", label: "1")
+                        .init(label: "1", pid: "1", status: "1")
                     ])
+                },
+                _fetchLocale: { _ in
+                    return .success("en-US")
                 },
                 _installedApps: { _ in
                     return  .success([])
                 },
-                _fetchLocale: { _ in
-                    return .success("en-US")
+                _openSimulator: { _ in
+                    return .success(())
                 }
             )
         self.manager = SimulatorManager(client: client)
@@ -58,7 +58,10 @@ extension RunningProcessesViewModelTests {
         )
 
         self.viewModel.emptyProcesses()
-        XCTAssertEqual(viewModel.processes, [.init(pid: "1", status: "1", label: "1")])
+        XCTAssertEqual(
+            viewModel.processes,
+            [.init(label: "1", pid: "1", status: "1")]
+        )
     }
 
     func testProcessesReturnEmptyArrayWhenNoSimulatorSelected() {
@@ -103,11 +106,11 @@ private final class EventHandler {
 
 extension Simulator {
     fileprivate static let sample = Simulator(
-        udid: "uuid",
-        isAvailable: true,
         deviceTypeIdentifier: "id",
-        state: "booted",
+        isAvailable: true,
         name: "sim",
-        os: .iOS("18")
+        os: .iOS("18"),
+        state: "booted",
+        udid: "uuid"
     )
 }

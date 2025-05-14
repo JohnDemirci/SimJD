@@ -19,10 +19,10 @@ final class InstalledApplicationsDetailViewModelTests: XCTestCase {
 
         XCTAssertEqual(actionNames, [
             "Application Sandbox Data",
+            "Info.plist",
             "Open User Defaults",
             "Remove UserDefaults",
-            "Uninstall Application",
-            "Info.plist"
+            "Uninstall Application"
         ])
     }
 
@@ -81,22 +81,22 @@ private extension InstalledAppDetail {
     static let apple: Self = .init(
         applicationType: "User",
         bundle: "AppleBundle",
-        displayName: "Apple",
         bundleIdentifier: "Apple",
         bundleName: "Apple",
         bundleVersion: "1.2.3",
         dataContainer: "AppleContainer",
+        displayName: "Apple",
         path: "ApplePath"
     )
 
     static let samsung: Self = .init(
         applicationType: "User",
         bundle: "SamsungBundle",
-        displayName: "Samsung",
         bundleIdentifier: "Samsung",
         bundleName: "Samsung",
         bundleVersion: "1.2.3",
         dataContainer: "SamsungContainer",
+        displayName: "Samsung",
         path: "SamsungPath"
     )
 }

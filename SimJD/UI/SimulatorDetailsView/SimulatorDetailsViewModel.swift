@@ -15,22 +15,22 @@ final class SimulatorDetailsViewModel {
     }
 
     enum Event: Equatable {
+        case didFailToRetrieveBatteryState
         case didSelectEraseContentAndSettings(Simulator)
         case didSelectDeleteSimulator(Simulator)
         case didSelectBatterySettings(Simulator, BatteryState, Int)
-        case didFailToRetrieveBatteryState
     }
 
-    var selectedTab: Tab = .documents
-    private let simulatorManager: SimulatorManager
     private let sendEvent: (Event) -> Void
+    private let simulatorManager: SimulatorManager
+    var selectedTab: Tab = .documents
 
     init(
         simulatorManager: SimulatorManager = .live,
         sendEvent: @escaping (Event) -> Void
     ) {
-        self.simulatorManager = simulatorManager
         self.sendEvent = sendEvent
+        self.simulatorManager = simulatorManager
     }
 }
 
@@ -57,10 +57,6 @@ extension SimulatorDetailsViewModel {
         switch action {
         case .actionsViewEvent(let event):
             switch event {
-            case .didSelectDeleteSimulator(let sim):
-                sendEvent(.didSelectDeleteSimulator(sim))
-            case .didSelectEraseContentAndSettings(let sim):
-                sendEvent(.didSelectEraseContentAndSettings(sim))
             case .didSelectBatterySettings(let sim):
                 switch simulatorManager.retrieveBatteryState(id: sim.id) {
                 case .success(let stateAndLevel):
@@ -68,6 +64,10 @@ extension SimulatorDetailsViewModel {
                 case .failure:
                     sendEvent(.didFailToRetrieveBatteryState)
                 }
+            case .didSelectDeleteSimulator(let sim):
+                sendEvent(.didSelectDeleteSimulator(sim))
+            case .didSelectEraseContentAndSettings(let sim):
+                sendEvent(.didSelectEraseContentAndSettings(sim))
             }
         }
     }

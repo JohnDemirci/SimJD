@@ -225,10 +225,8 @@ extension FolderManagerTests {
         let client = FolderClient
             .testing
             .mutate(
-                _openUserDefaults: openUserDefaults,
-                _removeUserDefaults: removeUserDefaults,
-                _openFile: openFile,
-                _fetchFileItems: fetchFileItems
+                _fetchFileItems: fetchFileItems, _openFile: openFile, _openUserDefaults: openUserDefaults,
+                _removeUserDefaults: removeUserDefaults
             )
 
         self.folderManager = .init(client)
@@ -239,53 +237,53 @@ private extension InstalledAppDetail {
     static let sample: Self = .init(
         applicationType: "User",
         bundle: "Sample",
-        displayName: "aAmple",
         bundleIdentifier: "Sample",
         bundleName: "Sample",
         bundleVersion: "Sample",
         dataContainer: "Sample",
+        displayName: "Sample",
         path: "Sample"
     )
 
     static let sampleWithoutContainer: Self = .init(
         applicationType: "User",
         bundle: "Sample",
-        displayName: "aAmple",
         bundleIdentifier: "Sample",
         bundleName: "Sample",
         bundleVersion: "Sample",
         dataContainer: nil,
+        displayName: "Sample",
         path: "Sample"
     )
 
     static let sampleWithoutBundleID: Self = .init(
         applicationType: "User",
         bundle: "Sample",
-        displayName: "aAmple",
         bundleIdentifier: nil,
         bundleName: "Sample",
         bundleVersion: "Sample",
         dataContainer: "Sample",
+        displayName: "Sample",
         path: "Sample"
     )
 }
 
 private extension FileItem {
     static let sample: Self = .init(
-        name: "1",
-        url: .applicationDirectory,
-        isDirectory: true,
         creationDate: nil,
+        isDirectory: true,
         modificationDate: nil,
-        size: nil
+        name: "1",
+        size: nil,
+        url: .applicationDirectory
     )
 
     static let sample2: Self = .init(
-        name: "2",
-        url: .applicationDirectory,
-        isDirectory: false,
         creationDate: nil,
+        isDirectory: true,
         modificationDate: nil,
-        size: nil
+        name: "2",
+        size: nil,
+        url: .applicationDirectory
     )
 }

@@ -16,21 +16,14 @@ struct InstalledApplicationDetailView: View {
 
     var body: some View {
         Table(viewModel.actions, selection: $viewModel.selection) {
-            TableColumn("Action") { item in
+            TableColumn("Action") { (item: InstalledApplicationAction) in
                 Text(item.name)
             }
         }
         .contextMenu(
             forSelectionType: InstalledApplicationAction.ID.self,
-            menu: {
-                switch $0.first {
-                case "Info.plist":
-                    EmptyView()
-                default:
-                    EmptyView()
-                }
-            },
-            primaryAction: { selections in
+            menu: { _ in EmptyView() },
+            primaryAction: { (selections: Set<InstalledApplicationAction.ID>) in
                 viewModel.didSelectAction(selections)
             }
         )

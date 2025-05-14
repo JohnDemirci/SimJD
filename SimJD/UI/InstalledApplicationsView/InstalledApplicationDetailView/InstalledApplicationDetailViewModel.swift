@@ -14,15 +14,15 @@ final class InstalledApplicationDetailViewModel {
         case couldNotOpenUserDefaults(InstalledAppDetail)
         case didSelectApplicationSandboxData(InstalledAppDetail)
         case didSelectOpenUserDefaults(InstalledAppDetail)
+        case didSelectInfoPlist(InstalledAppDetail)
         case didSelectRemoveUserDefaults(InstalledAppDetail)
         case didSelectUninstallApplication(InstalledAppDetail)
-        case didSelectInfoPlist(InstalledAppDetail)
     }
-
-    var selection: InstalledApplicationAction.ID?
 
     private let installedApplication: InstalledAppDetail
     private let sendEvent: (Event) -> Void
+
+    var selection: InstalledApplicationAction.ID?
 
     init(
         installedApplication: InstalledAppDetail,
@@ -42,6 +42,10 @@ extension InstalledApplicationDetailViewModel {
                 guard let self else { return }
                 self.sendEvent(.didSelectApplicationSandboxData(self.installedApplication))
             }),
+            .init(name: "Info.plist", action: { [weak self] in
+                guard let self else { return }
+                self.sendEvent(.didSelectInfoPlist(self.installedApplication))
+            }),
             .init(name: "Open User Defaults", action: { [weak self] in
                 guard let self else { return }
                 self.sendEvent(.didSelectOpenUserDefaults(self.installedApplication))
@@ -53,10 +57,6 @@ extension InstalledApplicationDetailViewModel {
             .init(name: "Uninstall Application", action: { [weak self] in
                 guard let self else { return }
                 self.sendEvent(.didSelectUninstallApplication(self.installedApplication))
-            }),
-            .init(name: "Info.plist", action: { [weak self] in
-                guard let self else { return }
-                self.sendEvent(.didSelectInfoPlist(self.installedApplication))
             })
         ]
     }

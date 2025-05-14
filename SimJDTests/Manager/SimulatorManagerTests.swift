@@ -836,19 +836,19 @@ extension SimulatorManagerTests {
         let client = SimulatorClient
             .testing
             .mutate(
-                _shutdownSimulator: _shutdownSimulator,
-                _openSimulator: _openSimulator,
                 _activeProcesses: _activeProcesses,
                 _createSimulator: _createSimulator,
-                _eraseContentAndSettings: _eraseContentAndSettings,
-                _installedApps: _installedApps,
-                _uninstallApp: _uninstallApp,
                 _deleteSimulator: _deleteSimulator,
+                _eraseContentAndSettings: _eraseContentAndSettings,
+                _fetchLocale: _fetchLocale,
                 _fetchSimulatorDictionary: _fetchSimulatorDictionary,
-                _updateLocation: _updateLocation,
                 _getDeviceList: _getDeviceList,
                 _getRuntimes: _getRuntimes,
-                _fetchLocale: _fetchLocale
+                _installedApps: _installedApps,
+                _openSimulator: _openSimulator,
+                _shutdownSimulator: _shutdownSimulator,
+                _uninstallApp: _uninstallApp,
+                _updateLocation: _updateLocation
             )
 
         self.manager = .init(client: client)
@@ -859,74 +859,74 @@ private extension Simulator {
     static let sample: Simulator = .init(
         dataPath: "path",
         dataPathSize: nil,
-        logPath: "logpath",
-        udid: "123",
-        isAvailable: true,
+        deviceImage: .iphone(.gen3),
         deviceTypeIdentifier: "id",
-        state: "Shutdown",
+        isAvailable: true,
+        logPath: "logpath",
         name: "name",
         os: .iOS("18"),
-        deviceImage: .iphone(.gen3)
+        state: "Shutdown",
+        udid: "123"
     )
 
     static let sample2: Simulator = .init(
         dataPath: "path2",
         dataPathSize: nil,
-        logPath: "logpath2",
-        udid: "1234",
-        isAvailable: true,
+        deviceImage: .iphone(.gen3),
         deviceTypeIdentifier: "id2",
-        state: "Shutdown",
+        isAvailable: true,
+        logPath: "logpath2",
         name: "name2",
         os: .iOS("18"),
-        deviceImage: .iphone(.gen3)
+        state: "Shutdown",
+        udid: "1234"
     )
 
     static let booted: Self = .init(
         dataPath: "bootedpath2",
         dataPathSize: nil,
-        logPath: "logpath2",
-        udid: "booted12",
-        isAvailable: true,
+        deviceImage: .iphone(.gen3),
         deviceTypeIdentifier: "bootedid",
-        state: "Booted",
+        isAvailable: true,
+        logPath: "logpath2",
         name: "bootedname",
         os: .iOS("18"),
-        deviceImage: .iphone(.gen3)
+        state: "Booted",
+        udid: "booted12"
     )
 
     static let booted2: Self = .init(
         dataPath: "path2",
         dataPathSize: nil,
-        logPath: "logpath2",
-        udid: "booted1234",
-        isAvailable: true,
+        deviceImage: .iphone(.gen3),
         deviceTypeIdentifier: "bootedid2",
-        state: "Booted",
+        isAvailable: true,
+        logPath: "logpath2",
         name: "bootedname2",
         os: .iOS("18"),
-        deviceImage: .iphone(.gen3)
+        state: "Booted",
+        udid: "booted1234"
     )
 
     static let simWithNoOS = Simulator(
         dataPath: "oslesspath",
         dataPathSize: nil,
-        logPath: "oslesslogpath",
-        udid: "oslessuuid",
-        isAvailable: true,
+        deviceImage: .iphone(.gen3),
         deviceTypeIdentifier: "oslessDeviceTypeIdentifier",
-        state: "Shutdown",
+        isAvailable: true,
+        logPath: "oslesslogpath",
         name: "oslessSimulator",
         os: nil,
-        deviceImage: .iphone(.gen3)
+        state: "Shutdown",
+        udid: "oslessuuid"
     )
 }
 
 private extension SimJD.ProcessInfo {
     static let sample: Self = .init(
+        label: "123",
         pid: "123",
-        status: "123",
-        label: "123"
+        status: "123"
     )
 }
 
@@ -934,11 +934,11 @@ private extension InstalledAppDetail {
     static var fake: Self = .init(
         applicationType: "User",
         bundle: "Bundle",
-        displayName: "Display",
         bundleIdentifier: "BundleID",
         bundleName: "BundleName",
         bundleVersion: "BundleVersion",
         dataContainer: "DataContainer",
+        displayName: "Display",
         path: "Path"
     )
 }

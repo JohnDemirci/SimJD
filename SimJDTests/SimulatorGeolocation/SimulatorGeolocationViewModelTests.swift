@@ -111,12 +111,12 @@ private final class EventHandler {
 
 extension Simulator {
     fileprivate static let sample = Simulator(
-        udid: "uuid",
-        isAvailable: true,
         deviceTypeIdentifier: "id",
-        state: "booted",
+        isAvailable: true,
         name: "sim",
-        os: .iOS("18")
+        os: .iOS("18"),
+        state: "booted",
+        udid: "uuid"
     )
 }
 

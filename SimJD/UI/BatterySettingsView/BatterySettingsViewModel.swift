@@ -11,22 +11,22 @@ import SwiftUI
 @Observable
 final class BatterySettingsViewModel {
     enum Event {
+        case didChangeBatteryState
         case didFailToChangeState
-        case didChangeState
     }
 
-    private let simulator: Simulator
     private let manager: SimulatorManager
     private let sendEvent: (Event) -> Void
+    private let simulator: Simulator
 
-    var state: BatteryState
     var level: Int
+    var state: BatteryState
 
     init(
-        simulator: Simulator,
-        manager: SimulatorManager,
-        state: BatteryState,
         level: Int,
+        manager: SimulatorManager,
+        simulator: Simulator,
+        state: BatteryState,
         sendEvent: @escaping (Event) -> Void
     ) {
         self.simulator = simulator
@@ -39,7 +39,7 @@ final class BatterySettingsViewModel {
     func didSelectDone() {
         switch manager.updateBatteryState(id: simulator.id, state: state, level: level) {
         case .success:
-            sendEvent(.didChangeState)
+            sendEvent(.didChangeBatteryState)
         case .failure:
             sendEvent(.didFailToChangeState)
         }

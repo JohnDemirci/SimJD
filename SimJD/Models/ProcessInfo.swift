@@ -6,9 +6,9 @@
 //
 
 struct ProcessInfo: Identifiable, Hashable {
+    let label: String
     let pid: String
     let status: String
-    let label: String
 
     var id: String {
         "\(pid)\(status)\(label)"

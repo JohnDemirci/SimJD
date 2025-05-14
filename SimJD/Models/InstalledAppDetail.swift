@@ -10,11 +10,11 @@ import Foundation
 struct InstalledAppDetail: Hashable, Identifiable {
     var applicationType: String?
     var bundle: String?
-    var displayName: String?
     var bundleIdentifier: String?
     var bundleName: String?
     var bundleVersion: String?
     var dataContainer: String?
+    var displayName: String?
     var path: String?
 
     var id: String { bundleIdentifier ?? UUID().uuidString }

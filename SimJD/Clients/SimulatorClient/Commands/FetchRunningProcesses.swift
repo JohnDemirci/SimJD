@@ -33,7 +33,11 @@ extension SimulatorClient {
         for line in lines.dropFirst() { // Drop the header line
             let components = line.components(separatedBy: "\t")
             if components.count == 3 {
-                let processInfo = ProcessInfo(pid: components[0], status: components[1], label: components[2])
+                let processInfo = ProcessInfo(
+                    label: components[2],
+                    pid: components[0],
+                    status: components[1]
+                )
                 processes.append(processInfo)
             }
         }
