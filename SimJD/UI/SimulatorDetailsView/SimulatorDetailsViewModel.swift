@@ -16,6 +16,7 @@ final class SimulatorDetailsViewModel {
 
     enum Event: Equatable {
         case didFailToRetrieveBatteryState
+        case didSelectAddMedia(Simulator)
         case didSelectEraseContentAndSettings(Simulator)
         case didSelectDeleteSimulator(Simulator)
         case didSelectBatterySettings(Simulator, BatteryState, Int)
@@ -57,6 +58,8 @@ extension SimulatorDetailsViewModel {
         switch action {
         case .actionsViewEvent(let event):
             switch event {
+            case .didSelectAddMedia(let sim):
+                sendEvent(.didSelectAddMedia(sim))
             case .didSelectBatterySettings(let sim):
                 switch simulatorManager.retrieveBatteryState(id: sim.id) {
                 case .success(let stateAndLevel):

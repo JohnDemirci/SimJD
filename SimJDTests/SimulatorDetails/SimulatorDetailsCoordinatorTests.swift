@@ -206,6 +206,42 @@ extension SimulatorDetailsCoordinatorTests {
         coordinator.handleAction(.simulatorDetailsViewModelEvent(.didSelectEraseContentAndSettings(simulator)))
         XCTAssertEqual(coordinator.alert, .didSelectEraseData(simulator))
     }
+
+    func testHandleActionDidSelectAddMedia() {
+        let simulator = Simulator.sample
+        coordinator.handleAction(.simulatorDetailsViewModelEvent(.didSelectAddMedia(simulator)))
+        XCTAssertEqual(coordinator.sheetDestination, .addMedia(simulator))
+    }
+
+    func testHandleActionDidSelectBatterySettings() {
+        let simulator = Simulator(
+            deviceTypeIdentifier: "something",
+            os: .iOS("17"),
+            state: "Booted",
+            udid: "something"
+        )
+
+        let state: BatteryState = .charging
+        let level: Int = 100
+
+        coordinator.handleAction(
+            .simulatorDetailsViewModelEvent(.didSelectBatterySettings(simulator, state, level))
+        )
+
+        XCTAssertEqual(coordinator.sheetDestination, .batterySettings(simulator, state, level))
+    }
+
+    func testHandleActionDidSelectBatterySettingsShuitdownSimulator() {
+        let simulator = Simulator.sample
+        let state: BatteryState = .charging
+        let level: Int = 100
+
+        coordinator.handleAction(
+            .simulatorDetailsViewModelEvent(.didSelectBatterySettings(simulator, state, level))
+        )
+
+        XCTAssertNil(coordinator.sheetDestination)
+    }
 }
 
 private extension Simulator {

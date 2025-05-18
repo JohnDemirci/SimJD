@@ -145,6 +145,12 @@ extension SimulatorDetailsViewModelTests {
         viewModel.handle(action: .actionsViewEvent(.didSelectBatterySettings(.sample)))
         XCTAssertEqual(eventHandler.event, .didFailToRetrieveBatteryState)
     }
+
+    func testDidSelectAddMedia() {
+        let sim = Simulator.sample
+        viewModel.handle(action: .actionsViewEvent(.didSelectAddMedia(sim)))
+        XCTAssertEqual(eventHandler.event, .didSelectAddMedia(sim))
+    }
 }
 
 private final class EventHandler {

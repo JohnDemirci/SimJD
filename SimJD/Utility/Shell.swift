@@ -28,7 +28,8 @@ struct Shell: Sendable {
         }
 
         return switch command {
-        case .shotdown,
+        case .addMedia,
+             .shotdown,
              .uninstallApp,
              .simulatorLocale,
              .activeProcesses,
@@ -62,7 +63,6 @@ struct Shell: Sendable {
             try process.run()
             process.waitUntilExit()
 
-            // Read data from the pipe
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
 
             guard let stringOutput = String(data: data, encoding: .utf8) else {
@@ -182,6 +182,7 @@ struct Shell: Sendable {
 
 extension Shell {
     enum Command: Hashable, TrackableCommand {
+        case addMedia(String, String)
         case fetchSimulators
         case shotdown(String)
         case openSimulator(String)
@@ -200,19 +201,33 @@ extension Shell {
 
         var path: Path {
             switch self {
-            case .activeProcesses:
-                .bash
+            case .activeProcesses:          .bash
 
-            case .shotdown, .installedApps, .eraseContents, .uninstallApp, .deleteSimulator, .fetchSimulators, .updateLocation, .simulatorLocale, .getDeviceTypes, .getRuntimes, .createSimulator, .batteryStatusUpdate, .retrieveOverrides:
-                .xcrun
+            case
+                .addMedia,
+                .shotdown,
+                .installedApps,
+                .eraseContents,
+                .uninstallApp,
+                .deleteSimulator,
+                .fetchSimulators,
+                .updateLocation,
+                .simulatorLocale,
+                .getDeviceTypes,
+                .getRuntimes,
+                .createSimulator,
+                .batteryStatusUpdate,
+                .retrieveOverrides:         .xcrun
 
-            case .openSimulator:
-                .none
+            case .openSimulator:            .none
             }
         }
 
         var arguments: [String] {
             switch self {
+            case .addMedia(let id, let path):
+                ["simctl", "addmedia", id, path]
+
             case .installedApps(let id):
                 ["simctl", "listapps", id]
 

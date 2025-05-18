@@ -24,6 +24,14 @@ struct SimulatorDetailsVCoordinatingView: View {
         }
         .sheet(item: $coordinator.sheetDestination) { (destination: SimulatorDetailsCoordinator.SheetDestination) in
             switch destination {
+            case .addMedia(let simulator):
+                AddMediaView(
+                    viewModel: AddMediaViewModel(
+                        manager: simManager,
+                        simulator: simulator
+                    )
+                )
+
             case .batterySettings(let simulator, let state, let level):
                 BatterySettingsView(
                     viewModel: BatterySettingsViewModel(

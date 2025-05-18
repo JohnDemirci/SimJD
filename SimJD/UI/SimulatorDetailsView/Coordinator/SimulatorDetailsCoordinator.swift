@@ -31,6 +31,7 @@ final class SimulatorDetailsCoordinator {
 
     enum SheetDestination: Hashable, Identifiable {
         case batterySettings(Simulator, BatteryState, Int)
+        case addMedia(Simulator)
 
         var id: AnyHashable { self }
     }
@@ -165,6 +166,9 @@ private extension SimulatorDetailsCoordinator {
 private extension SimulatorDetailsCoordinator {
     func handleSimulatorDetailsViewModelEvent(_ event: SimulatorDetailsViewModel.Event) {
         switch event {
+        case .didSelectAddMedia(let simulator):
+            self.sheetDestination = .addMedia(simulator)
+            
         case .didSelectDeleteSimulator(let simulator):
             self.alert = .didSelectDeleteSimulator(simulator)
 

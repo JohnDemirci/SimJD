@@ -9,9 +9,10 @@ import SwiftUI
 
 struct SimulatorSettingsView: View {
     enum Event {
+        case didSelectAddMedia(Simulator)
         case didSelectBatterySettings(Simulator)
-        case didSelectEraseContentAndSettings(Simulator)
         case didSelectDeleteSimulator(Simulator)
+        case didSelectEraseContentAndSettings(Simulator)
     }
 
     private let columnWidth: CGFloat
@@ -34,16 +35,20 @@ struct SimulatorSettingsView: View {
             columnWidth: columnWidth,
             content: {
                 VStack(alignment: .leading) {
-                    Button("Erase Content and Settings") {
-                        sendEvent(.didSelectEraseContentAndSettings(selectedSimulator))
-                    }
-
-                    Button("Delete Simulator") {
-                        sendEvent(.didSelectDeleteSimulator(selectedSimulator))
+                    Button("Add Media") {
+                        sendEvent(.didSelectAddMedia(selectedSimulator))
                     }
 
                     Button("Battery Settings") {
                         sendEvent(.didSelectBatterySettings(selectedSimulator))
+                    }
+                    
+                    Button("Delete Simulator") {
+                        sendEvent(.didSelectDeleteSimulator(selectedSimulator))
+                    }
+
+                    Button("Erase Content and Settings") {
+                        sendEvent(.didSelectEraseContentAndSettings(selectedSimulator))
                     }
                 }
                 .buttonStyle(.borderedProminent)

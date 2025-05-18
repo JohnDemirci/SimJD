@@ -372,3 +372,11 @@ extension SimulatorManager {
         simulatorClient.retrieveStatusBarState(id: id)
     }
 }
+
+// MARK: Fire and Forge
+
+extension SimulatorManager {
+    func addMedia(id: String, path: String) -> Result<Void, Failure> {
+        simulatorClient.addMedia(simulator: id, path: path)
+    }
+}

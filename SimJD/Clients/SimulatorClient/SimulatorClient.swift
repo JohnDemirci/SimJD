@@ -10,6 +10,7 @@ import OrderedCollections
 
 struct SimulatorClient: @unchecked Sendable {
     fileprivate var _activeProcesses: (String) -> Result<[ProcessInfo], Failure>
+    fileprivate var _addMedia: (String, String) -> Result<Void, Failure>
     fileprivate var _createSimulator: (String, String, String) -> Result<Void, Failure>
     fileprivate var _deleteSimulator: (String) -> Result<Void, Failure>
     fileprivate var _eraseContentAndSettings: (String) -> Result<Void, Failure>
@@ -27,6 +28,7 @@ struct SimulatorClient: @unchecked Sendable {
 
     private init(
         _activeProcesses: @escaping (String) -> Result<[ProcessInfo], Failure>,
+        _addMedia: @escaping (String, String) -> Result<Void, Failure>,
         _createSimulator: @escaping (String, String, String) -> Result<Void, Failure>,
         _deleteSimulator: @escaping (String) -> Result<Void, Failure>,
         _eraseContentAndSettings: @escaping (String) -> Result<Void, Failure>,
@@ -43,6 +45,7 @@ struct SimulatorClient: @unchecked Sendable {
         _updateLocation: @escaping (String, Double, Double) -> Result<Void, Failure>
     ) {
         self._activeProcesses = _activeProcesses
+        self._addMedia = _addMedia
         self._createSimulator = _createSimulator
         self._deleteSimulator = _deleteSimulator
         self._eraseContentAndSettings = _eraseContentAndSettings
@@ -61,6 +64,10 @@ struct SimulatorClient: @unchecked Sendable {
 
     func activeProcesses(simulator: String) -> Result<[ProcessInfo], Failure> {
         return _activeProcesses(simulator)
+    }
+
+    func addMedia(simulator: String, path: String) -> Result<Void, Failure> {
+        return _addMedia(simulator, path)
     }
 
     func createSimulator(name: String, deviceIdentifier: String, runtimeIdentifier: String) -> Result<Void, Failure> {
@@ -131,6 +138,9 @@ extension SimulatorClient {
         _activeProcesses: { (id: String) in
             handleRunningProcesses(id)
         },
+        _addMedia: { (id: String, path: String) in
+            handleAddMedia(id: id, path: path)
+        },
         _createSimulator: { (name: String, deviceIdentifier: String, runtimeIdentifier: String) in
             handleCreateSimulator(name: name, deviceIdentifier: deviceIdentifier, runtimeIdentifier: runtimeIdentifier)
         },
@@ -185,6 +195,7 @@ extension SimulatorClient {
     nonisolated(unsafe)
     static var testing: SimulatorClient = .init(
         _activeProcesses: { _ in fatalError("not implemented") },
+        _addMedia: { _, _ in fatalError("not implemented") },
         _createSimulator: { _, _, _ in fatalError("not implemented") },
         _deleteSimulator: { _ in fatalError("not implemented") },
         _eraseContentAndSettings: { _ in fatalError("not implemented") },
@@ -208,6 +219,7 @@ extension SimulatorClient {
     @discardableResult
     mutating func mutate(
         _activeProcesses: ((String) -> Result<[ProcessInfo], Failure>)? = nil,
+        _addMedia: ((String, String) -> Result<Void, Failure>)? = nil,
         _createSimulator: ((String, String, String) -> Result<Void, Failure>)? = nil,
         _deleteSimulator: ((String) -> Result<Void, Failure>)? = nil,
         _eraseContentAndSettings: ((String) -> Result<Void, Failure>)? = nil,
@@ -225,6 +237,10 @@ extension SimulatorClient {
     ) -> Self {
         if let _activeProcesses = _activeProcesses {
             self._activeProcesses = _activeProcesses
+        }
+
+        if let _addMedia = _addMedia {
+            self._addMedia = _addMedia
         }
 
         if let _createSimulator = _createSimulator {
