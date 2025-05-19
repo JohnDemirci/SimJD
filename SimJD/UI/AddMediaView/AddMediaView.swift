@@ -13,7 +13,11 @@ struct AddMediaView: View {
         }
         .padding()
         .onDrop(of: [.fileURL, .url], isTargeted: $viewModel.isTargeted) { providers in
-            viewModel.handleDrop(providers)
+            Task {
+                let _ = await viewModel.handleDrop(providers)
+            }
+
+            return true
         }
     }
 

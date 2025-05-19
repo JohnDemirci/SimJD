@@ -5,7 +5,7 @@
 //  Created by John Demirci on 5/14/25.
 //
 
-@preconcurrency import SwiftUI
+import SwiftUI
 
 @MainActor
 @Observable
@@ -27,7 +27,7 @@ final class AddMediaViewModel {
     }
 
     func handleDrop(_ providers: sending [NSItemProvider]) async -> Bool {
-        await withTaskGroup(of: String?.self) { @MainActor group in
+        return await withTaskGroup(of: String?.self) { group in
             for provider in providers {
                 // Skip providers that don’t conform
                 guard provider.hasItemConformingToTypeIdentifier("public.file-url") else { continue }
@@ -55,9 +55,7 @@ final class AddMediaViewModel {
             for await path in group {
                 if let path {
                     atLeastOneSuccess = true
-                    await MainActor.run {
-                        self.addImageToSimulator(atPath: path)
-                    }
+                    self.addImageToSimulator(atPath: path)
                 }
             }
 
@@ -83,10 +81,4 @@ final class AddMediaViewModel {
     }
 }
 
-final class SecureCodingBox: @unchecked Sendable {
-    private let coding: NSSecureCoding
-
-    init(_ coding: NSSecureCoding) {
-        self.coding = coding
-    }
-}
+extension NSItemProvider: @unchecked @retroactive Sendable {}
