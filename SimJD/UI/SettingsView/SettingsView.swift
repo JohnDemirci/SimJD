@@ -18,6 +18,14 @@ struct SettingsView: View {
             ) {
                 LogSettingsView()
             }
+
+            Tab(
+                "Derived Data Path",
+                systemImage: "document.circle",
+                value: SettingsView.ViewTab.paths
+            ) {
+                PathsView()
+            }
         }
         .scenePadding()
         .frame(maxWidth: 350, minHeight: 100)
@@ -27,5 +35,6 @@ struct SettingsView: View {
 extension SettingsView {
     enum ViewTab: Hashable {
         case log
+        case paths
     }
 }

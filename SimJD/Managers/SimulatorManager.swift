@@ -20,6 +20,11 @@ final class SimulatorManager {
     nonisolated(unsafe)
     private var cancellables: [AnyCancellable] = []
 
+    @ObservationIgnored
+    private var allSimulators: [Simulator] {
+        simulators.values.flatMap { $0 }
+    }
+
     nonisolated
     private let simulatorClient: SimulatorClient
 
@@ -209,6 +214,15 @@ extension SimulatorManager {
     }
 
     private func handleSimulatorSelection() {
+        if let persistedSimulatorID = UserDefaults.standard.string(forKey: Setting.selectedSimulator.key) {
+            if let persistedSelectedSimulator = allSimulators.first(where: { (sim: Simulator) in
+                sim.id == persistedSimulatorID
+            }) {
+                self.selectedSimulator = persistedSelectedSimulator
+                return
+            }
+        }
+
         guard
             let selectedSimulator,
             let existingSimulator = getSimulatorIfExists(selectedSimulator)
@@ -334,6 +348,8 @@ extension SimulatorManager {
 
     func didChangeSelectedSimulator() {
         guard let selectedSimulator else { return }
+
+        UserDefaults.standard.set(selectedSimulator.id, forKey: Setting.selectedSimulator.key)
 
         if selectedSimulator.state == "Booted" {
             let fetchInstalledApplicationsResult = fetchInstalledApplications(for: selectedSimulator)

@@ -35,11 +35,14 @@ struct Shell: Sendable {
              .activeProcesses,
              .createSimulator,
              .batteryStatusUpdate,
+             .launchApp,
+             .openPath,
              .retrieveOverrides,
              .getDeviceTypes,
              .getRuntimes,
              .updateLocation,
-             .installedApps:                basicExecute(command)
+             .installedApps,
+             .installApp:                   basicExecute(command)
 
         case .eraseContents(let uuid):      eraseContent(uuid: uuid)
 
@@ -101,9 +104,47 @@ struct Shell: Sendable {
         }
     }
 
+#if DEBUG
+    private func debugExecute(_ command: Shell.Command) -> Result<String?, Failure> {
+        let process = Process()
+
+        switch command.path {
+        case .none:
+            break
+        default:
+            process.executableURL = URL(fileURLWithPath: command.path.rawValue)
+        }
+        process.arguments = command.arguments
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            return .failure(Failure.message(error.localizedDescription))
+        }
+
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+
+        guard let stringOutput = String(data: data, encoding: .utf8) else {
+            return .failure(Failure.message("Decoding Error"))
+        }
+
+        return .success(stringOutput)
+    }
+#endif
+
     private func basicExecute(_ command: Shell.Command) -> Result<String?, Failure> {
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: command.path.rawValue)
+
+        switch command.path {
+        case .none:
+            break
+        default:
+            process.executableURL = URL(fileURLWithPath: command.path.rawValue)
+        }
         process.arguments = command.arguments
 
         let pipe = Pipe()
@@ -174,7 +215,6 @@ struct Shell: Sendable {
 
             return .success(nil)
         } catch {
-            print("Failed to open simulator: \(error)")
             return .failure(Failure.message(error.localizedDescription))
         }
     }
@@ -192,7 +232,10 @@ extension Shell {
         case getRuntimes
         case createSimulator(String, String, String) // name, deviceType, runtime
         case installedApps(String)
+        case openPath(String)
+        case installApp(Simulator.ID, String)
         case deleteSimulator(String)
+        case launchApp(String, String)
         case uninstallApp(String, String)
         case updateLocation(String, Double, Double)
         case simulatorLocale(String)
@@ -207,11 +250,13 @@ extension Shell {
                 .addMedia,
                 .shotdown,
                 .installedApps,
+                .installApp,
                 .eraseContents,
                 .uninstallApp,
                 .deleteSimulator,
                 .fetchSimulators,
                 .updateLocation,
+                .launchApp,
                 .simulatorLocale,
                 .getDeviceTypes,
                 .getRuntimes,
@@ -220,6 +265,7 @@ extension Shell {
                 .retrieveOverrides:         .xcrun
 
             case .openSimulator:            .none
+            case .openPath:                 .open
             }
         }
 
@@ -231,8 +277,14 @@ extension Shell {
             case .installedApps(let id):
                 ["simctl", "listapps", id]
 
+            case .installApp(let id, let path):
+                ["simctl", "install", id, path]
+
             case .eraseContents(let id):
                 ["simctl", "erase", id]
+
+            case .launchApp(let id, let bundleID):
+                ["simctl", "launch", id, bundleID]
 
             case .createSimulator(let name, let deviceType, let runtime):
                 ["simctl", "create", name, deviceType, runtime]
@@ -242,6 +294,9 @@ extension Shell {
 
             case .shotdown(let uuid):
                 ["simctl", "shutdown", uuid]
+
+            case .openPath(let path):
+                [path]
 
             case .activeProcesses(let uuid):
                 ["-c", "xcrun simctl spawn \(uuid) launchctl list"]

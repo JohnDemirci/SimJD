@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import AppKit
 
 struct FolderClient: @unchecked Sendable {
     fileprivate var _fetchFileItems: (URL) -> Result<[FileItem], Failure>
@@ -112,6 +113,7 @@ private extension FolderClient {
                     .isDirectoryKey,
                     .creationDateKey,
                     .contentModificationDateKey,
+                    .contentTypeKey,
                     .totalFileSizeKey
                 ]) else { return nil }
 
@@ -121,6 +123,7 @@ private extension FolderClient {
                     modificationDate: resourceValues.contentModificationDate,
                     name: url.lastPathComponent,
                     size: resourceValues.totalFileSize,
+                    contentType: resourceValues.contentType?.identifier,
                     url: url
                 )
             }

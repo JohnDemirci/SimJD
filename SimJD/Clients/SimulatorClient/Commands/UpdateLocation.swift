@@ -11,8 +11,6 @@ extension SimulatorClient {
         latitude: Double,
         longitude: Double
     ) -> Result<Void, Failure> {
-        dump("trying to update location for simulator \(simulatorID) lat \(latitude) long \(longitude)")
-        dump("full command is \(Shell.Command.updateLocation(simulatorID, latitude, longitude).fullCommand)")
         switch Shell.shared.execute(.updateLocation(simulatorID, latitude, longitude)) {
         case .success:
             return .success(())

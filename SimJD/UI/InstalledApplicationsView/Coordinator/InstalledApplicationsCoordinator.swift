@@ -13,6 +13,7 @@ final class InstalledApplicationsCoordinator {
     enum Destination: Hashable {
         case folder(URL)
         case installedApplicationDetails(InstalledAppDetail)
+        case installedApplicationMore(InstalledAppDetail)
     }
 
     enum Action {
@@ -118,6 +119,9 @@ private extension InstalledApplicationsCoordinator {
             case .failure:
                 self.alert = .didFailToOpenFile
             }
+
+        case .didSelectMore(let detail):
+            self.destination.append(.installedApplicationMore(detail))
 
         case .didSelectRemoveUserDefaults(let detail):
             self.alert = .didSelectRemoveUserDefaults(detail)

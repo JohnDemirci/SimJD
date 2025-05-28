@@ -13,8 +13,9 @@ final class InstalledApplicationDetailViewModel {
     enum Event: Equatable {
         case couldNotOpenUserDefaults(InstalledAppDetail)
         case didSelectApplicationSandboxData(InstalledAppDetail)
-        case didSelectOpenUserDefaults(InstalledAppDetail)
         case didSelectInfoPlist(InstalledAppDetail)
+        case didSelectOpenUserDefaults(InstalledAppDetail)
+        case didSelectMore(InstalledAppDetail)
         case didSelectRemoveUserDefaults(InstalledAppDetail)
         case didSelectUninstallApplication(InstalledAppDetail)
     }
@@ -30,8 +31,6 @@ final class InstalledApplicationDetailViewModel {
     ) {
         self.installedApplication = installedApplication
         self.sendEvent = sendEvent
-
-        dump(installedApplication.bundle)
     }
 }
 
@@ -49,6 +48,10 @@ extension InstalledApplicationDetailViewModel {
             .init(name: "Open User Defaults", action: { [weak self] in
                 guard let self else { return }
                 self.sendEvent(.didSelectOpenUserDefaults(self.installedApplication))
+            }),
+            .init(name: "More", action: { [weak self] in
+                guard let self else { return }
+                self.sendEvent(.didSelectMore(self.installedApplication))
             }),
             .init(name: "Remove UserDefaults", action: { [weak self] in
                 guard let self else { return }

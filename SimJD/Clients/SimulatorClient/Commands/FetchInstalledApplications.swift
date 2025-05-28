@@ -109,8 +109,6 @@ extension SimulatorClient {
                                 .replacingOccurrences(of: "\"", with: "")
                                 .replacingOccurrences(of: "file://", with: "")
 
-                            dump(dataContainer)
-
                             appInfo.dataContainer = dataContainer
                         } else if work.localizedStandardContains("Path") {
                             let path = split.last?

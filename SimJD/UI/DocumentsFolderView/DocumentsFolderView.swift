@@ -16,22 +16,26 @@ struct DocumentsFolderView: View {
 
     var body: some View {
         Table(viewModel.items, selection: $viewModel.selectedItem) {
-            TableColumn("Name") { item in
+            TableColumn("Name") { (item: FileItem) in
                 HStack {
                     FileIconView(url: item.url)
                     Text(item.name)
                 }
             }
 
-            TableColumn("Creation Date") { item in
+            TableColumn("Creation Date") { (item: FileItem) in
                 Text("\(item.creationDate?.formatted(date: .abbreviated, time: .shortened) ?? "N/A")")
             }
 
-            TableColumn("Last Modified") { item in
+            TableColumn("Last Modified") { (item: FileItem) in
                 Text("\(item.modificationDate?.formatted(date: .abbreviated, time: .shortened) ?? "N/A")")
             }
 
-            TableColumn("Size") { item in
+            TableColumn("Type") { (item: FileItem) in
+                Text(item.contentType ?? "N/A")
+            }
+
+            TableColumn("Size") { (item: FileItem) in
                 if let size = item.size {
                     Text(size, format: .number)
                 } else {
@@ -42,7 +46,7 @@ struct DocumentsFolderView: View {
         .scrollContentBackground(.hidden)
         .contextMenu(
             forSelectionType: FileItem.ID.self,
-            menu: { selectedItems in
+            menu: { (selectedItems: Set<FileItem.ID>) in
                 Button("Open") {
                     if selectedItems.count == 1 {
                         viewModel.selectedItem = selectedItems.first
@@ -58,7 +62,7 @@ struct DocumentsFolderView: View {
                     viewModel.didSelectOpenInFinder(selectedItems)
                 }
             },
-            primaryAction: { selectedItems in
+            primaryAction: { (selectedItems: Set<FileItem.ID>) in
                 viewModel.didDoubleClickOn(selectedItems)
             }
         )

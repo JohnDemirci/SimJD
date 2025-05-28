@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct FileItem: Identifiable, Hashable {
     let creationDate: Date?
@@ -14,5 +15,6 @@ struct FileItem: Identifiable, Hashable {
     let modificationDate: Date?
     let name: String
     let size: Int?
+    let contentType: String?
     let url: URL
 }

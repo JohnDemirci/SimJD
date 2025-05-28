@@ -13,9 +13,9 @@ struct InstalledApplicationsCoordinatingView: View {
     var body: some View {
         NavigationStack(path: $coordinator.destination) {
             InstalledApplicationsView(
-                viewModel: .init(
-                    sendEvent: {
-                        coordinator.handleAction(.installedApplicationsViewModelEvent($0))
+                viewModel: InstalledApplicationsViewModel(
+                    sendEvent: { (event: InstalledApplicationsViewModel.Event) in
+                        coordinator.handleAction(.installedApplicationsViewModelEvent(event))
                     }
                 )
             )
@@ -23,22 +23,26 @@ struct InstalledApplicationsCoordinatingView: View {
                 switch $0 {
                 case .folder(let url):
                     DocumentsFolderView(
-                        viewModel: .init(
+                        viewModel: DocumentsFolderViewModel(
                             folderURL: url,
 							copyBoard: CopyBoard(),
-                            sendEvent: { event in
+                            sendEvent: { (event: DocumentsFolderViewModel.Event) in
                                 coordinator.handleAction(.documentFolderViewModelEvent(event))
                             }
                         )
                     )
                 case .installedApplicationDetails(let details):
                     InstalledApplicationDetailView(
-                        viewModel: .init(
+                        viewModel: InstalledApplicationDetailViewModel(
                             installedApplication: details,
-                            sendEvent: {
-                                coordinator.handleAction(.installedApplicationDetailViewEvent($0))
+                            sendEvent: { (event: InstalledApplicationDetailViewModel.Event) in
+                                coordinator.handleAction(.installedApplicationDetailViewEvent(event))
                             }
                         )
+                    )
+                case .installedApplicationMore(let details):
+                    InstalledApplicationMoreView(
+                        viewModel: InstalledxApplicationMoreViewModel(detail: details)
                     )
                 }
             }
