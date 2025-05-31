@@ -9,7 +9,7 @@ import SwiftUI
 import AppKit
 
 struct PathsView: View {
-    @AppStorage(Setting.derivedDataPath.key) private var url: URL = .defaultDerivedDataURL
+    @AppStorage(Setting.derivedDataPath.key) private var url: URL = .derivedDataURL
 
     var body: some View {
         VStack(spacing: 16) {

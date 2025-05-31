@@ -42,7 +42,7 @@ struct InstalledApplicationsCoordinatingView: View {
                     )
                 case .installedApplicationMore(let details):
                     InstalledApplicationMoreView(
-                        viewModel: InstalledxApplicationMoreViewModel(detail: details)
+                        viewModel: InstalledApplicationMoreViewModel(detail: details)
                     )
                 }
             }

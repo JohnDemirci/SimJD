@@ -8,9 +8,16 @@
 import SwiftUI
 
 struct InstalledApplicationMoreView: View {
-    @State private var viewModel: InstalledxApplicationMoreViewModel
+    enum Event {
+        case didSelectCreateCache
+        case didSelectLaunch
+        case didSelectOpenInXcode
+        case viewDidAppear
+    }
 
-    init(viewModel: InstalledxApplicationMoreViewModel) {
+    @State private var viewModel: InstalledApplicationMoreViewModel
+
+    init(viewModel: InstalledApplicationMoreViewModel) {
         self.viewModel = viewModel
     }
 
@@ -30,11 +37,15 @@ struct InstalledApplicationMoreView: View {
                 trueView: {
                     Section {
                         Button("Launch") {
-                            viewModel.didSelectLaunch()
+                            viewModel.handleViewEvent(.didSelectLaunch)
                         }
 
                         Button("Open in Xcode") {
-                            viewModel.didSelectOpenInXcode()
+                            viewModel.handleViewEvent(.didSelectOpenInXcode)
+                        }
+
+                        Button("Cache Current App Binary For Simulator") {
+                            viewModel.handleViewEvent(.didSelectCreateCache)
                         }
                     }
                 },
@@ -44,7 +55,7 @@ struct InstalledApplicationMoreView: View {
             )
         }
         .onAppear {
-            viewModel.generateFields()
+            viewModel.handleViewEvent(.viewDidAppear)
         }
     }
 }

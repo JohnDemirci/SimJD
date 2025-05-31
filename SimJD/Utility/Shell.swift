@@ -34,6 +34,8 @@ struct Shell: Sendable {
              .simulatorLocale,
              .activeProcesses,
              .createSimulator,
+             .getBranchName,
+             .getCommitHash,
              .batteryStatusUpdate,
              .launchApp,
              .openPath,
@@ -228,6 +230,8 @@ extension Shell {
         case openSimulator(String)
         case activeProcesses(String)
         case eraseContents(String) // do not exclusively call this when executing command use the helper function
+        case getBranchName(URL)
+        case getCommitHash(URL)
         case getDeviceTypes
         case getRuntimes
         case createSimulator(String, String, String) // name, deviceType, runtime
@@ -265,7 +269,11 @@ extension Shell {
                 .retrieveOverrides:         .xcrun
 
             case .openSimulator:            .none
+
             case .openPath:                 .open
+
+            case .getBranchName,
+                 .getCommitHash:            .git
             }
         }
 
@@ -291,6 +299,12 @@ extension Shell {
 
             case .deleteSimulator(let id):
                 ["simctl", "delete", id]
+
+            case .getBranchName(let pathToProjectFolder):
+                ["-C", pathToProjectFolder.path(), "rev-parse", "--abbrev-ref", "HEAD"]
+
+            case .getCommitHash(let pathToProjectFolder):
+                ["-C", pathToProjectFolder.path(), "rev-parse", "HEAD"]
 
             case .shotdown(let uuid):
                 ["simctl", "shutdown", uuid]
@@ -359,6 +373,7 @@ extension Shell.Command {
         case bash = "/bin/bash"
         case xcrun = "/usr/bin/xcrun"
         case open = "/usr/bin/open"
+        case git = "/opt/homebrew/bin/git"
         case none
     }
 }
