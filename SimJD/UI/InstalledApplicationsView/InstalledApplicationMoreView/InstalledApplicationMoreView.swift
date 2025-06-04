@@ -32,30 +32,102 @@ struct InstalledApplicationMoreView: View {
                 .textSelection(.enabled)
             }
 
-            IfView(
-                viewModel.fields.contains("DerivedData Path"),
-                trueView: {
-                    Section {
-                        Button("Launch") {
-                            viewModel.handleViewEvent(.didSelectLaunch)
+            OptionalView(viewModel.fileItems) { (fileItems: [FileItem]) in
+                Section {
+                    Table(fileItems) {
+                        TableColumn("Name") { (item: FileItem) in
+                            HStack {
+                                FileIconView(url: item.url)
+                                Text(item.name)
+                            }
                         }
 
-                        Button("Open in Xcode") {
-                            viewModel.handleViewEvent(.didSelectOpenInXcode)
+                        TableColumn("Creation Date") { (item: FileItem) in
+                            Text("\(item.creationDate?.formatted(date: .abbreviated, time: .shortened) ?? "N/A")")
                         }
 
-                        Button("Cache Current App Binary For Simulator") {
-                            viewModel.handleViewEvent(.didSelectCreateCache)
+                        TableColumn("Last Modified") { (item: FileItem) in
+                            Text("\(item.modificationDate?.formatted(date: .abbreviated, time: .shortened) ?? "N/A")")
+                        }
+
+                        TableColumn("Type") { (item: FileItem) in
+                            Text(item.contentType ?? "N/A")
+                        }
+
+                        TableColumn("Size") { (item: FileItem) in
+                            if let size = item.size {
+                                Text(size, format: .number)
+                            } else {
+                                Text("N/A")
+                            }
                         }
                     }
-                },
-                falseView: {
-                    Text("No path to derived data found. Please rebuild the app through xcode and try again")
+                    .contextMenu(
+                        forSelectionType: FileItem.ID.self,
+                        menu: { _ in EmptyView() },
+                        primaryAction: { (selectedIDs: Set<FileItem.ID>) in
+                            viewModel.didSelectCachedFolder(selectedIDs)
+                        }
+                    )
+                    .scrollDisabled(true)
+                    .frame(height: CGFloat(fileItems.count) * 50 + 50)
                 }
-            )
+            }
         }
+        .scrollBounceBehavior(.basedOnSize)
         .onAppear {
             viewModel.handleViewEvent(.viewDidAppear)
         }
+        .toolbar {
+            IfView(viewModel.fields.contains("DerivedData Path")) {
+                HStack {
+                    Button("🚀") {
+                        viewModel.handleViewEvent(.didSelectLaunch)
+                    }
+                    .help("Launch the app on simulator")
+
+                    Button("🔨") {
+                        viewModel.handleViewEvent(.didSelectOpenInXcode)
+                    }
+                    .help("Open in XCode")
+
+                    Button("💾") {
+                        viewModel.handleViewEvent(.didSelectCreateCache)
+                    }
+                    .help("Cache the current app binary for simulator")
+                }
+            }
+        }
+    }
+}
+
+private struct ConditionalToolbarViewModifier<V: View>: ViewModifier {
+    private let condition: Bool
+    @ViewBuilder private var content: () -> V
+
+    init(
+        _ condition: Bool,
+        @ViewBuilder view: @escaping () -> V
+    ) {
+        self.condition = condition
+        self.content = view
+    }
+
+    func body(content: Content) -> some View {
+        if condition {
+            content
+                .toolbar {
+                    self.content()
+                }
+        }
+    }
+}
+
+extension View {
+    func conditionalToolbar<V: View>(
+        _ condition: Bool,
+        @ViewBuilder view: @escaping () -> V
+    ) -> some View {
+        modifier(ConditionalToolbarViewModifier(condition, view: view))
     }
 }

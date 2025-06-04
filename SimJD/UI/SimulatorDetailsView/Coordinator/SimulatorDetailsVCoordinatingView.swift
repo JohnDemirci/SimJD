@@ -9,8 +9,6 @@ import SwiftUI
 
 struct SimulatorDetailsVCoordinatingView: View {
     @State private var coordinator = SimulatorDetailsCoordinator()
-    @State var alert: Alert?
-
     private let simManager: SimulatorManager = .live
 
     var body: some View {

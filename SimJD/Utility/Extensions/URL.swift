@@ -114,3 +114,27 @@ extension URL {
         }
     }
 }
+
+private extension URL {
+    var fileItem: FileItem? {
+        guard let resourceValues = try? self.resourceValues(forKeys: .default) else {
+            return nil
+        }
+
+        return FileItem(
+            creationDate: resourceValues.creationDate,
+            isDirectory: resourceValues.isDirectory == true,
+            modificationDate: resourceValues.contentModificationDate,
+            name: self.lastPathComponent,
+            size: resourceValues.totalFileSize,
+            contentType: resourceValues.contentType?.identifier,
+            url: self
+        )
+    }
+}
+
+extension Collection where Element == URL {
+    var fileItems: [FileItem] {
+        return self.compactMap(\.fileItem)
+    }
+}

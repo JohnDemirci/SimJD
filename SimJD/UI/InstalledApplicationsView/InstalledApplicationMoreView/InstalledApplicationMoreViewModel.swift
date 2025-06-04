@@ -10,19 +10,29 @@ import SwiftUI
 @MainActor
 @Observable
 final class InstalledApplicationMoreViewModel {
+    enum Event {
+        case didSelectCachedBuildFolder(FileItem, InstalledAppDetail)
+    }
+
+    private let simulatorManager: SimulatorManager
+    private let sendEvent: (Event) -> Void
+
     let detail: InstalledAppDetail
     let fileManager: FileManager
-    private let simulatorManager: SimulatorManager
 
     var appDerivedDataPath: String = ""
     var fields: [InstalledApplicationMoreView.Field] = []
+    var fileItems: [FileItem]?
+    var selectedFileItem: FileItem?
 
     init(
         detail: InstalledAppDetail,
+        sendEvent: @escaping (Event) -> Void,
         fileManager: FileManager = .default,
         simulatorManager: SimulatorManager = .live
     ) {
         self.detail = detail
+        self.sendEvent = sendEvent
         self.fileManager = fileManager
         self.simulatorManager = simulatorManager
     }
@@ -46,64 +56,128 @@ extension InstalledApplicationMoreViewModel {
     }
 }
 
+extension InstalledApplicationMoreViewModel {
+    func didSelectCachedFolder(_ selectedItems: Set<FileItem.ID>) {
+        guard
+            let selectedItem = selectedItems.first,
+            let fileItem = fileItems?.first(where: { $0.id == selectedItem })
+        else { return }
+
+        sendEvent(.didSelectCachedBuildFolder(fileItem, detail))
+    }
+}
+
+// MARK: - Creating Cache
+
 private extension InstalledApplicationMoreViewModel {
     func handleDidSelectCreateCache() {
+        guard
+            let ddField = applicationDerivedDataField(),
+            let infoPlistURL = infoPlistURL(for: ddField.value),
+            let workspacePathURL = workspacePath(infoPlistURL: infoPlistURL),
+            let branchName = gitBranchGame(at: workspacePathURL.deletingLastPathComponent()),
+            let applicationBinaryPath = applicationBinaryPath(
+                derivedDataPath: ddField.value,
+                displayName: detail.displayName!
+            )
+        else { return }
+
+        let cacheDirectoryURL = getCacheDirectoryForCurrentBuild(
+            derivedDataPath: ddField.value,
+            branchName: branchName
+        )
+
+        createCacheDirectory(cacheBuildFolderURL: cacheDirectoryURL)
+        createAppCacheInCacheDirectory(
+            cacheDirectoryURL: cacheDirectoryURL,
+            applicationBinaryPathURL: applicationBinaryPath
+        )
+    }
+
+    func applicationDerivedDataField() -> InstalledApplicationMoreView.Field? {
         // get derived data folder of the application
         guard let ddField = fields.first(where: { (field: InstalledApplicationMoreView.Field) in
             field.key == "DerivedData Path"
-        }) else { return }
+        }) else { return nil }
 
+        return ddField
+    }
+
+    func infoPlistURL(for derivedDataPath: String) -> URL? {
         // get the path to the info plist
-        let infoPlistResult = URL.getFilePath(for: .infoPlist(ddField.value))
+        let infoPlistResult = URL.getFilePath(for: .infoPlist(derivedDataPath))
+        guard case .success(let infoPlistURL) = infoPlistResult else { return nil }
+        return infoPlistURL
+    }
 
-        guard case .success(let infoPlistURL) = infoPlistResult else { return }
-
+    func workspacePath(infoPlistURL: URL) -> URL? {
         // Get the workspace path
         let workspacePathResult = URL.getFilePath(for: .workspacePath(infoPlistURL))
+        guard case .success(let workspacePathURL) = workspacePathResult else { return nil }
+        return workspacePathURL
+    }
 
-        guard case .success(let workspacePathURL) = workspacePathResult else { return }
-        // remove the last bit of the path so we only have the reference to the folder not the workspace or the project file itself
-        let folderURL = workspacePathURL.deletingLastPathComponent()
-        // Get the branch name from git
-        let gitBranchResult = Shell.shared.execute(.getBranchName(folderURL))
+    func gitBranchGame(at workspacePath: URL) -> String? {
+        let gitBranchResult = Shell.shared.execute(.getBranchName(workspacePath))
         guard
             case .success(let optionalBranchName) = gitBranchResult,
             let branchName = optionalBranchName?.replacingOccurrences(of: "\n", with: "")
-        else { return }
-        // Get the commit hash
-        let commitHashResult = Shell.shared.execute(.getCommitHash(folderURL))
-        guard
-            case .success(let optionalCommitHash) = commitHashResult,
-            let commitHash = optionalCommitHash?.replacingOccurrences(of: "\n", with: "")
-        else { return }
-        // Find the application to run on the simulator from the derived data and cache it using the branch name and commit hash as key to identify
+        else { return nil }
+
+        return branchName
+    }
+
+    func applicationBinaryPath(
+        derivedDataPath: String,
+        displayName: String
+    ) -> URL? {
         let applicationPathURLResult = URL.getFilePath(
             for: .applicationBinary(
-                ddField.value,
-                detail.displayName!
+                derivedDataPath,
+                displayName
             )
         )
 
-        guard case .success(let applicationPathURL) = applicationPathURLResult else { return }
-        // Create a folder mamed Simulator Cached Builds
-        let cacheDirectory = URL(fileURLWithPath: ddField.value)
+        switch applicationPathURLResult {
+        case .success(let applicationPathURL):
+            return applicationPathURL
+        case .failure:
+            return nil
+        }
+    }
+
+    func getCacheDirectoryForCurrentBuild(
+        derivedDataPath: String,
+        branchName: String
+    ) -> URL {
+        let cacheDirectory = URL(fileURLWithPath: derivedDataPath)
             .appendingPathComponent("SimJD-SimulatorBuildCache")
         // Create a folder with the name of commit hash and display name
         let currentBuildCacheDirectory = cacheDirectory
-            .appendingPathComponent("\(branchName)_\(commitHash)")
+            .appendingPathComponent("\(branchName)")
 
-        if fileManager.fileExists(atPath: currentBuildCacheDirectory.path()) {
-            try! FileManager.default.removeItem(atPath: currentBuildCacheDirectory.path())
-            try! FileManager.default.createDirectory(at: currentBuildCacheDirectory, withIntermediateDirectories: true)
-        } else {
-            try! FileManager.default.createDirectory(at: currentBuildCacheDirectory, withIntermediateDirectories: true)
-        }
-
-        let destinationURL = currentBuildCacheDirectory.appendingPathComponent(applicationPathURL.lastPathComponent)
-
-        try! FileManager.default.copyItem(at: applicationPathURL, to: destinationURL)
+        return currentBuildCacheDirectory
     }
 
+    func createCacheDirectory(cacheBuildFolderURL: URL) {
+        if fileManager.fileExists(atPath: cacheBuildFolderURL.path()) {
+            try! FileManager.default.removeItem(atPath: cacheBuildFolderURL.path())
+            try! FileManager.default.createDirectory(at: cacheBuildFolderURL, withIntermediateDirectories: true)
+        } else {
+            try! FileManager.default.createDirectory(at: cacheBuildFolderURL, withIntermediateDirectories: true)
+        }
+    }
+
+    func createAppCacheInCacheDirectory(
+        cacheDirectoryURL: URL,
+        applicationBinaryPathURL: URL
+    ) {
+        let destinationURL = cacheDirectoryURL.appendingPathComponent(applicationBinaryPathURL.lastPathComponent)
+        try! FileManager.default.copyItem(at: applicationBinaryPathURL, to: destinationURL)
+    }
+}
+
+private extension InstalledApplicationMoreViewModel {
     func handleViewDidLoad() {
         func getPathToAppDerivedData() {
             guard
@@ -128,6 +202,7 @@ private extension InstalledApplicationMoreViewModel {
         }
 
         getPathToAppDerivedData()
+        getListOfCaches()
     }
 
     func handleDidSelectOpenInXcode() {
@@ -167,6 +242,27 @@ private extension InstalledApplicationMoreViewModel {
 
         let _ = Shell.shared.execute(.installApp(selectedSimulator.id, url.path()))
         let _ = Shell.shared.execute(.launchApp(selectedSimulator.id, detail.bundleIdentifier!))
+    }
+
+    func getListOfCaches() {
+        guard let ddField = fields.first(where: { (field: InstalledApplicationMoreView.Field) in
+            field.key == "DerivedData Path"
+        }) else { return }
+
+        let cacheDirectory = URL(fileURLWithPath: ddField.value)
+            .appendingPathComponent("SimJD-SimulatorBuildCache")
+
+        guard fileManager.fileExists(atPath: cacheDirectory.path()) else { return }
+
+        let urls = try! fileManager.contentsOfDirectory(
+            at: cacheDirectory, includingPropertiesForKeys: [.nameKey]
+        )
+
+        let filteredItems = urls.fileItems.filter { (fileItem: FileItem) in
+            !fileItem.name.localizedStandardContains("DS_Store")
+        }
+
+        self.fileItems = filteredItems
     }
 }
 

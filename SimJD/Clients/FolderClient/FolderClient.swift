@@ -108,27 +108,7 @@ private extension FolderClient {
                 options: [.skipsHiddenFiles]
             )
 
-            let items = fileURLs.compactMap { url -> FileItem? in
-                guard let resourceValues = try? url.resourceValues(forKeys: [
-                    .isDirectoryKey,
-                    .creationDateKey,
-                    .contentModificationDateKey,
-                    .contentTypeKey,
-                    .totalFileSizeKey
-                ]) else { return nil }
-
-                return FileItem(
-                    creationDate: resourceValues.creationDate,
-                    isDirectory: resourceValues.isDirectory == true,
-                    modificationDate: resourceValues.contentModificationDate,
-                    name: url.lastPathComponent,
-                    size: resourceValues.totalFileSize,
-                    contentType: resourceValues.contentType?.identifier,
-                    url: url
-                )
-            }
-
-            return .success(items)
+            return .success(fileURLs.fileItems)
         } catch {
             return .failure(Failure.message(error.localizedDescription))
         }

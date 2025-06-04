@@ -187,7 +187,10 @@ extension SimulatorManager {
     func fetchSimulators() -> Result<Void, Failure> {
         switch simulatorClient.fetchSimulatorDictionary() {
         case .success(let dict):
-            self.simulators = dict
+            if simulators != dict {
+                self.simulators = dict
+            }
+
             handleSimulatorSelection()
             return .success(())
         case .failure(let error):
@@ -218,8 +221,8 @@ extension SimulatorManager {
             if let persistedSelectedSimulator = allSimulators.first(where: { (sim: Simulator) in
                 sim.id == persistedSimulatorID
             }) {
+                guard self.selectedSimulator != persistedSelectedSimulator else { return }
                 self.selectedSimulator = persistedSelectedSimulator
-                return
             }
         }
 
@@ -230,6 +233,8 @@ extension SimulatorManager {
             self.selectedSimulator = simulators.flatMap(\.value).first
             return
         }
+
+        guard selectedSimulator != existingSimulator else { return }
         self.selectedSimulator = existingSimulator
     }
 

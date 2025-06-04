@@ -19,6 +19,7 @@ final class InstalledApplicationsCoordinator {
     enum Action {
         case documentFolderViewModelEvent(DocumentsFolderViewModel.Event)
         case installedApplicationDetailViewEvent(InstalledApplicationDetailViewModel.Event)
+        case installedApplicationMoreViewModelEvent(InstalledApplicationMoreViewModel.Event)
         case installedApplicationsViewModelEvent(InstalledApplicationsViewModel.Event)
     }
 
@@ -63,6 +64,9 @@ final class InstalledApplicationsCoordinator {
 
         case .installedApplicationDetailViewEvent(let event):
             handleInstalledApplicationDetailViewEvent(event)
+
+        case .installedApplicationMoreViewModelEvent(let event):
+            handleInstalledApplicationMoreViewModelEvent(event)
 
         case .installedApplicationsViewModelEvent(let event):
             handleInstalledApplicationsViewModelEvent(event)
@@ -133,6 +137,25 @@ private extension InstalledApplicationsCoordinator {
             }
 
             self.alert = .didSelectUnisntallApplication(selectedSimulator, detail)
+        }
+    }
+
+    func handleInstalledApplicationMoreViewModelEvent(_ event: InstalledApplicationMoreViewModel.Event) {
+        switch event {
+        case .didSelectCachedBuildFolder(let fileItem, let detail):
+            let filesImDirectory = try! FileManager
+                .default
+                .contentsOfDirectory(at: fileItem.url, includingPropertiesForKeys: [.nameKey])
+
+            let appBinary = filesImDirectory.first { (url: URL) in
+                url.absoluteString.localizedStandardContains(fileItem.name)
+            }
+
+            guard let appBinary else { return }
+            guard let selectedSimulator = simulatorManager.selectedSimulator else { return }
+
+            let _ = Shell.shared.execute(.installApp(selectedSimulator.id, appBinary.path()))
+            let _ = Shell.shared.execute(.launchApp(selectedSimulator.id, detail.bundleIdentifier!))
         }
     }
 

@@ -42,7 +42,12 @@ struct InstalledApplicationsCoordinatingView: View {
                     )
                 case .installedApplicationMore(let details):
                     InstalledApplicationMoreView(
-                        viewModel: InstalledApplicationMoreViewModel(detail: details)
+                        viewModel: InstalledApplicationMoreViewModel(
+                            detail: details,
+                            sendEvent: { (event: InstalledApplicationMoreViewModel.Event) in
+                                coordinator.handleAction(.installedApplicationMoreViewModelEvent(event))
+                            }
+                        )
                     )
                 }
             }
