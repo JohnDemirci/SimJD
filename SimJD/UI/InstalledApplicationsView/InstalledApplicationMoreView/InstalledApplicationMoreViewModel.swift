@@ -10,6 +10,10 @@ import SwiftUI
 @MainActor
 @Observable
 final class InstalledApplicationMoreViewModel {
+    enum Action {
+        case cachedAppBinaryTableViewEvent(CachedAppBinaryTableView.Event)
+    }
+
     enum Event {
         case didSelectCachedBuildFolder(FileItem, InstalledAppDetail)
     }
@@ -54,6 +58,16 @@ extension InstalledApplicationMoreViewModel {
             handleViewDidLoad()
         }
     }
+
+    func handleAction(_ action: Action) {
+        switch action {
+        case .cachedAppBinaryTableViewEvent(let event):
+            switch event {
+            case .didSelectCachedFolder(let items):
+                didSelectCachedFolder(items)
+            }
+        }
+    }
 }
 
 extension InstalledApplicationMoreViewModel {
@@ -75,7 +89,7 @@ private extension InstalledApplicationMoreViewModel {
             let ddField = applicationDerivedDataField(),
             let infoPlistURL = infoPlistURL(for: ddField.value),
             let workspacePathURL = workspacePath(infoPlistURL: infoPlistURL),
-            let branchName = gitBranchGame(at: workspacePathURL.deletingLastPathComponent()),
+            let branchName = gitBranchName(at: workspacePathURL.deletingLastPathComponent()),
             let applicationBinaryPath = applicationBinaryPath(
                 derivedDataPath: ddField.value,
                 displayName: detail.displayName!
@@ -92,6 +106,8 @@ private extension InstalledApplicationMoreViewModel {
             cacheDirectoryURL: cacheDirectoryURL,
             applicationBinaryPathURL: applicationBinaryPath
         )
+
+        getListOfCaches()
     }
 
     func applicationDerivedDataField() -> InstalledApplicationMoreView.Field? {
@@ -117,7 +133,7 @@ private extension InstalledApplicationMoreViewModel {
         return workspacePathURL
     }
 
-    func gitBranchGame(at workspacePath: URL) -> String? {
+    func gitBranchName(at workspacePath: URL) -> String? {
         let gitBranchResult = Shell.shared.execute(.getBranchName(workspacePath))
         guard
             case .success(let optionalBranchName) = gitBranchResult,
@@ -125,6 +141,16 @@ private extension InstalledApplicationMoreViewModel {
         else { return nil }
 
         return branchName
+    }
+
+    func gitCommitHash(at workspacePath: URL) -> String? {
+        let commitHashResult = Shell.shared.execute(.getCommitHash(workspacePath))
+        guard
+            case .success(let optionalCommitHash) = commitHashResult,
+            let commitHash = optionalCommitHash?.replacingOccurrences(of: "\n", with: "")
+        else { return nil }
+
+        return commitHash
     }
 
     func applicationBinaryPath(
@@ -192,6 +218,31 @@ private extension InstalledApplicationMoreViewModel {
             )
         }
 
+        func getBranchInformation() {
+            guard
+                let ddField = applicationDerivedDataField(),
+                let infoPlistURL = infoPlistURL(for: ddField.value),
+                let workspacePathURL = workspacePath(infoPlistURL: infoPlistURL),
+                let branchName = gitBranchName(at: workspacePathURL.deletingLastPathComponent())
+            else { return }
+
+            fields.append(
+                InstalledApplicationMoreView.Field(
+                    key: "Current Branch",
+                    value: branchName
+                )
+            )
+
+            guard let commitHash = gitCommitHash(at: workspacePathURL) else { return }
+
+            fields.append(
+                InstalledApplicationMoreView.Field(
+                    key: "Latest Commit Hash",
+                    value: commitHash
+                )
+            )
+        }
+
         Array(detail.dictionaryRepresentation.keys).forEach { (key: String) in
             fields.append(
                 InstalledApplicationMoreView.Field(
@@ -203,6 +254,7 @@ private extension InstalledApplicationMoreViewModel {
 
         getPathToAppDerivedData()
         getListOfCaches()
+        getBranchInformation()
     }
 
     func handleDidSelectOpenInXcode() {
@@ -262,7 +314,9 @@ private extension InstalledApplicationMoreViewModel {
             !fileItem.name.localizedStandardContains("DS_Store")
         }
 
-        self.fileItems = filteredItems
+        withAnimation {
+            self.fileItems = filteredItems
+        }
     }
 }
 

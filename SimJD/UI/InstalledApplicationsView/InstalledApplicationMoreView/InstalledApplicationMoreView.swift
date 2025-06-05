@@ -16,6 +16,8 @@ struct InstalledApplicationMoreView: View {
     }
 
     @State private var viewModel: InstalledApplicationMoreViewModel
+    @State private var selection: FileItem?
+    @State private var isExpanded: Bool = false
 
     init(viewModel: InstalledApplicationMoreViewModel) {
         self.viewModel = viewModel
@@ -23,111 +25,72 @@ struct InstalledApplicationMoreView: View {
 
     var body: some View {
         List {
-            Section {
-                ForEach(viewModel.fields, id: \.self) { (field: Field) in
-                    LabeledContent(field.key, value: field.value)
-                }
-                .multilineTextAlignment(.trailing)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .textSelection(.enabled)
-            }
-
-            OptionalView(viewModel.fileItems) { (fileItems: [FileItem]) in
-                Section {
-                    Table(fileItems) {
-                        TableColumn("Name") { (item: FileItem) in
-                            HStack {
-                                FileIconView(url: item.url)
-                                Text(item.name)
-                            }
-                        }
-
-                        TableColumn("Creation Date") { (item: FileItem) in
-                            Text("\(item.creationDate?.formatted(date: .abbreviated, time: .shortened) ?? "N/A")")
-                        }
-
-                        TableColumn("Last Modified") { (item: FileItem) in
-                            Text("\(item.modificationDate?.formatted(date: .abbreviated, time: .shortened) ?? "N/A")")
-                        }
-
-                        TableColumn("Type") { (item: FileItem) in
-                            Text(item.contentType ?? "N/A")
-                        }
-
-                        TableColumn("Size") { (item: FileItem) in
-                            if let size = item.size {
-                                Text(size, format: .number)
-                            } else {
-                                Text("N/A")
-                            }
-                        }
+            Section(
+                isExpanded: $isExpanded,
+                content: {
+                    ForEach(viewModel.fields, id: \.self) { (field: Field) in
+                        LabeledContent(field.key, value: field.value)
                     }
-                    .contextMenu(
-                        forSelectionType: FileItem.ID.self,
-                        menu: { _ in EmptyView() },
-                        primaryAction: { (selectedIDs: Set<FileItem.ID>) in
-                            viewModel.didSelectCachedFolder(selectedIDs)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .textSelection(.enabled)
+                },
+                header: {
+                    Button(
+                        action: {
+                            withAnimation {
+                                isExpanded.toggle()
+                            }
+                        },
+                        label: {
+                            LabeledContent("Information") {
+                                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                            }
                         }
                     )
-                    .scrollDisabled(true)
-                    .frame(height: CGFloat(fileItems.count) * 50 + 50)
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Color.gray)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
                 }
-            }
+            )
+
+            CachedAppBinaryTableView(
+                items: $viewModel.fileItems,
+                sendEvent: { (event: CachedAppBinaryTableView.Event) in
+                    viewModel.handleAction(.cachedAppBinaryTableViewEvent(event))
+                }
+            )
         }
         .scrollBounceBehavior(.basedOnSize)
         .onAppear {
             viewModel.handleViewEvent(.viewDidAppear)
         }
         .toolbar {
-            IfView(viewModel.fields.contains("DerivedData Path")) {
-                HStack {
-                    Button("🚀") {
-                        viewModel.handleViewEvent(.didSelectLaunch)
-                    }
-                    .help("Launch the app on simulator")
+            toolbarButtonView()
+        }
+    }
+}
 
-                    Button("🔨") {
-                        viewModel.handleViewEvent(.didSelectOpenInXcode)
-                    }
-                    .help("Open in XCode")
-
-                    Button("💾") {
-                        viewModel.handleViewEvent(.didSelectCreateCache)
-                    }
-                    .help("Cache the current app binary for simulator")
+extension InstalledApplicationMoreView {
+    func toolbarButtonView() -> some View {
+        IfView(viewModel.fields.contains("DerivedData Path")) {
+            HStack {
+                Button("🚀") {
+                    viewModel.handleViewEvent(.didSelectLaunch)
                 }
+                .help("Launch the app on simulator")
+
+                Button("🔨") {
+                    viewModel.handleViewEvent(.didSelectOpenInXcode)
+                }
+                .help("Open in XCode")
+
+                Button("💾") {
+                    viewModel.handleViewEvent(.didSelectCreateCache)
+                }
+                .help("Cache the current app binary for simulator")
             }
         }
-    }
-}
-
-private struct ConditionalToolbarViewModifier<V: View>: ViewModifier {
-    private let condition: Bool
-    @ViewBuilder private var content: () -> V
-
-    init(
-        _ condition: Bool,
-        @ViewBuilder view: @escaping () -> V
-    ) {
-        self.condition = condition
-        self.content = view
-    }
-
-    func body(content: Content) -> some View {
-        if condition {
-            content
-                .toolbar {
-                    self.content()
-                }
-        }
-    }
-}
-
-extension View {
-    func conditionalToolbar<V: View>(
-        _ condition: Bool,
-        @ViewBuilder view: @escaping () -> V
-    ) -> some View {
-        modifier(ConditionalToolbarViewModifier(condition, view: view))
     }
 }

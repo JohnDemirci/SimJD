@@ -36,6 +36,7 @@ struct Shell: Sendable {
              .createSimulator,
              .getBranchName,
              .getCommitHash,
+             .terminateApp,
              .batteryStatusUpdate,
              .launchApp,
              .openPath,
@@ -232,6 +233,10 @@ extension Shell {
         case eraseContents(String) // do not exclusively call this when executing command use the helper function
         case getBranchName(URL)
         case getCommitHash(URL)
+        case terminateApp(
+            String, // simulatorID
+            String // BundleID
+        )
         case getDeviceTypes
         case getRuntimes
         case createSimulator(String, String, String) // name, deviceType, runtime
@@ -260,6 +265,7 @@ extension Shell {
                 .deleteSimulator,
                 .fetchSimulators,
                 .updateLocation,
+                .terminateApp,
                 .launchApp,
                 .simulatorLocale,
                 .getDeviceTypes,
@@ -311,6 +317,9 @@ extension Shell {
 
             case .openPath(let path):
                 [path]
+
+            case .terminateApp(let simulatorID, let bundleID):
+                ["simctl", "terminate", simulatorID, bundleID]
 
             case .activeProcesses(let uuid):
                 ["-c", "xcrun simctl spawn \(uuid) launchctl list"]

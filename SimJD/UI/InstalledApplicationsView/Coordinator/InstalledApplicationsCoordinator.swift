@@ -154,6 +154,8 @@ private extension InstalledApplicationsCoordinator {
             guard let appBinary else { return }
             guard let selectedSimulator = simulatorManager.selectedSimulator else { return }
 
+            
+            let _ = Shell.shared.execute(.terminateApp(selectedSimulator.id, detail.bundleIdentifier!))
             let _ = Shell.shared.execute(.installApp(selectedSimulator.id, appBinary.path()))
             let _ = Shell.shared.execute(.launchApp(selectedSimulator.id, detail.bundleIdentifier!))
         }
