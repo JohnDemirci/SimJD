@@ -51,14 +51,22 @@ extension URL {
                             .isDirectoryKey,
                             .creationDateKey,
                             .contentModificationDateKey,
+                            .contentAccessDateKey,
                             .contentTypeKey,
                             .totalFileSizeKey
                         ]
                     )
 
-                let applicationDerivedDataURL = urls.first { (url: URL) in
+                let applicationDerivedDataURL = urls.filter { (url: URL) in
                     url.absoluteString.localizedStandardContains(detail.displayName!)
                 }
+                .sorted { lhsURL, rhsURL in
+                    let lhsResourceValues = try! lhsURL.resourceValues(forKeys: [.contentAccessDateKey])
+                    let rhsResourceValues = try! rhsURL.resourceValues(forKeys: [.contentAccessDateKey])
+
+                    return lhsResourceValues.contentAccessDate ?? Date() > rhsResourceValues.contentAccessDate ?? Date()
+                }
+                .first
 
                 guard let applicationDerivedDataURL else {
                     return .failure(Failure.message("url does not exists"))
