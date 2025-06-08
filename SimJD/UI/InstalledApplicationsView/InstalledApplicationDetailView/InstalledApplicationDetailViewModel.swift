@@ -15,7 +15,7 @@ final class InstalledApplicationDetailViewModel {
         case didSelectApplicationSandboxData(InstalledAppDetail)
         case didSelectInfoPlist(InstalledAppDetail)
         case didSelectOpenUserDefaults(InstalledAppDetail)
-        case didSelectMore(InstalledAppDetail)
+        case didSelectBuildsAndCaches(InstalledAppDetail)
         case didSelectRemoveUserDefaults(InstalledAppDetail)
         case didSelectUninstallApplication(InstalledAppDetail)
     }
@@ -49,9 +49,9 @@ extension InstalledApplicationDetailViewModel {
                 guard let self else { return }
                 self.sendEvent(.didSelectOpenUserDefaults(self.installedApplication))
             }),
-            .init(name: "More", action: { [weak self] in
+            .init(name: "Builds & Caches", action: { [weak self] in
                 guard let self else { return }
-                self.sendEvent(.didSelectMore(self.installedApplication))
+                self.sendEvent(.didSelectBuildsAndCaches(self.installedApplication))
             }),
             .init(name: "Remove UserDefaults", action: { [weak self] in
                 guard let self else { return }

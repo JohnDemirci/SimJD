@@ -9,7 +9,7 @@ import SwiftUI
 
 @MainActor
 @Observable
-final class InstalledApplicationMoreViewModel {
+final class BuildsAndCachesViewModel {
     enum Action {
         case cachedAppBinaryTableViewEvent(CachedAppBinaryTableView.Event)
     }
@@ -25,7 +25,7 @@ final class InstalledApplicationMoreViewModel {
     let fileManager: FileManager
 
     var appDerivedDataPath: String = ""
-    var fields: [InstalledApplicationMoreView.Field] = []
+    var fields: [BuildsAndCachesView.Field] = []
     var fileItems: [FileItem]?
     var selectedFileItem: FileItem?
 
@@ -42,8 +42,8 @@ final class InstalledApplicationMoreViewModel {
     }
 }
 
-extension InstalledApplicationMoreViewModel {
-    func handleViewEvent(_ event: InstalledApplicationMoreView.Event) {
+extension BuildsAndCachesViewModel {
+    func handleViewEvent(_ event: BuildsAndCachesView.Event) {
         switch event {
         case .didSelectCreateCache:
             handleDidSelectCreateCache()
@@ -70,7 +70,7 @@ extension InstalledApplicationMoreViewModel {
     }
 }
 
-extension InstalledApplicationMoreViewModel {
+extension BuildsAndCachesViewModel {
     func didSelectCachedFolder(_ selectedItems: Set<FileItem.ID>) {
         guard
             let selectedItem = selectedItems.first,
@@ -83,7 +83,7 @@ extension InstalledApplicationMoreViewModel {
 
 // MARK: - Creating Cache
 
-private extension InstalledApplicationMoreViewModel {
+private extension BuildsAndCachesViewModel {
     func handleDidSelectCreateCache() {
         guard
             let ddField = applicationDerivedDataField(),
@@ -107,12 +107,25 @@ private extension InstalledApplicationMoreViewModel {
             applicationBinaryPathURL: applicationBinaryPath
         )
 
+        var dictionaryRepresentation: [String: String] = detail.dictionaryRepresentation
+        fields.forEach { (field: BuildsAndCachesView.Field) in
+            dictionaryRepresentation[field.key] = field.value
+        }
+
+        let jsonURL = cacheDirectoryURL.appendingPathComponent("details.json")
+        do {
+            let data = try JSONSerialization.data(withJSONObject: dictionaryRepresentation, options: .prettyPrinted)
+            try data.write(to: jsonURL)
+        } catch {
+            fatalError("could not write file to disk")
+        }
+
         getListOfCaches()
     }
 
-    func applicationDerivedDataField() -> InstalledApplicationMoreView.Field? {
+    func applicationDerivedDataField() -> BuildsAndCachesView.Field? {
         // get derived data folder of the application
-        guard let ddField = fields.first(where: { (field: InstalledApplicationMoreView.Field) in
+        guard let ddField = fields.first(where: { (field: BuildsAndCachesView.Field) in
             field.key == "DerivedData Path"
         }) else { return nil }
 
@@ -203,7 +216,7 @@ private extension InstalledApplicationMoreViewModel {
     }
 }
 
-private extension InstalledApplicationMoreViewModel {
+private extension BuildsAndCachesViewModel {
     func handleViewDidLoad() {
         func getPathToAppDerivedData() {
             guard
@@ -211,7 +224,7 @@ private extension InstalledApplicationMoreViewModel {
             else { return }
 
             self.fields.append(
-                InstalledApplicationMoreView.Field(
+                BuildsAndCachesView.Field(
                     key: "DerivedData Path",
                     value: url.path()
                 )
@@ -227,7 +240,7 @@ private extension InstalledApplicationMoreViewModel {
             else { return }
 
             fields.append(
-                InstalledApplicationMoreView.Field(
+                BuildsAndCachesView.Field(
                     key: "Current Branch",
                     value: branchName
                 )
@@ -236,18 +249,9 @@ private extension InstalledApplicationMoreViewModel {
             guard let commitHash = gitCommitHash(at: workspacePathURL) else { return }
 
             fields.append(
-                InstalledApplicationMoreView.Field(
+                BuildsAndCachesView.Field(
                     key: "Latest Commit Hash",
                     value: commitHash
-                )
-            )
-        }
-
-        Array(detail.dictionaryRepresentation.keys).forEach { (key: String) in
-            fields.append(
-                InstalledApplicationMoreView.Field(
-                    key: key,
-                    value: detail[dynamicMember: key] ?? "N/A"
                 )
             )
         }
@@ -258,7 +262,7 @@ private extension InstalledApplicationMoreViewModel {
     }
 
     func handleDidSelectOpenInXcode() {
-        guard let ddField = fields.first(where: { (field: InstalledApplicationMoreView.Field) in
+        guard let ddField = fields.first(where: { (field: BuildsAndCachesView.Field) in
             field.key == "DerivedData Path"
         }) else { return }
 
@@ -276,7 +280,7 @@ private extension InstalledApplicationMoreViewModel {
     }
 
     func handleDidSelectLaunchInSimulator() {
-        let applicationDerivedDataPath = fields.first { (field: InstalledApplicationMoreView.Field) in
+        let applicationDerivedDataPath = fields.first { (field: BuildsAndCachesView.Field) in
             field.key == "DerivedData Path"
         }
 
@@ -297,7 +301,7 @@ private extension InstalledApplicationMoreViewModel {
     }
 
     func getListOfCaches() {
-        guard let ddField = fields.first(where: { (field: InstalledApplicationMoreView.Field) in
+        guard let ddField = fields.first(where: { (field: BuildsAndCachesView.Field) in
             field.key == "DerivedData Path"
         }) else { return }
 
@@ -320,14 +324,14 @@ private extension InstalledApplicationMoreViewModel {
     }
 }
 
-extension InstalledApplicationMoreView {
+extension BuildsAndCachesView {
     struct Field: Hashable {
         let key: String
         let value: String
     }
 }
 
-extension Collection where Element == InstalledApplicationMoreView.Field {
+extension Collection where Element == BuildsAndCachesView.Field {
     func contains(_ key: String) -> Bool {
         first(where: { $0.key == key }) != nil
     }

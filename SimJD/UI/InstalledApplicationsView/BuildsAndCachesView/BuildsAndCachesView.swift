@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct InstalledApplicationMoreView: View {
+struct BuildsAndCachesView: View {
     enum Event {
         case didSelectCreateCache
         case didSelectLaunch
@@ -15,11 +15,11 @@ struct InstalledApplicationMoreView: View {
         case viewDidAppear
     }
 
-    @State private var viewModel: InstalledApplicationMoreViewModel
+    @State private var viewModel: BuildsAndCachesViewModel
     @State private var selection: FileItem?
-    @State private var isExpanded: Bool = false
+    @State private var isExpanded: Bool = true
 
-    init(viewModel: InstalledApplicationMoreViewModel) {
+    init(viewModel: BuildsAndCachesViewModel) {
         self.viewModel = viewModel
     }
 
@@ -67,12 +67,14 @@ struct InstalledApplicationMoreView: View {
             viewModel.handleViewEvent(.viewDidAppear)
         }
         .toolbar {
-            toolbarButtonView()
+            ToolbarItem(placement: .primaryAction) {
+                toolbarButtonView()
+            }
         }
     }
 }
 
-extension InstalledApplicationMoreView {
+extension BuildsAndCachesView {
     func toolbarButtonView() -> some View {
         IfView(viewModel.fields.contains("DerivedData Path")) {
             HStack {

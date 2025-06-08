@@ -21,6 +21,16 @@ struct InstalledApplicationsCoordinatingView: View {
             )
             .navigationDestination(for: InstalledApplicationsCoordinator.Destination.self) {
                 switch $0 {
+                case .cachedBuildDetailsView(let fileItem, let installedAppDetail):
+                    CachedBuildDetailsView(
+                        viewModel: CachedBuildDetailsViewModel(
+                            details: installedAppDetail,
+                            fileItem: fileItem,
+                            sendEvent: { (event: CachedBuildDetailsViewModel.Event) in
+                                coordinator.handleAction(.cachedBuildDetailsViewModelEvent(event))
+                            }
+                        )
+                    )
                 case .folder(let url):
                     DocumentsFolderView(
                         viewModel: DocumentsFolderViewModel(
@@ -41,11 +51,11 @@ struct InstalledApplicationsCoordinatingView: View {
                         )
                     )
                 case .installedApplicationMore(let details):
-                    InstalledApplicationMoreView(
-                        viewModel: InstalledApplicationMoreViewModel(
+                    BuildsAndCachesView(
+                        viewModel: BuildsAndCachesViewModel(
                             detail: details,
-                            sendEvent: { (event: InstalledApplicationMoreViewModel.Event) in
-                                coordinator.handleAction(.installedApplicationMoreViewModelEvent(event))
+                            sendEvent: { (event: BuildsAndCachesViewModel.Event) in
+                                coordinator.handleAction(.buildsAndCachesViewModelEvent(event))
                             }
                         )
                     )

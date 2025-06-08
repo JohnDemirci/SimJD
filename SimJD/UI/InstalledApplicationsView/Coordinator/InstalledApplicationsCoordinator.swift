@@ -11,15 +11,17 @@ import SwiftUI
 @Observable
 final class InstalledApplicationsCoordinator {
     enum Destination: Hashable {
+        case cachedBuildDetailsView(FileItem, InstalledAppDetail)
         case folder(URL)
         case installedApplicationDetails(InstalledAppDetail)
         case installedApplicationMore(InstalledAppDetail)
     }
 
     enum Action {
+        case cachedBuildDetailsViewModelEvent(CachedBuildDetailsViewModel.Event)
         case documentFolderViewModelEvent(DocumentsFolderViewModel.Event)
         case installedApplicationDetailViewEvent(InstalledApplicationDetailViewModel.Event)
-        case installedApplicationMoreViewModelEvent(InstalledApplicationMoreViewModel.Event)
+        case buildsAndCachesViewModelEvent(BuildsAndCachesViewModel.Event)
         case installedApplicationsViewModelEvent(InstalledApplicationsViewModel.Event)
     }
 
@@ -59,14 +61,17 @@ final class InstalledApplicationsCoordinator {
 
     func handleAction(_ action: Action) {
         switch action {
+        case .cachedBuildDetailsViewModelEvent(let event):
+            handleCachedBuildDetailsViewModelEvent(event)
+
         case .documentFolderViewModelEvent(let event):
             handleDocumentsFolderViewModelEvent(event)
 
         case .installedApplicationDetailViewEvent(let event):
             handleInstalledApplicationDetailViewEvent(event)
 
-        case .installedApplicationMoreViewModelEvent(let event):
-            handleInstalledApplicationMoreViewModelEvent(event)
+        case .buildsAndCachesViewModelEvent(let event):
+            handleBuildsAndCachesViewModelEvent(event)
 
         case .installedApplicationsViewModelEvent(let event):
             handleInstalledApplicationsViewModelEvent(event)
@@ -75,6 +80,16 @@ final class InstalledApplicationsCoordinator {
 }
 
 private extension InstalledApplicationsCoordinator {
+    func handleCachedBuildDetailsViewModelEvent(_ event: CachedBuildDetailsViewModel.Event) {
+        switch event {
+        case .didSelectLaunchInSimulator(let url, let bundleIdentifier):
+            guard let selectedSimulator = simulatorManager.selectedSimulator else { return }
+            let _ = Shell.shared.execute(.terminateApp(selectedSimulator.id, bundleIdentifier))
+            let _ = Shell.shared.execute(.installApp(selectedSimulator.id, url.path()))
+            let _ = Shell.shared.execute(.launchApp(selectedSimulator.id, bundleIdentifier))
+        }
+    }
+
     func handleDocumentsFolderViewModelEvent(_ event: DocumentsFolderViewModel.Event) {
         switch event {
         case .didFailToFetchFiles:
@@ -124,7 +139,7 @@ private extension InstalledApplicationsCoordinator {
                 self.alert = .didFailToOpenFile
             }
 
-        case .didSelectMore(let detail):
+        case .didSelectBuildsAndCaches(let detail):
             self.destination.append(.installedApplicationMore(detail))
 
         case .didSelectRemoveUserDefaults(let detail):
@@ -140,24 +155,10 @@ private extension InstalledApplicationsCoordinator {
         }
     }
 
-    func handleInstalledApplicationMoreViewModelEvent(_ event: InstalledApplicationMoreViewModel.Event) {
+    func handleBuildsAndCachesViewModelEvent(_ event: BuildsAndCachesViewModel.Event) {
         switch event {
         case .didSelectCachedBuildFolder(let fileItem, let detail):
-            let filesImDirectory = try! FileManager
-                .default
-                .contentsOfDirectory(at: fileItem.url, includingPropertiesForKeys: [.nameKey])
-
-            let appBinary = filesImDirectory.first { (url: URL) in
-                url.absoluteString.localizedStandardContains(fileItem.name)
-            }
-
-            guard let appBinary else { return }
-            guard let selectedSimulator = simulatorManager.selectedSimulator else { return }
-
-            
-            let _ = Shell.shared.execute(.terminateApp(selectedSimulator.id, detail.bundleIdentifier!))
-            let _ = Shell.shared.execute(.installApp(selectedSimulator.id, appBinary.path()))
-            let _ = Shell.shared.execute(.launchApp(selectedSimulator.id, detail.bundleIdentifier!))
+            self.destination.append(.cachedBuildDetailsView(fileItem, detail))
         }
     }
 
