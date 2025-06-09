@@ -19,7 +19,7 @@ struct RunningProcessesView: View {
             ForEach(viewModel.processes) { process in
                 Text(process.label)
             }
-            .inCase(viewModel.processes == []) {
+            .inCase(viewModel.processes.isEmpty) {
                 NoProcessView {
                     viewModel.emptyProcesses()
                 }

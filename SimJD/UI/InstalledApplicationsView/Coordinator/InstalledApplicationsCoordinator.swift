@@ -159,6 +159,19 @@ private extension InstalledApplicationsCoordinator {
         switch event {
         case .didSelectCachedBuildFolder(let fileItem, let detail):
             self.destination.append(.cachedBuildDetailsView(fileItem, detail))
+        case .didSelectOpenInXcode(let applicationDerivedDataPath):
+            switch URL.getFilePath(for: .infoPlist(applicationDerivedDataPath)) {
+            case .success(let infoPlistPath):
+                switch URL.getFilePath(for: .workspacePath(infoPlistPath)) {
+                case .success(let workspacePath):
+                    let _ = Shell.shared.execute(.openPath(workspacePath.path()))
+                case .failure(let error):
+                    fatalError(error.localizedDescription)
+                }
+            case .failure(let error):
+                // TODO: - handle errors
+                break
+            }
         }
     }
 

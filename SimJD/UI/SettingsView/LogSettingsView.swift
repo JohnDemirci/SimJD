@@ -8,8 +8,6 @@
 import Foundation
 import SwiftUI
 
-
-
 struct LogSettingsView: View {
     @AppStorage(Setting.enableLogging.key) var enableLogging: Bool = true
     @State private var showHistory: Bool = false

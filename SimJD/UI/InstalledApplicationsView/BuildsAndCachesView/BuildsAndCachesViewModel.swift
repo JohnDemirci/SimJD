@@ -16,6 +16,7 @@ final class BuildsAndCachesViewModel {
 
     enum Event {
         case didSelectCachedBuildFolder(FileItem, InstalledAppDetail)
+        case didSelectOpenInXcode(String /* Derived Data path */)
     }
 
     private let simulatorManager: SimulatorManager
@@ -264,19 +265,12 @@ private extension BuildsAndCachesViewModel {
     func handleDidSelectOpenInXcode() {
         guard let ddField = fields.first(where: { (field: BuildsAndCachesView.Field) in
             field.key == "DerivedData Path"
-        }) else { return }
-
-        switch URL.getFilePath(for: .infoPlist(ddField.value)) {
-        case .success(let pListURL):
-            switch URL.getFilePath(for: .workspacePath(pListURL)) {
-            case .success(let workspacePath):
-                let _ = Shell.shared.execute(.openPath(workspacePath.path()))
-            case .failure(let error):
-                fatalError(error.localizedDescription)
-            }
-        case .failure:
-            break
+        }) else {
+            // TODO: - handle error
+            return
         }
+
+        sendEvent(.didSelectOpenInXcode(ddField.value))
     }
 
     func handleDidSelectLaunchInSimulator() {
