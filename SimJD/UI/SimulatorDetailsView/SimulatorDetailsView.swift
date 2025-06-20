@@ -71,7 +71,7 @@ private extension SimulatorDetailsView {
                         SimulatorGeolocationCoordinatingView()
                     }
                 }
-                .id(viewModel.selectedSimulator)
+                .id(SimulatorManager.live.selectedSimulator)
             }
         )
         .padding(.vertical, 10)
